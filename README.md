@@ -2,5 +2,7 @@
 A local (mock) version of AWS KMS
 
 ```sh
-./bin/start
+./bin/linux
+
+./bin/mac
 ```
