@@ -24,3 +24,8 @@
 [[constraint]]
   name = "github.com/gin-gonic/gin"
   version = "^1.2.0"
+
+[metadata.heroku]
+  root-package = "github.com/NSmithUK/local-kms-go"
+  go-version = "go1.9"
+  ensure = "true"
