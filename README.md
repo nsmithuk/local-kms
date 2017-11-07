@@ -5,7 +5,7 @@ Currently support just two endpoints:
 * encrypt
 * decrypt
 
-## Setup
+## Install
 
 ```sh
 go get -u github.com/NSmithUK/local-kms-go
@@ -16,6 +16,11 @@ dep ensure
 
 go install
 
+```
+
+## Run
+
+```sh
 $GOPATH/bin/local-kms-go
 
 ```
