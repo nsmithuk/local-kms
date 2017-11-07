@@ -5,7 +5,6 @@ import (
 	"crypto/rand"
 	"io"
 	"crypto/cipher"
-	"log"
 )
 
 func Encrypt( key [32]byte, plaintextString string ) []byte {
@@ -21,8 +20,6 @@ func Encrypt( key [32]byte, plaintextString string ) []byte {
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
 		panic(err.Error())
 	}
-
-	log.Println(nonce)
 
 	aesgcm, err := cipher.NewGCM(block)
 	if err != nil {
