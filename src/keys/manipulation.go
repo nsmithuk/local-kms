@@ -1,20 +1,6 @@
-package main
+package keys
 
-import (
-	"crypto/sha256"
-)
-
-/*
-Crude fake key generation; a sha256 of the ident.
- */
-func getKey( ident string ) []byte {
-
-	fakeKey := sha256.Sum256([]byte(ident))
-
-	return []byte(fakeKey[:])
-}
-
-func appendKeyIdent( ident string, data []byte ) []byte {
+func AppendKeyIdent( ident string, data []byte ) []byte {
 
 	identBytes := []byte(ident)
 
@@ -37,10 +23,11 @@ func appendKeyIdent( ident string, data []byte ) []byte {
 	return result
 }
 
-func extractKeyIdent( data []byte ) (string, []byte) {
+func ExtractKeyIdent( data []byte ) (string, []byte) {
 
 	identlength := uint8(data[0])
 
 	// We need the plus one to step over the fist 'length' byte.
 	return string(data[1:identlength+1]), data[identlength+1:]
 }
+
