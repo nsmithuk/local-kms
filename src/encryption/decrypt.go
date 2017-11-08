@@ -10,8 +10,6 @@ func Decrypt( key [32]byte, ciphertext []byte ) string {
 
 	nonce := ciphertext[:12]
 
-	log.Println(nonce)
-
 	block, err := aes.NewCipher([]byte(key[:]))
 	if err != nil {
 		panic(err.Error())
