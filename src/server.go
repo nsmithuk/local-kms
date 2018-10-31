@@ -46,10 +46,26 @@ func handleRequest(w http.ResponseWriter, r *http.Request) {
 		h := handler.NewRequestHandler(r, logger, database)
 
 		switch r.Header.Get("X-Amz-Target") {
+		case "TrentService.ListKeys":
+			respond(w, h.ListKeys())
+
 		case "TrentService.CreateKey":
-			result := h.CreateKey()
-			w.WriteHeader(result.Code)
-			fmt.Fprint(w, result.Body)
+			respond(w, h.CreateKey())
+
+		case "TrentService.CreateAlias":
+			respond(w, h.CreateAlias())
+
+		case "TrentService.DeleteAlias":
+			respond(w, h.DeleteAlias())
+
+		case "TrentService.ListAliases":
+			respond(w, h.ListAliases())
+
+		case "TrentService.ScheduleKeyDeletion":
+			respond(w, h.ScheduleKeyDeletion())
+
+		case "TrentService.CancelKeyDeletion":
+			respond(w, h.CancelKeyDeletion())
 
 		default:
 			error501(w)
@@ -57,6 +73,11 @@ func handleRequest(w http.ResponseWriter, r *http.Request) {
 
 	}
 
+}
+
+func respond( w http.ResponseWriter, r handler.Response ) {
+	w.WriteHeader(r.Code)
+	fmt.Fprint(w, r.Body)
 }
 
 func error404(w http.ResponseWriter){

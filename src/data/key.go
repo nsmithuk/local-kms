@@ -1,8 +1,11 @@
 package data
 
+import "time"
+
 type Key struct {
-	Metadata 	KeyMetadata
-	BackingKeys	[][32]byte
+	Metadata 		KeyMetadata
+	BackingKeys		[][32]byte
+	NextKeyRotation	time.Time
 }
 
 type KeyMetadata struct {
@@ -20,45 +23,3 @@ type KeyMetadata struct {
 	Origin string `json:",omitempty"`
 	ValidTo int64 `json:",omitempty"`
 }
-
-//-------------------------
-// Mapped Types
-
-/*
-//type KeyMetadata kms.KeyMetadata
-
-func (t KeyMetadata) MarshalJSON() ([]byte, error) {
-	type Alias KeyMetadata
-
-	var ValidTo *int64
-	var CreationDate *int64
-	var DeletionDate *int64
-
-	if t.ValidTo != nil {
-		val := t.ValidTo.UnixNano()
-		ValidTo = &val
-	}
-
-	if t.CreationDate != nil {
-		val := t.CreationDate.UnixNano()
-		CreationDate = &val
-	}
-
-	if t.DeletionDate != nil {
-		val := t.DeletionDate.UnixNano()
-		DeletionDate = &val
-	}
-
-	return json.Marshal(&struct {
-		ValidTo			*int64
-		CreationDate	*int64
-		DeletionDate	*int64
-		Alias
-	}{
-		ValidTo: 		ValidTo,
-		CreationDate: 	CreationDate,
-		DeletionDate: 	DeletionDate,
-		Alias:    		(Alias)(t),
-	})
-}
-*/

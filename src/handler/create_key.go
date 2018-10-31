@@ -7,18 +7,28 @@ import(
 	"github.com/aws/aws-sdk-go/service/kms"
 	"github.com/satori/go.uuid"
 	"time"
+	"fmt"
 )
 
 func (r *RequestHandler) CreateKey() Response {
 
 	var body *kms.CreateKeyInput
+	err := r.decodeBodyInto(&body)
 
-	r.decodeBodyInto(&body)
+	if err != nil {
+		body = &kms.CreateKeyInput{}
+	}
 
 	//--------------------------------
 	// Validation
 
+	if body.Description != nil && len(*body.Description) > 2 {
+		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'description' failed to satisfy " +
+			"constraint: Member must have length less than or equal to 8192", *body.Description)
 
+		r.logger.Warnf(msg)
+		return NewValidationExceptionResponse(msg)
+	}
 
 	//--------------------------------
 	// Create the key set up
@@ -30,7 +40,7 @@ func (r *RequestHandler) CreateKey() Response {
 			Arn: config.ArnPrefix() + "key/" + keyId,
 			KeyId: keyId,
 			AWSAccountId: config.AWSAccountId,
-			CreationDate: time.Now().UnixNano(),
+			CreationDate: time.Now().Unix(),
 			Description: body.Description,
 			Enabled: true,
 			KeyManager: "CUSTOMER",
@@ -47,9 +57,10 @@ func (r *RequestHandler) CreateKey() Response {
 	//--------------------------------
 	// Save the key
 
-	err := r.database.SaveKey(key)
+	err = r.database.SaveKey(key)
 	if err != nil {
 		r.logger.Error(err)
+		return NewInternalFailureExceptionResponse(err.Error())
 	}
 
 	//---
