@@ -19,16 +19,18 @@ func (r *RequestHandler) CreateKey() Response {
 		body = &kms.CreateKeyInput{}
 	}
 
+
 	//--------------------------------
 	// Validation
 
-	if body.Description != nil && len(*body.Description) > 2 {
+	if body.Description != nil && len(*body.Description) > 8192 {
 		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'description' failed to satisfy " +
 			"constraint: Member must have length less than or equal to 8192", *body.Description)
 
 		r.logger.Warnf(msg)
 		return NewValidationExceptionResponse(msg)
 	}
+
 
 	//--------------------------------
 	// Create the key set up
@@ -65,9 +67,7 @@ func (r *RequestHandler) CreateKey() Response {
 
 	//---
 
-	response := map[string]data.KeyMetadata{
+	return NewResponse( 200, map[string]data.KeyMetadata{
 		"KeyMetadata": key.Metadata,
-	}
-
-	return NewResponse( 200, response)
+	})
 }

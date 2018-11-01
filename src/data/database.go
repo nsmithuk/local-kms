@@ -5,6 +5,7 @@ import(
 	"encoding/json"
 	"github.com/syndtr/goleveldb/leveldb/util"
 	"time"
+	"github.com/NSmithUK/local-kms-go/src/service"
 )
 
 type Database struct {
@@ -76,6 +77,22 @@ func (d *Database) LoadKey(arn string) (*Key, error) {
 		d.DeleteObject(arn)
 		return nil, leveldb.ErrNotFound
 	}
+
+	//---
+
+	// Check if key needs rotating
+	if k.Metadata.Enabled && !k.NextKeyRotation.IsZero() && k.NextKeyRotation.Before(time.Now()) {
+
+		// Add a new backing key to use
+		k.BackingKeys = append(k.BackingKeys, service.GenerateNewKey())
+
+		// Reset the timer
+		k.NextKeyRotation = time.Now().AddDate(1, 0, 0)
+
+		d.SaveKey(&k)
+	}
+
+	//---
 
 	return &k, err
 }

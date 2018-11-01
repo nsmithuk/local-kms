@@ -67,6 +67,30 @@ func handleRequest(w http.ResponseWriter, r *http.Request) {
 		case "TrentService.CancelKeyDeletion":
 			respond(w, h.CancelKeyDeletion())
 
+		case "TrentService.DescribeKey":
+			respond(w, h.DescribeKey())
+
+		case "TrentService.UpdateAlias":
+			respond(w, h.UpdateAlias())
+
+		case "TrentService.UpdateKeyDescription":
+			respond(w, h.UpdateKeyDescription())
+
+		case "TrentService.EnableKey":
+			respond(w, h.EnableKey())
+
+		case "TrentService.DisableKey":
+			respond(w, h.DisableKey())
+
+		case "TrentService.EnableKeyRotation":
+			respond(w, h.EnableKeyRotation())
+
+		case "TrentService.GetKeyRotationStatus":
+			respond(w, h.GetKeyRotationStatus())
+
+		case "TrentService.DisableKeyRotation":
+			respond(w, h.DisableKeyRotation())
+
 		default:
 			error501(w)
 		}

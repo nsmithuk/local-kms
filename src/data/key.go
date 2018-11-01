@@ -14,7 +14,7 @@ type KeyMetadata struct {
 	CreationDate int64 `json:",omitempty"`
 	DeletionDate int64 `json:",omitempty"`
 	Description *string	`json:",omitempty"`
-	Enabled bool `json:",omitempty"`
+	Enabled bool
 	ExpirationModel string `json:",omitempty"`
 	KeyId string `json:",omitempty"`
 	KeyManager string `json:",omitempty"`

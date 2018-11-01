@@ -67,6 +67,10 @@ func New400ExceptionResponse(exception, message string) Response {
 //-------------------------------------------------
 // Error helpers
 
+func NewDisabledExceptionResponse(message string) Response {
+	return New400ExceptionResponse("DisabledException", message)
+}
+
 func NewMissingParameterResponse(message string) Response {
 	return New400ExceptionResponse("MissingParameterException", message)
 }

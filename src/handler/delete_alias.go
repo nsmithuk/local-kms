@@ -34,7 +34,7 @@ func (r *RequestHandler) DeleteAlias() Response {
 		return NewValidationExceptionResponse(msg)
 	}
 
-	if strings.HasPrefix(*body.AliasName, "alias/aws/") {
+	if strings.HasPrefix(*body.AliasName, "alias/aws") {
 		r.logger.Warnf("Cannot remove alias with prefix 'alias/aws/'")
 		return NewNotAuthorizedExceptionResponse( "")
 	}

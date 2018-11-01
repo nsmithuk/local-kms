@@ -68,6 +68,8 @@ func (r *RequestHandler) ScheduleKeyDeletion() Response {
 
 	//---
 
+	key.Metadata.Enabled = false
+	key.Metadata.KeyState = "PendingDeletion"
 	key.Metadata.DeletionDate = time.Now().AddDate(0, 0, int(PendingWindowInDays)).Unix()
 
 	//--------------------------------

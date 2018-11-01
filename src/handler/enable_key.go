@@ -6,13 +6,13 @@ import (
 	"fmt"
 )
 
-func (r *RequestHandler) CancelKeyDeletion() Response {
+func (r *RequestHandler) EnableKey() Response {
 
-	var body *kms.CancelKeyDeletionInput
+	var body *kms.EnableKeyInput
 	err := r.decodeBodyInto(&body)
 
 	if err != nil {
-		body = &kms.CancelKeyDeletionInput{}
+		body = &kms.EnableKeyInput{}
 	}
 
 	//--------------------------------
@@ -27,13 +27,13 @@ func (r *RequestHandler) CancelKeyDeletion() Response {
 
 	//---
 
-	target := config.EnsureArn("key/", *body.KeyId)
+	keyArn := config.EnsureArn("key/", *body.KeyId)
 
 	// Lookup the key
-	key, _ := r.database.LoadKey(target)
+	key, _ := r.database.LoadKey(keyArn)
 
 	if key == nil {
-		msg := fmt.Sprintf("Key '%s' does not exist", target)
+		msg := fmt.Sprintf("Key '%s' does not exist", keyArn)
 
 		r.logger.Warnf(msg)
 		return NewNotFoundExceptionResponse(msg)
@@ -41,9 +41,9 @@ func (r *RequestHandler) CancelKeyDeletion() Response {
 
 	//---
 
-	if key.Metadata.DeletionDate == 0 {
-		// Key is pending deletion; cannot re-schedule
-		msg := fmt.Sprintf("%s is not pending deletion.", target)
+	if key.Metadata.DeletionDate != 0 {
+		// Key is pending deletion; cannot create alias
+		msg := fmt.Sprintf("%s is pending deletion.", keyArn)
 
 		r.logger.Warnf(msg)
 		return NewKMSInvalidStateExceptionResponse(msg)
@@ -53,7 +53,6 @@ func (r *RequestHandler) CancelKeyDeletion() Response {
 
 	key.Metadata.Enabled = true
 	key.Metadata.KeyState = "Enabled"
-	key.Metadata.DeletionDate = 0
 
 	//--------------------------------
 	// Save the key
@@ -66,7 +65,6 @@ func (r *RequestHandler) CancelKeyDeletion() Response {
 
 	//---
 
-	return NewResponse( 200, map[string]interface{}{
-		"KeyId": key.Metadata.Arn,
-	})
+	return NewResponse( 200, nil)
+
 }

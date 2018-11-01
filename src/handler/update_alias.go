@@ -1,20 +1,19 @@
 package handler
 
 import (
-	"github.com/NSmithUK/local-kms-go/src/config"
 	"github.com/aws/aws-sdk-go/service/kms"
 	"strings"
-	"github.com/NSmithUK/local-kms-go/src/data"
+	"github.com/NSmithUK/local-kms-go/src/config"
 	"fmt"
 )
 
-func (r *RequestHandler) CreateAlias() Response {
+func (r *RequestHandler) UpdateAlias() Response {
 
-	var body *kms.CreateAliasInput
+	var body *kms.UpdateAliasInput
 	err := r.decodeBodyInto(&body)
 
 	if err != nil {
-		body = &kms.CreateAliasInput{}
+		body = &kms.UpdateAliasInput{}
 	}
 
 	//--------------------------------
@@ -55,15 +54,28 @@ func (r *RequestHandler) CreateAlias() Response {
 		return NewValidationExceptionResponse(msg)
 	}
 
-	// --------------------------------
+	//---
 
-	target := config.EnsureArn("key/", *body.TargetKeyId)
+	aliasArn := config.ArnPrefix() + *body.AliasName
+
+	alias, err := r.database.LoadAlias(aliasArn)
+
+	if err != nil {
+		msg := fmt.Sprintf("Alias '%s' does not exist", *body.AliasName)
+
+		r.logger.Warnf(msg)
+		return NewNotFoundExceptionResponse(msg)
+	}
+
+	//---
+
+	keyArn := config.EnsureArn("key/", *body.TargetKeyId)
 
 	// Lookup the key
-	key, _ := r.database.LoadKey(target)
+	key, _ := r.database.LoadKey(keyArn)
 
 	if key == nil {
-		msg := fmt.Sprintf("Key '%s' does not exist", target)
+		msg := fmt.Sprintf("Key '%s' does not exist", keyArn)
 
 		r.logger.Warnf(msg)
 		return NewNotFoundExceptionResponse(msg)
@@ -73,7 +85,7 @@ func (r *RequestHandler) CreateAlias() Response {
 
 	if key.Metadata.DeletionDate != 0 {
 		// Key is pending deletion; cannot create alias
-		msg := fmt.Sprintf("%s is pending deletion.", target)
+		msg := fmt.Sprintf("%s is pending deletion.", keyArn)
 
 		r.logger.Warnf(msg)
 		return NewKMSInvalidStateExceptionResponse(msg)
@@ -81,22 +93,7 @@ func (r *RequestHandler) CreateAlias() Response {
 
 	//---
 
-	aliasArn := config.ArnPrefix() + *body.AliasName
-
-	_, err = r.database.LoadAlias(aliasArn)
-
-	if err == nil {
-		msg := fmt.Sprintf("An alias with the name %s already exists", aliasArn)
-
-		r.logger.Warnf(msg)
-		return NewAlreadyExistsExceptionResponse(msg)
-	}
-
-	alias := &data.Alias{
-		AliasName: *body.AliasName,
-		AliasArn: aliasArn,
-		TargetKeyId: key.Metadata.KeyId,
-	}
+	alias.TargetKeyId = key.Metadata.KeyId
 
 	r.database.SaveAlias(alias)
 

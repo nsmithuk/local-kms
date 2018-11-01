@@ -4,15 +4,16 @@ import (
 	"github.com/aws/aws-sdk-go/service/kms"
 	"github.com/NSmithUK/local-kms-go/src/config"
 	"fmt"
+	"time"
 )
 
-func (r *RequestHandler) CancelKeyDeletion() Response {
+func (r *RequestHandler) DisableKeyRotation() Response {
 
-	var body *kms.CancelKeyDeletionInput
+	var body *kms.DisableKeyRotationInput
 	err := r.decodeBodyInto(&body)
 
 	if err != nil {
-		body = &kms.CancelKeyDeletionInput{}
+		body = &kms.DisableKeyRotationInput{}
 	}
 
 	//--------------------------------
@@ -27,13 +28,13 @@ func (r *RequestHandler) CancelKeyDeletion() Response {
 
 	//---
 
-	target := config.EnsureArn("key/", *body.KeyId)
+	keyArn := config.EnsureArn("key/", *body.KeyId)
 
 	// Lookup the key
-	key, _ := r.database.LoadKey(target)
+	key, _ := r.database.LoadKey(keyArn)
 
 	if key == nil {
-		msg := fmt.Sprintf("Key '%s' does not exist", target)
+		msg := fmt.Sprintf("Key '%s' does not exist", keyArn)
 
 		r.logger.Warnf(msg)
 		return NewNotFoundExceptionResponse(msg)
@@ -41,9 +42,9 @@ func (r *RequestHandler) CancelKeyDeletion() Response {
 
 	//---
 
-	if key.Metadata.DeletionDate == 0 {
-		// Key is pending deletion; cannot re-schedule
-		msg := fmt.Sprintf("%s is not pending deletion.", target)
+	if key.Metadata.DeletionDate != 0 {
+		// Key is pending deletion; cannot create alias
+		msg := fmt.Sprintf("%s is pending deletion.", keyArn)
 
 		r.logger.Warnf(msg)
 		return NewKMSInvalidStateExceptionResponse(msg)
@@ -51,9 +52,18 @@ func (r *RequestHandler) CancelKeyDeletion() Response {
 
 	//---
 
-	key.Metadata.Enabled = true
-	key.Metadata.KeyState = "Enabled"
-	key.Metadata.DeletionDate = 0
+	if !key.Metadata.Enabled {
+		// Key is pending deletion; cannot create alias
+		msg := fmt.Sprintf("%s is disabled.", keyArn)
+
+		r.logger.Warnf(msg)
+		return NewDisabledExceptionResponse(msg)
+	}
+
+	//---
+
+	// Disable by setting this to Time Zero.
+	key.NextKeyRotation = time.Time{}
 
 	//--------------------------------
 	// Save the key
@@ -66,7 +76,5 @@ func (r *RequestHandler) CancelKeyDeletion() Response {
 
 	//---
 
-	return NewResponse( 200, map[string]interface{}{
-		"KeyId": key.Metadata.Arn,
-	})
+	return NewResponse( 200, nil)
 }
