@@ -91,6 +91,12 @@ func handleRequest(w http.ResponseWriter, r *http.Request) {
 		case "TrentService.DisableKeyRotation":
 			respond(w, h.DisableKeyRotation())
 
+		case "TrentService.Encrypt":
+			respond(w, h.Encrypt())
+
+		case "TrentService.Decrypt":
+			respond(w, h.Decrypt())
+
 		default:
 			error501(w)
 		}

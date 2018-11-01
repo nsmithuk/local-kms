@@ -95,6 +95,10 @@ func NewKMSInvalidStateExceptionResponse(message string) Response {
 	return New400ExceptionResponse("KMSInvalidStateException", message)
 }
 
+func NewInvalidCiphertextExceptionResponse(message string) Response {
+	return New400ExceptionResponse("InvalidCiphertextException", message)
+}
+
 //---
 
 func NewInternalFailureExceptionResponse(message string) Response {
