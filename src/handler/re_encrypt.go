@@ -6,17 +6,24 @@ import (
 	"github.com/NSmithUK/local-kms-go/src/service"
 )
 
-func (r *RequestHandler) Decrypt() Response {
+func (r *RequestHandler) ReEncrypt() Response {
 
-	var body *kms.DecryptInput
+	var body *kms.ReEncryptInput
 	err := r.decodeBodyInto(&body)
 
 	if err != nil {
-		body = &kms.DecryptInput{}
+		body = &kms.ReEncryptInput{}
 	}
 
 	//--------------------------------
 	// Validation
+
+	if body.DestinationKeyId == nil {
+		msg := "DestinationKeyId is a required parameter"
+
+		r.logger.Warnf(msg)
+		return NewMissingParameterResponse(msg)
+	}
 
 	if len(body.CiphertextBlob) == 0 {
 		msg := "CiphertextBlob is a required parameter"
@@ -34,19 +41,20 @@ func (r *RequestHandler) Decrypt() Response {
 	}
 
 	//--------------------------------
+	// Decrypt
 
-	keyArn, keyVersion, ciphertext := service.DeconstructCipherResponse(body.CiphertextBlob)
+	keyArn, keySourceVersion, ciphertext := service.DeconstructCipherResponse(body.CiphertextBlob)
 
-	key, response := r.getUsableKey(keyArn)
+	keySource, response := r.getUsableKey(keyArn)
 
 	// If the response is not empty, there was an error
 	if !response.Empty() {
 		return response
 	}
 
-	//--------------------------------
+	//---
 
-	if keyVersion >= uint32(len(key.BackingKeys)) {
+	if keySourceVersion >= uint32(len(keySource.BackingKeys)) {
 		msg := "Required version of backing key is missing"
 
 		r.logger.Warnf(msg)
@@ -55,7 +63,7 @@ func (r *RequestHandler) Decrypt() Response {
 
 	//---
 
-	dataKey := key.BackingKeys[keyVersion]
+	dataKey := keySource.BackingKeys[keySourceVersion]
 
 	plaintext, err := service.Decrypt(dataKey, ciphertext)
 
@@ -67,12 +75,32 @@ func (r *RequestHandler) Decrypt() Response {
 	}
 
 	//--------------------------------
+	// Encrypt
+
+	keyDestination, response := r.getUsableKey(*body.DestinationKeyId)
+
+	// If the response is not empty, there was an error
+	if !response.Empty() {
+		return response
+	}
+
+	//---
+
+	keyDestinationVersion := len(keyDestination.BackingKeys) - 1
+
+	dataKey = keyDestination.BackingKeys[keyDestinationVersion]
+
+	ciphertext, _ = service.Encrypt(dataKey, plaintext)
+
+	cipherResponse := service.ConstructCipherResponse(keyDestination.Metadata.Arn, uint32(keyDestinationVersion), ciphertext)
 
 	return NewResponse( 200, &struct {
 		KeyId			string
-		Plaintext		[]byte
+		SourceKeyId		string
+		CiphertextBlob	[]byte
 	}{
-		KeyId: key.Metadata.Arn,
-		Plaintext: plaintext,
+		KeyId: keyDestination.Metadata.Arn,
+		SourceKeyId: keySource.Metadata.Arn,
+		CiphertextBlob: cipherResponse,
 	})
 }

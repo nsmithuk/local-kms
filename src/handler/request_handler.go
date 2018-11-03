@@ -40,6 +40,10 @@ type Response struct {
 	Body		string
 }
 
+func (r Response) Empty() bool {
+	return r.Code == 0 && r.Body == ""
+}
+
 func NewResponse(code int, v interface{}) Response {
 	if v == nil {
 		return Response{ code, "" }

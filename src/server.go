@@ -97,6 +97,18 @@ func handleRequest(w http.ResponseWriter, r *http.Request) {
 		case "TrentService.Decrypt":
 			respond(w, h.Decrypt())
 
+		case "TrentService.GenerateDataKey":
+			respond(w, h.GenerateDataKey())
+
+		case "TrentService.GenerateDataKeyWithoutPlaintext":
+			respond(w, h.GenerateDataKeyWithoutPlaintext())
+
+		case "TrentService.GenerateRandom":
+			respond(w, h.GenerateRandom())
+
+		case "TrentService.ReEncrypt":
+			respond(w, h.ReEncrypt())
+
 		default:
 			error501(w)
 		}
