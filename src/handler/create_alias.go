@@ -100,5 +100,7 @@ func (r *RequestHandler) CreateAlias() Response {
 
 	r.database.SaveAlias(alias)
 
+	r.logger.Infof("New alias created: %s -> %s\n", alias.AliasArn, key.Metadata.Arn)
+
 	return NewResponse(200, nil)
 }

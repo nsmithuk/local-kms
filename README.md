@@ -18,7 +18,7 @@ development and testing. Not for use in a production environment._
 * Generating a data key, with or without plain text
 * Generating random data
 
-### Do not (yet) support
+### Does not (yet) support
 
 * Grants
 * Key Policies

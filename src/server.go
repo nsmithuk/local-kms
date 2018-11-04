@@ -14,7 +14,11 @@ var logger = log.New()
 
 func Run(port string) {
 
+	//logger.SetLevel(log.DebugLevel)
+
 	http.HandleFunc("/", handleRequest)
+
+	logger.Infof("Local KMS started on 0.0.0.0:%s", port)
 
 	err := http.ListenAndServe(":"+port, nil)
 	if err != nil {
@@ -24,6 +28,7 @@ func Run(port string) {
 }
 
 func handleRequest(w http.ResponseWriter, r *http.Request) {
+	logger.Debugf("%s %s %s\n", r.RemoteAddr, r.Method, r.URL)
 
 	database := data.NewDatabase(config.DatabasePath)
 	defer database.Close()

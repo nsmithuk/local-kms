@@ -67,6 +67,8 @@ func (r *RequestHandler) CreateKey() Response {
 
 	//---
 
+	r.logger.Infof("New key created: %s\n", key.Metadata.Arn)
+
 	return NewResponse( 200, map[string]data.KeyMetadata{
 		"KeyMetadata": key.Metadata,
 	})
