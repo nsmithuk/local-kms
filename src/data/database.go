@@ -5,7 +5,7 @@ import(
 	"encoding/json"
 	"github.com/syndtr/goleveldb/leveldb/util"
 	"time"
-	"github.com/NSmithUK/local-kms-go/src/service"
+	"github.com/nsmithuk/local-kms/src/service"
 )
 
 type Database struct {

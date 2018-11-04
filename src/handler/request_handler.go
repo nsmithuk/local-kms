@@ -4,7 +4,7 @@ import(
 	"net/http"
 	log "github.com/sirupsen/logrus"
 	"encoding/json"
-	"github.com/NSmithUK/local-kms-go/src/data"
+	"github.com/nsmithuk/local-kms/src/data"
 )
 
 //--------------------------------------------------------------------

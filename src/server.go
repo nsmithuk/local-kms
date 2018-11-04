@@ -4,18 +4,19 @@ import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"net/http"
-	"github.com/NSmithUK/local-kms-go/src/data"
-	"github.com/NSmithUK/local-kms-go/src/config"
-	"github.com/NSmithUK/local-kms-go/src/handler"
+	"github.com/nsmithuk/local-kms/src/data"
+	"github.com/nsmithuk/local-kms/src/config"
+	"github.com/nsmithuk/local-kms/src/handler"
 	"strings"
 )
 
 var logger = log.New()
 
-func Run() {
+func Run(port string) {
 
-	http.HandleFunc("/", handleRequest) // set router
-	err := http.ListenAndServe(":9090", nil) // set listen port
+	http.HandleFunc("/", handleRequest)
+
+	err := http.ListenAndServe(":"+port, nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}

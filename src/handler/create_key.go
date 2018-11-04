@@ -1,9 +1,9 @@
 package handler
 
 import(
-	"github.com/NSmithUK/local-kms-go/src/service"
-	"github.com/NSmithUK/local-kms-go/src/config"
-	"github.com/NSmithUK/local-kms-go/src/data"
+	"github.com/nsmithuk/local-kms/src/service"
+	"github.com/nsmithuk/local-kms/src/config"
+	"github.com/nsmithuk/local-kms/src/data"
 	"github.com/aws/aws-sdk-go/service/kms"
 	"github.com/satori/go.uuid"
 	"time"

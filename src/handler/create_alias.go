@@ -1,10 +1,10 @@
 package handler
 
 import (
-	"github.com/NSmithUK/local-kms-go/src/config"
+	"github.com/nsmithuk/local-kms/src/config"
 	"github.com/aws/aws-sdk-go/service/kms"
 	"strings"
-	"github.com/NSmithUK/local-kms-go/src/data"
+	"github.com/nsmithuk/local-kms/src/data"
 	"fmt"
 )
 

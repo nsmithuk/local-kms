@@ -1,7 +1,17 @@
 package main
 
-import "github.com/NSmithUK/local-kms-go/src"
+import (
+	"os"
+	"github.com/nsmithuk/local-kms/src"
+)
 
 func main() {
-	src.Run()
+
+	port := os.Getenv("PORT")
+
+	if port == "" {
+		port = "9090"
+	}
+
+	src.Run(port)
 }

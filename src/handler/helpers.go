@@ -2,8 +2,8 @@ package handler
 
 import (
 	"fmt"
-	"github.com/NSmithUK/local-kms-go/src/data"
-	"github.com/NSmithUK/local-kms-go/src/config"
+	"github.com/nsmithuk/local-kms/src/data"
+	"github.com/nsmithuk/local-kms/src/config"
 	"strings"
 )
 

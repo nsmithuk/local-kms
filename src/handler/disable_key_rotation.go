@@ -2,7 +2,7 @@ package handler
 
 import (
 	"github.com/aws/aws-sdk-go/service/kms"
-	"github.com/NSmithUK/local-kms-go/src/config"
+	"github.com/nsmithuk/local-kms/src/config"
 	"fmt"
 	"time"
 )

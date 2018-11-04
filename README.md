@@ -34,9 +34,9 @@ Requires Go 1.11 or higher.
 ### Install
 
 ```sh
-go get -u github.com/nsmithuk/local-kms-go
+go get -u github.com/nsmithuk/local-kms
 
-cd $GOPATH/src/github.com/nsmithuk/local-kms-go
+cd $GOPATH/src/github.com/nsmithuk/local-kms
 
 dep ensure
 
@@ -47,7 +47,7 @@ go install
 ### Run
 
 ```sh
-$GOPATH/bin/local-kms-go
+$GOPATH/bin/local-kms
 
 ```
 
