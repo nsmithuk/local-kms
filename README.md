@@ -51,13 +51,13 @@ $GOPATH/bin/local-kms
 
 ```
 
-Local KMS runs on port http://localhost:9090
+Local KMS runs on port http://localhost:8080
 
 ### Examples
 
 Creating a Customer Master Key
 ```console
-curl -X "POST" "http://localhost:9090/" \
+curl -X "POST" "http://localhost:8080/" \
      -H 'X-Amz-Target: TrentService.CreateKey' \
      -H 'Content-Type: application/json; charset=utf-8' \
      -d $'{}'
@@ -65,7 +65,7 @@ curl -X "POST" "http://localhost:9090/" \
 
 Encrypting some (base64 encoded) data
 ```console
-curl -X "POST" "http://localhost:9090/" \
+curl -X "POST" "http://localhost:8080/" \
      -H 'X-Amz-Target: TrentService.Encrypt' \
      -H 'Content-Type: application/json; charset=utf-8' \
      -d $'{
@@ -76,7 +76,7 @@ curl -X "POST" "http://localhost:9090/" \
 
 Decrypting some KMS cipher text
 ```console
-curl -X "POST" "http://localhost:9090/" \
+curl -X "POST" "http://localhost:8080/" \
      -H 'X-Amz-Target: TrentService.Decrypt' \
      -H 'Content-Type: application/json; charset=utf-8' \
      -d $'{
