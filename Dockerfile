@@ -17,4 +17,10 @@ FROM alpine
 
 COPY --from=build /go/bin/local-kms /usr/local/bin/local-kms
 
+RUN mkdir /data
+
+ENV ACCOUNT_ID 111122223333
+ENV REGION eu-west-2
+ENV DATA_PATH /data
+
 CMD ["local-kms"]
