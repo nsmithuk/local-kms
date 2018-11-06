@@ -23,6 +23,10 @@ func Run(port string) {
 
 	//---
 
+	seed("")
+
+	//---
+
 	http.HandleFunc("/", handleRequest)
 
 	logger.Infof("Local KMS started on 0.0.0.0:%s", port)
