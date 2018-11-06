@@ -4,6 +4,7 @@ import (
 	"os"
 	"github.com/nsmithuk/local-kms/src"
 	"github.com/nsmithuk/local-kms/src/config"
+	"path/filepath"
 )
 
 func main() {
@@ -28,7 +29,15 @@ func main() {
 	}
 	config.DatabasePath = dataPath
 
-	//---
+	//-------------------------------
+	// Seed
+
+	seedPath, _ := filepath.Abs("init/seed.yaml")
+
+	src.Seed(seedPath)
+
+	//-------------------------------
+	// Run
 
 	port := os.Getenv("PORT")
 

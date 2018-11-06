@@ -2,30 +2,13 @@ package src
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net/http"
-	"github.com/nsmithuk/local-kms/src/data"
-	"github.com/nsmithuk/local-kms/src/config"
+	log "github.com/sirupsen/logrus"
 	"github.com/nsmithuk/local-kms/src/handler"
 	"strings"
 )
 
-var logger = log.New()
-
 func Run(port string) {
-
-	//logger.SetLevel(log.DebugLevel)
-	logger.SetFormatter(&log.TextFormatter{
-		ForceColors: true,
-		FullTimestamp: true,
-		TimestampFormat: "2006-01-02 15:04:05.000",
-	})
-
-	//---
-
-	seed("")
-
-	//---
 
 	http.HandleFunc("/", handleRequest)
 
@@ -38,10 +21,11 @@ func Run(port string) {
 
 }
 
+
 func handleRequest(w http.ResponseWriter, r *http.Request) {
 	logger.Debugf("%s %s %s\n", r.RemoteAddr, r.Method, r.URL)
 
-	database := data.NewDatabase(config.DatabasePath)
+	database := getDatabase()
 	defer database.Close()
 
 	//---
