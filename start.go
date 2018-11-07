@@ -27,13 +27,12 @@ func main() {
 	if dataPath == "" {
 		dataPath = "/tmp/local-kms"
 	}
-	config.DatabasePath = dataPath
+	config.DatabasePath, _ = filepath.Abs(dataPath)
 
 	//-------------------------------
 	// Seed
 
-	seedPath, _ := filepath.Abs("init/seed.yaml")
-
+	seedPath := os.Getenv("SEED_PATH")
 	src.Seed(seedPath)
 
 	//-------------------------------

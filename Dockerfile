@@ -17,6 +17,7 @@ FROM alpine
 
 COPY --from=build /go/bin/local-kms /usr/local/bin/local-kms
 
+RUN mkdir /init
 RUN mkdir /data
 
 ENV ACCOUNT_ID 111122223333

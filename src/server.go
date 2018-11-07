@@ -6,12 +6,14 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/nsmithuk/local-kms/src/handler"
 	"strings"
+	"github.com/nsmithuk/local-kms/src/config"
 )
 
 func Run(port string) {
 
 	http.HandleFunc("/", handleRequest)
 
+	logger.Infof("Data will be stored in %s", config.DatabasePath)
 	logger.Infof("Local KMS started on 0.0.0.0:%s", port)
 
 	err := http.ListenAndServe(":"+port, nil)

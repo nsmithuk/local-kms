@@ -8,6 +8,8 @@ import (
 	"github.com/nsmithuk/local-kms/src/data"
 	"github.com/nsmithuk/local-kms/src/config"
 	"time"
+	"path/filepath"
+	"github.com/syndtr/goleveldb/leveldb"
 )
 
 func Seed(path string){
@@ -17,8 +19,10 @@ func Seed(path string){
 		return
 	}
 
+	path, _ = filepath.Abs(path)
+
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		logger.Errorln(fmt.Sprintf("No file found at path %s; skipping.", path))
+		logger.Infoln(fmt.Sprintf("No file found at path %s; skipping.", path))
 		return
 	}
 
@@ -41,6 +45,8 @@ func Seed(path string){
 	if err != nil {
 		logger.Errorln(fmt.Sprintf("Error parsing YAML at path %s: %s; skipping.", path, err))
 	}
+
+	logger.Infof("Importing data from seed file %s\n", path)
 
 	//-----------------------------------------
 	// Apply defaults
@@ -68,13 +74,27 @@ func Seed(path string){
 
 	//---
 
+	keysAdded := 0
 	for _, key := range seed.Keys {
+
+		if _, err := database.LoadKey(key.Metadata.Arn); err != leveldb.ErrNotFound {
+			logger.Warnf("Key %s already exists; skipping key", key.Metadata.KeyId)
+			continue
+		}
+
 		database.SaveKey(&key)
 	}
 
+	aliasesAdded := 0
 	for _, alias := range seed.Aliases {
+
+		if _, err := database.LoadAlias(alias.AliasArn); err != leveldb.ErrNotFound {
+			logger.Warnf("Alias %s already exists; skipping alias\n", alias.AliasName)
+			continue
+		}
+
 		database.SaveAlias(&alias)
 	}
 
-	logger.Infof("%d keys and %d aliases added from seed file", len(seed.Keys), len(seed.Aliases))
+	logger.Infof("%d new keys and %d new aliases added\n", keysAdded, aliasesAdded)
 }
