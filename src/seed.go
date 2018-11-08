@@ -22,13 +22,13 @@ func Seed(path string){
 	path, _ = filepath.Abs(path)
 
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		logger.Infoln(fmt.Sprintf("No file found at path %s; skipping.", path))
+		logger.Infoln(fmt.Sprintf("No file found at path %s; skipping seeding.", path))
 		return
 	}
 
 	context, err := ioutil.ReadFile(path)
 	if err != nil {
-		logger.Errorln(fmt.Sprintf("Unable to read content of file at path %s; skipping.", path))
+		logger.Errorln(fmt.Sprintf("Unable to read seed content of file at path %s; skipping.", path))
 		return
 	}
 
@@ -83,6 +83,7 @@ func Seed(path string){
 		}
 
 		database.SaveKey(&key)
+		keysAdded++
 	}
 
 	aliasesAdded := 0
@@ -94,6 +95,7 @@ func Seed(path string){
 		}
 
 		database.SaveAlias(&alias)
+		aliasesAdded++
 	}
 
 	logger.Infof("%d new keys and %d new aliases added\n", keysAdded, aliasesAdded)

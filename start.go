@@ -33,6 +33,9 @@ func main() {
 	// Seed
 
 	seedPath := os.Getenv("SEED_PATH")
+	if seedPath == "" {
+		seedPath = "/init/seed.yaml"
+	}
 	src.Seed(seedPath)
 
 	//-------------------------------

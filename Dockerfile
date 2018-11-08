@@ -26,4 +26,4 @@ ENV DATA_PATH /data
 
 ENV PORT 8080
 
-CMD ["local-kms"]
+ENTRYPOINT ["local-kms"]
