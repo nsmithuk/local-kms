@@ -83,6 +83,8 @@ func (r *RequestHandler) ScheduleKeyDeletion() Response {
 
 	//---
 
+	r.logger.Infof("Schedule key deletion: %s\n", key.Metadata.Arn)
+
 	return NewResponse( 200, map[string]interface{}{
 		"KeyId": key.Metadata.Arn,
 		"DeletionDate": key.Metadata.DeletionDate,

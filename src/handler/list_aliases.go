@@ -107,5 +107,9 @@ func (r *RequestHandler) ListAliases() Response {
 		}
 	}
 
+	//---
+
+	r.logger.Infof("%d aliases listed\n", len(aliases))
+
 	return NewResponse( 200, response)
 }

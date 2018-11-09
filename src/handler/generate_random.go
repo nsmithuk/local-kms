@@ -37,6 +37,12 @@ func (r *RequestHandler) GenerateRandom() Response {
 
 	data := service.GenerateRandomData(uint16(*body.NumberOfBytes))
 
+	//---
+
+	//---
+
+	r.logger.Infof("Random data generated: %d bytes\n", *body.NumberOfBytes)
+
 	return NewResponse( 200, &struct {
 		Plaintext	[]byte
 	}{

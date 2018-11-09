@@ -81,5 +81,7 @@ func (r *RequestHandler) EnableKeyRotation() Response {
 
 	//---
 
+	r.logger.Infof("Key rotation enabled: %s\n", key.Metadata.Arn)
+
 	return NewResponse( 200, nil)
 }

@@ -84,5 +84,9 @@ func (r *RequestHandler) ListKeys() Response {
 		}
 	}
 
+	//---
+
+	r.logger.Infof("%d keys listed\n", len(keys))
+
 	return NewResponse( 200, response)
 }

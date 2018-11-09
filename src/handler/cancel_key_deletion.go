@@ -66,6 +66,8 @@ func (r *RequestHandler) CancelKeyDeletion() Response {
 
 	//---
 
+	r.logger.Infof("Key deletion canceled: %s\n", key.Metadata.Arn)
+
 	return NewResponse( 200, map[string]interface{}{
 		"KeyId": key.Metadata.Arn,
 	})

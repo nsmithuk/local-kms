@@ -54,5 +54,9 @@ func (r *RequestHandler) DeleteAlias() Response {
 
 	r.database.DeleteObject(aliasArn)
 
+	//---
+
+	r.logger.Infof("Alias deleted: %s\n", aliasArn)
+
 	return NewResponse(200, nil)
 }

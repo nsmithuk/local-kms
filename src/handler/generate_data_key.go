@@ -22,6 +22,10 @@ func (r *RequestHandler) GenerateDataKey() Response {
 		return errResponse
 	}
 
+	//---
+
+	r.logger.Infof("Data key generated with plaintext: %s\n", keyResponse.KeyId)
+
 	return NewResponse( 200, keyResponse)
 }
 

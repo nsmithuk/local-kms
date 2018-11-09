@@ -68,5 +68,9 @@ func (r *RequestHandler) UpdateKeyDescription() Response {
 		return NewInternalFailureExceptionResponse(err.Error())
 	}
 
+	//---
+
+	r.logger.Infof("Key description updated: %s\n", key.Metadata.Arn)
+
 	return NewResponse(200, nil)
 }

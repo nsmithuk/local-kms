@@ -67,5 +67,9 @@ func (r *RequestHandler) DescribeKey() Response {
 		"KeyMetadata": key.Metadata,
 	}
 
+	//---
+
+	r.logger.Infof("Key described: %s\n", key.Metadata.Arn)
+
 	return NewResponse( 200, response)
 }

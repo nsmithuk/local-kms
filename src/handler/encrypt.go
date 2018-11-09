@@ -59,6 +59,10 @@ func (r *RequestHandler) Encrypt() Response {
 
 	cipherResponse := service.ConstructCipherResponse(key.Metadata.Arn, uint32(keyVersion), ciphertext)
 
+	//---
+
+	r.logger.Infof("Encryption called: %s\n", key.Metadata.Arn)
+
 	return NewResponse( 200, &struct {
 		KeyId			string
 		CiphertextBlob	[]byte

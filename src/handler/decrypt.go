@@ -68,6 +68,8 @@ func (r *RequestHandler) Decrypt() Response {
 
 	//--------------------------------
 
+	r.logger.Infof("Decryption called: %s\n", key.Metadata.Arn)
+
 	return NewResponse( 200, &struct {
 		KeyId			string
 		Plaintext		[]byte

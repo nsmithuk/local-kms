@@ -94,6 +94,10 @@ func (r *RequestHandler) ReEncrypt() Response {
 
 	cipherResponse := service.ConstructCipherResponse(keyDestination.Metadata.Arn, uint32(keyDestinationVersion), ciphertext)
 
+	//---
+
+	r.logger.Infof("ReEncrypt called: %s -> %s\n", keySource.Metadata.Arn, keyDestination.Metadata.Arn)
+
 	return NewResponse( 200, &struct {
 		KeyId			string
 		SourceKeyId		string

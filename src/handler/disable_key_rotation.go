@@ -76,5 +76,7 @@ func (r *RequestHandler) DisableKeyRotation() Response {
 
 	//---
 
+	r.logger.Infof("Key rotation disabled: %s\n", key.Metadata.Arn)
+
 	return NewResponse( 200, nil)
 }

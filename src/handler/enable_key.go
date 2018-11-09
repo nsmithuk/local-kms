@@ -65,6 +65,8 @@ func (r *RequestHandler) EnableKey() Response {
 
 	//---
 
+	r.logger.Infof("Key enabled: %s\n", key.Metadata.Arn)
+
 	return NewResponse( 200, nil)
 
 }

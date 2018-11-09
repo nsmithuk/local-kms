@@ -41,6 +41,8 @@ func (r *RequestHandler) GetKeyRotationStatus() Response {
 
 	//---
 
+	r.logger.Infof("Key rotation status returned: %s\n", key.Metadata.Arn)
+
 	return NewResponse( 200, map[string]bool{
 		"KeyRotationEnabled": !key.NextKeyRotation.IsZero(),
 	})

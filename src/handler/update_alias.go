@@ -97,5 +97,9 @@ func (r *RequestHandler) UpdateAlias() Response {
 
 	r.database.SaveAlias(alias)
 
+	//---
+
+	r.logger.Infof("Alias updated: %s -> %s\n", alias.AliasArn, key.Metadata.Arn)
+
 	return NewResponse(200, nil)
 }
