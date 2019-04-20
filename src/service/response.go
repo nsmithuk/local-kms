@@ -13,10 +13,10 @@ func ConstructCipherResponse(ident string, version uint32, data []byte) []byte {
 
 	/*
 		Final result will be:
-			- The length of the ident
-			- The ident
-			- The version (uint32 = 4 bytes)
-			- The data
+			A) The length of the ident		: 1 bytes
+			B) The ident					: A bytes
+			C) The Data Key version			: 4 bytes
+			D) The ciphertext				: variable/remaining bytes
 	 */
 
 	result := []byte{byte(len(identBytes))}
