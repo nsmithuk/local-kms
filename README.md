@@ -24,7 +24,7 @@ Seeding allow LKMS to be supplied with a set of pre-defined keys and aliases on 
 
 If a key in the seeding file already exists, it will not be overwritten or amended by the seeding process.
 
-### Does not (yet) support
+### Does not (yet) supported
 
 * Tags
 * Grants
