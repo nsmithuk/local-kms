@@ -2,11 +2,12 @@ package src
 
 import (
 	"fmt"
-	"net/http"
-	log "github.com/sirupsen/logrus"
-	"github.com/nsmithuk/local-kms/src/handler"
-	"strings"
 	"github.com/nsmithuk/local-kms/src/config"
+	"github.com/nsmithuk/local-kms/src/handler"
+	log "github.com/sirupsen/logrus"
+	"net/http"
+	"reflect"
+	"strings"
 )
 
 func Run(port string) {
@@ -48,74 +49,43 @@ func handleRequest(w http.ResponseWriter, r *http.Request) {
 
 		h := handler.NewRequestHandler(r, logger, database)
 
-		switch r.Header.Get("X-Amz-Target") {
-		case "TrentService.ListKeys":
-			respond(w, h.ListKeys())
+		/*
+			The target endpoint is specified in the `X-Amz-Target` header.
 
-		case "TrentService.CreateKey":
-			respond(w, h.CreateKey())
+			The format is:	TrentService.<method>
+			For example: 	TrentService.ListKeys
+		 */
 
-		case "TrentService.CreateAlias":
-			respond(w, h.CreateAlias())
+		target := strings.Split(r.Header.Get("X-Amz-Target"), ".")
 
-		case "TrentService.DeleteAlias":
-			respond(w, h.DeleteAlias())
+		// Ensure we have at least the 2 components we expect.
+		if len(target) >= 2 {
 
-		case "TrentService.ListAliases":
-			respond(w, h.ListAliases())
+			method := reflect.ValueOf(h).MethodByName(target[1])
 
-		case "TrentService.ScheduleKeyDeletion":
-			respond(w, h.ScheduleKeyDeletion())
+			if method.IsValid() {
 
-		case "TrentService.CancelKeyDeletion":
-			respond(w, h.CancelKeyDeletion())
+				result := method.Call([]reflect.Value{})
 
-		case "TrentService.DescribeKey":
-			respond(w, h.DescribeKey())
+				if len(result) == 0 {
+					logger.Panicf("Missing expected response from reflected method call\n")
+				}
 
-		case "TrentService.UpdateAlias":
-			respond(w, h.UpdateAlias())
+				response, ok := result[0].Interface().(handler.Response)
 
-		case "TrentService.UpdateKeyDescription":
-			respond(w, h.UpdateKeyDescription())
+				if !ok {
+					logger.Panicf("Unable to assert type of returned response\n")
+				}
 
-		case "TrentService.EnableKey":
-			respond(w, h.EnableKey())
+				respond(w, response)
+				return
+			}
 
-		case "TrentService.DisableKey":
-			respond(w, h.DisableKey())
-
-		case "TrentService.EnableKeyRotation":
-			respond(w, h.EnableKeyRotation())
-
-		case "TrentService.GetKeyRotationStatus":
-			respond(w, h.GetKeyRotationStatus())
-
-		case "TrentService.DisableKeyRotation":
-			respond(w, h.DisableKeyRotation())
-
-		case "TrentService.Encrypt":
-			respond(w, h.Encrypt())
-
-		case "TrentService.Decrypt":
-			respond(w, h.Decrypt())
-
-		case "TrentService.GenerateDataKey":
-			respond(w, h.GenerateDataKey())
-
-		case "TrentService.GenerateDataKeyWithoutPlaintext":
-			respond(w, h.GenerateDataKeyWithoutPlaintext())
-
-		case "TrentService.GenerateRandom":
-			respond(w, h.GenerateRandom())
-
-		case "TrentService.ReEncrypt":
-			respond(w, h.ReEncrypt())
-
-		default:
-			error501(w)
 		}
 
+		// If we couldn't find a valid method matching the request
+		error501(w)
+		return
 	}
 
 }
