@@ -1,0 +1,12 @@
+version: "3"
+
+services:
+  kms:
+    container_name: local-kms-dev
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    volumes:
+    - .:/go/src/github.com/nsmithuk/local-kms
+    ports:
+    - 8080:8080
