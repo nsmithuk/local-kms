@@ -20,7 +20,7 @@ func (r *RequestHandler) getUsableKey(keyId string) (*data.Key, Response){
 		alias, err := r.database.LoadAlias(aliasArn)
 
 		if err != nil {
-			msg := fmt.Sprintf("Alias '%s' does not exist", keyId)
+			msg := fmt.Sprintf("Alias %s is not found.", config.ArnPrefix() + keyId)
 
 			r.logger.Warnf(msg)
 			return nil, NewNotFoundExceptionResponse(msg)
