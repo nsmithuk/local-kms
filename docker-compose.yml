@@ -8,5 +8,6 @@ services:
       dockerfile: Dockerfile.dev
     volumes:
     - .:/go/src/github.com/nsmithuk/local-kms
+    - ./init:/init
     ports:
     - 8080:8080

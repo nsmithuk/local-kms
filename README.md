@@ -26,10 +26,12 @@ If a key in the seeding file already exists, it will not be overwritten or amend
 
 ### Does not (yet) supported
 
+* Encryption Context support (coming soon)
 * Tags
 * Grants
 * Key Policies
-* Importing your own key
+* Importing your own key material
+* Operations relating to a Custom Key Store
 
 ## Getting Started with Docker
 
@@ -131,10 +133,10 @@ The following environment variables can be set to configure LKMS.
 
 ## Known Differences from AWS' KMS
 
-When successfully calling ScheduleKeyDeletion, the timestamp returned from AWS is in Scientific Notation/Standard Form.
-For example, `1.5565824E9`. The same request to Local KMS will return `1556582400`. This seems to have no effect on
-official AWS SDKs, as from a JSON interpreter's perspective, the two are identical. It does however seem difficult to
-fix in Go.
+When successfully calling `ScheduleKeyDeletion`, the timestamp returned from AWS is in Scientific Notation/Standard Form.
+For example `1.5565824E9`. The same request to Local KMS will return `1556582400`. This should have no effect on
+official AWS SDKs, as from a JSON interpreter's perspective the two are identical. It does however seem difficult to
+force Go to return the value in Standard Form.
 See: https://github.com/nsmithuk/local-kms/issues/4
 
 ## Building from source

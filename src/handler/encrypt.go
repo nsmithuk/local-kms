@@ -26,10 +26,11 @@ func (r *RequestHandler) Encrypt() Response {
 	}
 
 	if len(body.Plaintext) == 0 {
-		msg := "Plaintext is a required parameter"
+		msg := "1 validation error detected: Value at 'plaintext' failed to satisfy constraint: Member must have " +
+			"length greater than or equal to 1"
 
 		r.logger.Warnf(msg)
-		return NewMissingParameterResponse(msg)
+		return NewValidationExceptionResponse(msg)
 	}
 
 	if len(body.Plaintext) > 4096 {
