@@ -112,6 +112,10 @@ func NewInvalidCiphertextExceptionResponse(message string) Response {
 	return New400ExceptionResponse("InvalidCiphertextException", message)
 }
 
+func NewSerializationExceptionResponse(message string) Response {
+	return New400ExceptionResponse("SerializationException", message)
+}
+
 func NewAccessDeniedExceptionResponse(message string) Response {
 	return New400ExceptionResponseFormatted("AccessDeniedException", message, true)
 }

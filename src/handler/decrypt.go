@@ -1,8 +1,9 @@
 package handler
 
 import (
-	"github.com/aws/aws-sdk-go/service/kms"
+	"encoding/base64"
 	"fmt"
+	"github.com/aws/aws-sdk-go/service/kms"
 	"github.com/nsmithuk/local-kms/src/service"
 )
 
@@ -12,6 +13,12 @@ func (r *RequestHandler) Decrypt() Response {
 	err := r.decodeBodyInto(&body)
 
 	if err != nil {
+
+		// Errors decoding the base64 have a specific error.
+		_, ok := err.(base64.CorruptInputError); if ok {
+			return NewSerializationExceptionResponse("")
+		}
+
 		body = &kms.DecryptInput{}
 	}
 
