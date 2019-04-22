@@ -16,6 +16,7 @@ func (r *RequestHandler) Decrypt() Response {
 
 		// Errors decoding the base64 have a specific error.
 		_, ok := err.(base64.CorruptInputError); if ok {
+			r.logger.Warnf("Unable to decode base64 value")
 			return NewSerializationExceptionResponse("")
 		}
 
@@ -26,10 +27,11 @@ func (r *RequestHandler) Decrypt() Response {
 	// Validation
 
 	if len(body.CiphertextBlob) == 0 {
-		msg := "CiphertextBlob is a required parameter"
+		msg := "1 validation error detected: Value 'java.nio.HeapByteBuffer[pos=0 lim=0 cap=0]' at 'ciphertextBlob' " +
+			"failed to satisfy constraint: Member must have length greater than or equal to 1"
 
 		r.logger.Warnf(msg)
-		return NewMissingParameterResponse(msg)
+		return NewValidationExceptionResponse(msg)
 	}
 
 	if len(body.CiphertextBlob) > 6144 {
@@ -42,13 +44,25 @@ func (r *RequestHandler) Decrypt() Response {
 
 	//--------------------------------
 
-	keyArn, keyVersion, ciphertext := service.DeconstructCipherResponse(body.CiphertextBlob)
+	keyArn, keyVersion, ciphertext, ok := service.DeconstructCipherResponse(body.CiphertextBlob)
+
+	// If we unable to deconstruct the message
+	if !ok {
+		r.logger.Warnf("Unable to deconstruct ciphertext")
+		return NewInvalidCiphertextExceptionResponse("")
+	}
 
 	key, response := r.getUsableKey(keyArn)
 
 	// If the response is not empty, there was an error
 	if !response.Empty() {
-		return response
+
+		// We override the returned error on decrypt. The message is more generic such that it doesn't leak any metadata.
+
+		msg := "The ciphertext refers to a customer master key that does not exist, does not exist in this region, " +
+			"or you are not allowed to access."
+
+		return NewAccessDeniedExceptionResponse(msg)
 	}
 
 	//--------------------------------

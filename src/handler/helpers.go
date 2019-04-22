@@ -40,11 +40,7 @@ func (r *RequestHandler) getUsableKey(keyId string) (*data.Key, Response){
 		msg := fmt.Sprintf("Key '%s' does not exist", keyId)
 		r.logger.Warnf(msg)
 
-		// AWS KMS returns a more generic error response.
-		msg = "The ciphertext refers to a customer master key that does not exist, does not exist in this region, " +
-			"or you are not allowed to access."
-
-		return nil, NewAccessDeniedExceptionResponse(msg)
+		return nil, NewNotFoundExceptionResponse(msg)
 	}
 
 	//----------------------------------

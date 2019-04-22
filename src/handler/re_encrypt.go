@@ -43,7 +43,7 @@ func (r *RequestHandler) ReEncrypt() Response {
 	//--------------------------------
 	// Decrypt
 
-	keyArn, keySourceVersion, ciphertext := service.DeconstructCipherResponse(body.CiphertextBlob)
+	keyArn, keySourceVersion, ciphertext, _ := service.DeconstructCipherResponse(body.CiphertextBlob)
 
 	keySource, response := r.getUsableKey(keyArn)
 
