@@ -58,14 +58,23 @@ func NewResponse(code int, v interface{}) Response {
 	return Response{ code, string(j) }
 }
 
-func New400ExceptionResponse(exception, message string) Response {
+func New400ExceptionResponseFormatted(exception, message string, capitalM bool) Response {
 	response := map[string]string{"__type":exception}
 
 	if message != "" {
-		response["message"] = message
+		if capitalM {
+			// In a few cases, AWS KMS responds with a capital 'M' on message.
+			response["Message"] = message
+		} else {
+			response["message"] = message
+		}
 	}
 
 	return NewResponse(400, response)
+}
+
+func New400ExceptionResponse(exception, message string) Response {
+	return New400ExceptionResponseFormatted(exception, message, false)
 }
 
 //-------------------------------------------------
@@ -101,6 +110,10 @@ func NewKMSInvalidStateExceptionResponse(message string) Response {
 
 func NewInvalidCiphertextExceptionResponse(message string) Response {
 	return New400ExceptionResponse("InvalidCiphertextException", message)
+}
+
+func NewAccessDeniedExceptionResponse(message string) Response {
+	return New400ExceptionResponseFormatted("AccessDeniedException", message, true)
 }
 
 //---
