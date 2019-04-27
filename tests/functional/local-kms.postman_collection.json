@@ -46,8 +46,8 @@
 									"    pm.expect(jsonData.KeyMetadata).to.have.property('Origin');",
 									"});",
 									"",
-									"pm.environment.set(\"test-key\", jsonData.KeyMetadata.KeyId);",
-									"pm.environment.set(\"test-key-arn\", jsonData.KeyMetadata.Arn);",
+									"pm.environment.set(\"test_key\", jsonData.KeyMetadata.KeyId);",
+									"pm.environment.set(\"test_key_arn\", jsonData.KeyMetadata.Arn);",
 									""
 								],
 								"type": "text/javascript"
@@ -116,7 +116,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n   \"AliasName\": \"{{test_alias}}\",\n   \"TargetKeyId\": \"{{test-key}}\"\n}"
+							"raw": "{\n   \"AliasName\": \"{{test_alias}}\",\n   \"TargetKeyId\": \"{{test_key}}\"\n}"
 						},
 						"url": {
 							"raw": "{{Host}}",
@@ -145,19 +145,20 @@
 									"",
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
-									"    pm.environment.set(\"ciphertext\", jsonData.CiphertextBlob);",
 									"});",
 									"",
 									"pm.test(\"The response is JSON\", function () {",
 									"    pm.response.to.be.json;",
 									"});",
 									"",
-									"pm.test(\"The KeyMetadata looks sensible\", function () {",
+									"pm.test(\"The response looks sensible\", function () {",
 									"    // AWS do add fields, so keep this as a minimum number for now",
 									"    pm.expect(Object.keys(jsonData)).to.have.lengthOf(2);",
 									"    ",
 									"    pm.expect(jsonData).to.have.property('KeyId');",
 									"    pm.expect(jsonData).to.have.property('CiphertextBlob');",
+									"    ",
+									"    pm.environment.set(\"ciphertext\", jsonData.CiphertextBlob);",
 									"});",
 									""
 								],
@@ -824,6 +825,1021 @@
 			]
 		},
 		{
+			"name": "ReEncrypt",
+			"item": [
+				{
+					"name": "Successful ReEncrypt",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4e3d4579-a1b5-4b65-8ec6-abee70f7cdf5",
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"The response is JSON\", function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"Check we have expected fields\", function () {",
+									"    // AWS do add fields, so keep this as a minimum number for now",
+									"    pm.expect(Object.keys(jsonData)).to.have.lengthOf.at.least(3);",
+									"    ",
+									"    pm.expect(jsonData).to.have.property('KeyId');",
+									"    pm.expect(jsonData).to.have.property('SourceKeyId');",
+									"    pm.expect(jsonData).to.have.property('CiphertextBlob');",
+									"    ",
+									"    pm.environment.set(\"ciphertext\", jsonData.CiphertextBlob);",
+									"});",
+									"",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "a7d1da28-b568-4a32-8054-9495847765f2",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Amz-Target",
+								"type": "text",
+								"value": "TrentService.ReEncrypt"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-amz-json-1.1"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"CiphertextBlob\": \"{{ciphertext}}\",\n   \"DestinationKeyId\": \"{{test_key}}\"\n}\n"
+						},
+						"url": {
+							"raw": "{{Host}}",
+							"host": [
+								"{{Host}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Successful [still] Decrypt",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4e3d4579-a1b5-4b65-8ec6-abee70f7cdf5",
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"The response is JSON\", function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"Check we have expected fields\", function () {",
+									"    // AWS do add fields, so keep this as a minimum number for now",
+									"    pm.expect(Object.keys(jsonData)).to.have.lengthOf.at.least(2);",
+									"    ",
+									"    pm.expect(jsonData).to.have.property('KeyId');",
+									"    pm.expect(jsonData).to.have.property('Plaintext');",
+									"});",
+									"",
+									"pm.test(\"Check message matches what we expect\", function () {",
+									"",
+									"    var words = CryptoJS.enc.Base64.parse(jsonData.Plaintext);",
+									"    var textString = CryptoJS.enc.Utf8.stringify(words);",
+									"    ",
+									"    console.log('Returned message ' + textString)",
+									"",
+									"    pm.expect(textString).to.equal(pm.globals.get('test_encryption_string'))",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "a7d1da28-b568-4a32-8054-9495847765f2",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Amz-Target",
+								"type": "text",
+								"value": "TrentService.Decrypt"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-amz-json-1.1"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"CiphertextBlob\": \"{{ciphertext}}\"\n}\n"
+						},
+						"url": {
+							"raw": "{{Host}}",
+							"host": [
+								"{{Host}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Successful ReEncrypt with Context",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4e3d4579-a1b5-4b65-8ec6-abee70f7cdf5",
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"The response is JSON\", function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"Check we have expected fields\", function () {",
+									"    // AWS do add fields, so keep this as a minimum number for now",
+									"    pm.expect(Object.keys(jsonData)).to.have.lengthOf.at.least(3);",
+									"    ",
+									"    pm.expect(jsonData).to.have.property('KeyId');",
+									"    pm.expect(jsonData).to.have.property('SourceKeyId');",
+									"    pm.expect(jsonData).to.have.property('CiphertextBlob');",
+									"    ",
+									"    pm.environment.set(\"ciphertext\", jsonData.CiphertextBlob);",
+									"});",
+									"",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "a7d1da28-b568-4a32-8054-9495847765f2",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Amz-Target",
+								"type": "text",
+								"value": "TrentService.ReEncrypt"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-amz-json-1.1"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"CiphertextBlob\": \"{{ciphertext}}\",\n   \"DestinationKeyId\": \"{{test_key}}\",\n   \"DestinationEncryptionContext\": { \n      \"a\" : \"b\",\n      \"b\" : \"v\",\n      \"c\" : \"c\",\n      \"d\" : \"x\",\n      \"e\" : \"z\"\n   }\n}\n"
+						},
+						"url": {
+							"raw": "{{Host}}",
+							"host": [
+								"{{Host}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Fail [still] Decrypt with Contex",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4e3d4579-a1b5-4b65-8ec6-abee70f7cdf5",
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"The response is JSON\", function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"Check expected error returned\", function () {",
+									"    pm.expect(Object.keys(jsonData)).to.have.lengthOf(1);",
+									"    pm.expect(jsonData).to.have.property('__type');",
+									"        pm.expect(jsonData['__type']).to.equal('InvalidCiphertextException')",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "a7d1da28-b568-4a32-8054-9495847765f2",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Amz-Target",
+								"type": "text",
+								"value": "TrentService.Decrypt"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-amz-json-1.1"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"CiphertextBlob\": \"{{ciphertext}}\"\n}\n"
+						},
+						"url": {
+							"raw": "{{Host}}",
+							"host": [
+								"{{Host}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Successful [still] Decrypt with Context",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4e3d4579-a1b5-4b65-8ec6-abee70f7cdf5",
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"The response is JSON\", function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"Check we have expected fields\", function () {",
+									"    // AWS do add fields, so keep this as a minimum number for now",
+									"    pm.expect(Object.keys(jsonData)).to.have.lengthOf.at.least(2);",
+									"    ",
+									"    pm.expect(jsonData).to.have.property('KeyId');",
+									"    pm.expect(jsonData).to.have.property('Plaintext');",
+									"});",
+									"",
+									"pm.test(\"Check message matches what we expect\", function () {",
+									"",
+									"    var words = CryptoJS.enc.Base64.parse(jsonData.Plaintext);",
+									"    var textString = CryptoJS.enc.Utf8.stringify(words);",
+									"    ",
+									"    console.log('Returned message ' + textString)",
+									"",
+									"    pm.expect(textString).to.equal(pm.globals.get('test_encryption_string'))",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "a7d1da28-b568-4a32-8054-9495847765f2",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Amz-Target",
+								"type": "text",
+								"value": "TrentService.Decrypt"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-amz-json-1.1"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"CiphertextBlob\": \"{{ciphertext}}\",\n   \"EncryptionContext\": { \n      \"a\" : \"b\",\n      \"b\" : \"v\",\n      \"c\" : \"c\",\n      \"d\" : \"x\",\n      \"e\" : \"z\"\n   }\n}\n"
+						},
+						"url": {
+							"raw": "{{Host}}",
+							"host": [
+								"{{Host}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Encrypt with Context",
+			"item": [
+				{
+					"name": "Successful Encrypt",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4e3d4579-a1b5-4b65-8ec6-abee70f7cdf5",
+								"exec": [
+									"// Parsing the response returned by the request.",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    pm.environment.set(\"ciphertext_with_context\", jsonData.CiphertextBlob);",
+									"});",
+									"",
+									"pm.test(\"The response is JSON\", function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"The KeyMetadata looks sensible\", function () {",
+									"    // AWS do add fields, so keep this as a minimum number for now",
+									"    pm.expect(Object.keys(jsonData)).to.have.lengthOf(2);",
+									"    ",
+									"    pm.expect(jsonData).to.have.property('KeyId');",
+									"    pm.expect(jsonData).to.have.property('CiphertextBlob');",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "a7d1da28-b568-4a32-8054-9495847765f2",
+								"exec": [
+									"//console.log('Encrypting ' + pm.test_encryption_string)",
+									"",
+									"test_encryption_string = pm.globals.get('test_encryption_string')",
+									"",
+									"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+									"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+									"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+									"    ",
+									"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Amz-Target",
+								"type": "text",
+								"value": "TrentService.Encrypt"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-amz-json-1.1"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"KeyId\": \"{{test_alias}}\",\n   \"Plaintext\": \"{{encoded_plaintext}}\",\n   \"EncryptionContext\": { \n      \"a\" : \"1\",\n      \"b\" : \"2\",\n      \"c\" : \"3\",\n      \"d\" : \"4\",\n      \"e\" : \"5\"\n   }\n}"
+						},
+						"url": {
+							"raw": "{{Host}}",
+							"host": [
+								"{{Host}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Fail Decrypt due to lack of context",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4e3d4579-a1b5-4b65-8ec6-abee70f7cdf5",
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"The response is JSON\", function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"Check expected error returned\", function () {",
+									"    pm.expect(Object.keys(jsonData)).to.have.lengthOf(1);",
+									"    pm.expect(jsonData).to.have.property('__type');",
+									"        pm.expect(jsonData['__type']).to.equal('InvalidCiphertextException')",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "a7d1da28-b568-4a32-8054-9495847765f2",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Amz-Target",
+								"type": "text",
+								"value": "TrentService.Decrypt"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-amz-json-1.1"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"CiphertextBlob\": \"{{ciphertext_with_context}}\"\n}\n"
+						},
+						"url": {
+							"raw": "{{Host}}",
+							"host": [
+								"{{Host}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Successful Decrypt",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4e3d4579-a1b5-4b65-8ec6-abee70f7cdf5",
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"The response is JSON\", function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"Check we have expected fields\", function () {",
+									"    // AWS do add fields, so keep this as a minimum number for now",
+									"    pm.expect(Object.keys(jsonData)).to.have.lengthOf.at.least(2);",
+									"    ",
+									"    pm.expect(jsonData).to.have.property('KeyId');",
+									"    pm.expect(jsonData).to.have.property('Plaintext');",
+									"});",
+									"",
+									"pm.test(\"Check message matches what we expect\", function () {",
+									"",
+									"    var words = CryptoJS.enc.Base64.parse(jsonData.Plaintext);",
+									"    var textString = CryptoJS.enc.Utf8.stringify(words);",
+									"    ",
+									"    console.log('Returned message ' + textString)",
+									"",
+									"    pm.expect(textString).to.equal(pm.globals.get('test_encryption_string'))",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "a7d1da28-b568-4a32-8054-9495847765f2",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Amz-Target",
+								"type": "text",
+								"value": "TrentService.Decrypt"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-amz-json-1.1"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"CiphertextBlob\": \"{{ciphertext_with_context}}\",\n   \"EncryptionContext\": { \n      \"e\" : \"5\",\n      \"a\" : \"1\",\n      \"b\" : \"2\",\n      \"c\" : \"3\",\n      \"d\" : \"4\"\n   }\n}\n"
+						},
+						"url": {
+							"raw": "{{Host}}",
+							"host": [
+								"{{Host}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Data Keys",
+			"item": [
+				{
+					"name": "Generate Data Key (KeySpec)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4e3d4579-a1b5-4b65-8ec6-abee70f7cdf5",
+								"exec": [
+									"// Parsing the response returned by the request.",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"The response is JSON\", function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"The response looks sensible\", function () {",
+									"    // AWS do add fields, so keep this as a minimum number for now",
+									"    pm.expect(Object.keys(jsonData)).to.have.lengthOf(3);",
+									"    ",
+									"    pm.expect(jsonData).to.have.property('KeyId');",
+									"    pm.expect(jsonData).to.have.property('Plaintext');",
+									"    pm.expect(jsonData).to.have.property('CiphertextBlob');",
+									"    ",
+									"    pm.environment.set(\"ciphertext_datakey\", jsonData.CiphertextBlob);",
+									"    pm.environment.set(\"plaintext_datakey\", jsonData.Plaintext);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "a7d1da28-b568-4a32-8054-9495847765f2",
+								"exec": [
+									"//console.log('Encrypting ' + pm.test_encryption_string)",
+									"",
+									"test_encryption_string = pm.globals.get('test_encryption_string')",
+									"",
+									"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+									"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+									"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+									"    ",
+									"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Amz-Target",
+								"type": "text",
+								"value": "TrentService.GenerateDataKey"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-amz-json-1.1"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"KeyId\": \"{{test_alias}}\",\n   \"KeySpec\": \"AES_256\"\n}"
+						},
+						"url": {
+							"raw": "{{Host}}",
+							"host": [
+								"{{Host}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Decrypt Date Key",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4e3d4579-a1b5-4b65-8ec6-abee70f7cdf5",
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"The response is JSON\", function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"Check we have expected fields\", function () {",
+									"    // AWS do add fields, so keep this as a minimum number for now",
+									"    pm.expect(Object.keys(jsonData)).to.have.lengthOf.at.least(2);",
+									"    ",
+									"    pm.expect(jsonData).to.have.property('KeyId');",
+									"    pm.expect(jsonData).to.have.property('Plaintext');",
+									"});",
+									"",
+									"pm.test(\"Check message matches what we expect\", function () {",
+									"    pm.expect(jsonData.Plaintext).to.equal(pm.environment.get('plaintext_datakey'))",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "a7d1da28-b568-4a32-8054-9495847765f2",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Amz-Target",
+								"type": "text",
+								"value": "TrentService.Decrypt"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-amz-json-1.1"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"CiphertextBlob\": \"{{ciphertext_datakey}}\"\n}\n"
+						},
+						"url": {
+							"raw": "{{Host}}",
+							"host": [
+								"{{Host}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Data Key Bits & Context",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4e3d4579-a1b5-4b65-8ec6-abee70f7cdf5",
+								"exec": [
+									"// Parsing the response returned by the request.",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"The response is JSON\", function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"The response looks sensible\", function () {",
+									"    // AWS do add fields, so keep this as a minimum number for now",
+									"    pm.expect(Object.keys(jsonData)).to.have.lengthOf(3);",
+									"    ",
+									"    pm.expect(jsonData).to.have.property('KeyId');",
+									"    pm.expect(jsonData).to.have.property('Plaintext');",
+									"    pm.expect(jsonData).to.have.property('CiphertextBlob');",
+									"    ",
+									"    pm.environment.set(\"ciphertext_datakey\", jsonData.CiphertextBlob);",
+									"    pm.environment.set(\"plaintext_datakey\", jsonData.Plaintext);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "a7d1da28-b568-4a32-8054-9495847765f2",
+								"exec": [
+									"//console.log('Encrypting ' + pm.test_encryption_string)",
+									"",
+									"test_encryption_string = pm.globals.get('test_encryption_string')",
+									"",
+									"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+									"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+									"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+									"    ",
+									"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Amz-Target",
+								"type": "text",
+								"value": "TrentService.GenerateDataKey"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-amz-json-1.1"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"KeyId\": \"{{test_alias}}\",\n   \"NumberOfBytes\": 3,\n   \"EncryptionContext\": { \n      \"a\" : \"!\",\n      \"b\" : \"@\",\n      \"c\" : \"£\",\n      \"d\" : \"$\",\n      \"e\" : \"%\"\n   }\n}"
+						},
+						"url": {
+							"raw": "{{Host}}",
+							"host": [
+								"{{Host}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Decrypt Date without Context",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4e3d4579-a1b5-4b65-8ec6-abee70f7cdf5",
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"The response is JSON\", function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"Check expected error returned\", function () {",
+									"    pm.expect(Object.keys(jsonData)).to.have.lengthOf(1);",
+									"    pm.expect(jsonData).to.have.property('__type');",
+									"        pm.expect(jsonData['__type']).to.equal('InvalidCiphertextException')",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "a7d1da28-b568-4a32-8054-9495847765f2",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Amz-Target",
+								"type": "text",
+								"value": "TrentService.Decrypt"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-amz-json-1.1"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"CiphertextBlob\": \"{{ciphertext_datakey}}\"\n}\n"
+						},
+						"url": {
+							"raw": "{{Host}}",
+							"host": [
+								"{{Host}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Decrypt Date with Context",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4e3d4579-a1b5-4b65-8ec6-abee70f7cdf5",
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"The response is JSON\", function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"Check we have expected fields\", function () {",
+									"    // AWS do add fields, so keep this as a minimum number for now",
+									"    pm.expect(Object.keys(jsonData)).to.have.lengthOf.at.least(2);",
+									"    ",
+									"    pm.expect(jsonData).to.have.property('KeyId');",
+									"    pm.expect(jsonData).to.have.property('Plaintext');",
+									"});",
+									"",
+									"pm.test(\"Check message matches what we expect\", function () {",
+									"    pm.expect(jsonData.Plaintext).to.equal(pm.environment.get('plaintext_datakey'))",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "a7d1da28-b568-4a32-8054-9495847765f2",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Amz-Target",
+								"type": "text",
+								"value": "TrentService.Decrypt"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-amz-json-1.1"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"CiphertextBlob\": \"{{ciphertext_datakey}}\",\n   \"EncryptionContext\": { \n      \"a\" : \"!\",\n      \"b\" : \"@\",\n      \"c\" : \"£\",\n      \"d\" : \"$\",\n      \"e\" : \"%\"\n   }\n}\n"
+						},
+						"url": {
+							"raw": "{{Host}}",
+							"host": [
+								"{{Host}}"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "0c48c963-5708-4253-a111-e34cd562f2d7",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "bb7d8809-470f-4560-934f-bbe8e5905cdb",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
 			"name": "Teardown",
 			"item": [
 				{
@@ -894,7 +1910,7 @@
 									"});",
 									"",
 									"pm.test(\"Check we have correct ARN\", function () {",
-									"    pm.expect(jsonData.KeyId).to.equal(pm.environment.get(\"test-key-arn\"));",
+									"    pm.expect(jsonData.KeyId).to.equal(pm.environment.get(\"test_key_arn\"));",
 									"});",
 									""
 								],
@@ -919,7 +1935,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n   \"KeyId\": \"{{test-key}}\",\n   \"PendingWindowInDays\": 7\n}\n"
+							"raw": "{\n   \"KeyId\": \"{{test_key}}\",\n   \"PendingWindowInDays\": 7\n}\n"
 						},
 						"url": {
 							"raw": "{{Host}}",

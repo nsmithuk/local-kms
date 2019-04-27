@@ -112,7 +112,7 @@ func (r *RequestHandler) generateDataKey() (Response, *GenerateDataKeyResponse) 
 
 	dataKey := key.BackingKeys[keyVersion]
 
-	ciphertext, err := service.Encrypt(dataKey, plaintext)
+	ciphertext, err := service.Encrypt(dataKey, plaintext, body.EncryptionContext)
 
 	cipherResponse := service.ConstructCipherResponse(key.Metadata.Arn, uint32(keyVersion), ciphertext)
 

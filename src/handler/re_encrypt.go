@@ -65,7 +65,7 @@ func (r *RequestHandler) ReEncrypt() Response {
 
 	dataKey := keySource.BackingKeys[keySourceVersion]
 
-	plaintext, err := service.Decrypt(dataKey, ciphertext)
+	plaintext, err := service.Decrypt(dataKey, ciphertext, body.SourceEncryptionContext)
 
 	if err != nil {
 		msg := "Unable to decode Ciphertext"
@@ -90,7 +90,7 @@ func (r *RequestHandler) ReEncrypt() Response {
 
 	dataKey = keyDestination.BackingKeys[keyDestinationVersion]
 
-	ciphertext, _ = service.Encrypt(dataKey, plaintext)
+	ciphertext, _ = service.Encrypt(dataKey, plaintext, body.DestinationEncryptionContext)
 
 	cipherResponse := service.ConstructCipherResponse(keyDestination.Metadata.Arn, uint32(keyDestinationVersion), ciphertext)
 

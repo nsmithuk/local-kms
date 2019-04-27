@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"github.com/aws/aws-sdk-go/service/kms"
 	"fmt"
+	"github.com/aws/aws-sdk-go/service/kms"
 	"github.com/nsmithuk/local-kms/src/service"
 )
 
@@ -52,11 +52,12 @@ func (r *RequestHandler) Encrypt() Response {
 
 	//----------------------------------
 
+	// Starts from 0. We want the highest/latest key
 	keyVersion := len(key.BackingKeys) - 1
 
 	dataKey := key.BackingKeys[keyVersion]
 
-	ciphertext, _ := service.Encrypt(dataKey, body.Plaintext)
+	ciphertext, _ := service.Encrypt(dataKey, body.Plaintext, body.EncryptionContext)
 
 	cipherResponse := service.ConstructCipherResponse(key.Metadata.Arn, uint32(keyVersion), ciphertext)
 

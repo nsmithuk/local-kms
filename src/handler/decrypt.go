@@ -78,13 +78,13 @@ func (r *RequestHandler) Decrypt() Response {
 
 	dataKey := key.BackingKeys[keyVersion]
 
-	plaintext, err := service.Decrypt(dataKey, ciphertext)
+	plaintext, err := service.Decrypt(dataKey, ciphertext, body.EncryptionContext)
 
 	if err != nil {
-		msg := "Unable to decode Ciphertext"
-
+		msg := fmt.Sprintf("Unable to decode Ciphertext: %s", err)
 		r.logger.Warnf(msg)
-		return NewInvalidCiphertextExceptionResponse(msg)
+
+		return NewInvalidCiphertextExceptionResponse("")
 	}
 
 	//--------------------------------
