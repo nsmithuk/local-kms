@@ -15,6 +15,7 @@ development and testing against KMS; not for use in a production environment._
     * Enabling/disabling automated key rotation
 * Management of key aliases
 * Encryption
+    * Encryption Contexts
 * Decryption
 * Generating a data key, with or without plain text
 * Generating random data
@@ -26,7 +27,6 @@ If a key in the seeding file already exists, it will not be overwritten or amend
 
 ### Does not (yet) supported
 
-* Encryption Context support (coming soon)
 * Tags
 * Grants
 * Key Policies
