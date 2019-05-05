@@ -19,15 +19,23 @@ func (r *RequestHandler) GenerateRandom() Response {
 	// Validation
 
 	if body.NumberOfBytes == nil {
-		msg := "NumberOfBytes is a required parameter"
+		msg := "Please specify either number of bytes or key spec."
 
 		r.logger.Warnf(msg)
-		return NewMissingParameterResponse(msg)
+		return NewValidationExceptionResponse(msg)
 	}
 
-	if *body.NumberOfBytes < 1 || *body.NumberOfBytes > 1024 {
-		msg := fmt.Sprintf("1 validation error detected: Value '%d' at 'NumberOfBytes' failed to satisfy " +
-			"constraint: Member must have minimum value of 1 and maximum value of 1024.", *body.NumberOfBytes)
+	if *body.NumberOfBytes < 1 {
+		msg := fmt.Sprintf("1 validation error detected: Value '%d' at 'numberOfBytes' failed to satisfy " +
+			"constraint: Member must have value greater than or equal to 1", *body.NumberOfBytes)
+
+		r.logger.Warnf(msg)
+		return NewValidationExceptionResponse(msg)
+	}
+
+	if *body.NumberOfBytes > 1024 {
+		msg := fmt.Sprintf("1 validation error detected: Value '%d' at 'numberOfBytes' failed to satisfy " +
+			"constraint: Member must have value less than or equal to 1024", *body.NumberOfBytes)
 
 		r.logger.Warnf(msg)
 		return NewValidationExceptionResponse(msg)
@@ -39,9 +47,7 @@ func (r *RequestHandler) GenerateRandom() Response {
 
 	//---
 
-	//---
-
-	r.logger.Infof("Random data generated: %d bytes\n", *body.NumberOfBytes)
+	r.logger.Infof("Random data generated: %d bytes\n", len(data))
 
 	return NewResponse( 200, &struct {
 		Plaintext	[]byte

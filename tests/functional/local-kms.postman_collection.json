@@ -1456,7 +1456,6 @@
 									"});",
 									"",
 									"pm.test(\"The response looks sensible\", function () {",
-									"    // AWS do add fields, so keep this as a minimum number for now",
 									"    pm.expect(Object.keys(jsonData)).to.have.lengthOf(3);",
 									"    ",
 									"    pm.expect(jsonData).to.have.property('KeyId');",
@@ -1612,7 +1611,6 @@
 									"});",
 									"",
 									"pm.test(\"The response looks sensible\", function () {",
-									"    // AWS do add fields, so keep this as a minimum number for now",
 									"    pm.expect(Object.keys(jsonData)).to.have.lengthOf(3);",
 									"    ",
 									"    pm.expect(jsonData).to.have.property('KeyId');",
@@ -1814,6 +1812,86 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Generate Data Key Sans Plaintext",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4e3d4579-a1b5-4b65-8ec6-abee70f7cdf5",
+								"exec": [
+									"// Parsing the response returned by the request.",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"The response is JSON\", function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"The response looks sensible\", function () {",
+									"    // Should have exactly 2. i.e. no Plaintext field",
+									"    pm.expect(Object.keys(jsonData)).to.have.lengthOf(2);",
+									"    ",
+									"    pm.expect(jsonData).to.have.property('KeyId');",
+									"    pm.expect(jsonData).to.have.property('CiphertextBlob');",
+									"    ",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "a7d1da28-b568-4a32-8054-9495847765f2",
+								"exec": [
+									"//console.log('Encrypting ' + pm.test_encryption_string)",
+									"",
+									"test_encryption_string = pm.globals.get('test_encryption_string')",
+									"",
+									"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+									"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+									"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+									"    ",
+									"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Amz-Target",
+								"type": "text",
+								"value": "TrentService.GenerateDataKeyWithoutPlaintext"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-amz-json-1.1"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"KeyId\": \"{{test_alias}}\",\n   \"KeySpec\": \"AES_256\"\n}"
+						},
+						"url": {
+							"raw": "{{Host}}",
+							"host": [
+								"{{Host}}"
+							]
+						}
+					},
+					"response": []
 				}
 			],
 			"event": [
@@ -1836,6 +1914,423 @@
 							""
 						]
 					}
+				}
+			]
+		},
+		{
+			"name": "Random Data",
+			"item": [
+				{
+					"name": "Generate a little Random Data",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4e3d4579-a1b5-4b65-8ec6-abee70f7cdf5",
+								"exec": [
+									"// Parsing the response returned by the request.",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"The response is JSON\", function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"The response looks sensible\", function () {",
+									"    pm.expect(Object.keys(jsonData)).to.have.lengthOf(1);",
+									"    pm.expect(jsonData).to.have.property('Plaintext');",
+									"});",
+									"",
+									"pm.test(\"The response is the correct length\", function () {",
+									"    var words = CryptoJS.enc.Base64.parse(jsonData.Plaintext);",
+									"    ",
+									"    // 8 bytes equals 16 characters",
+									"    pm.expect(words.toString().length).to.eql(16);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "a7d1da28-b568-4a32-8054-9495847765f2",
+								"exec": [
+									"//console.log('Encrypting ' + pm.test_encryption_string)",
+									"",
+									"test_encryption_string = pm.globals.get('test_encryption_string')",
+									"",
+									"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+									"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+									"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+									"    ",
+									"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Amz-Target",
+								"type": "text",
+								"value": "TrentService.GenerateRandom"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-amz-json-1.1"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"NumberOfBytes\": 8\n}"
+						},
+						"url": {
+							"raw": "{{Host}}",
+							"host": [
+								"{{Host}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Generate a lot of Random Data",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4e3d4579-a1b5-4b65-8ec6-abee70f7cdf5",
+								"exec": [
+									"// Parsing the response returned by the request.",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"The response is JSON\", function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"The response looks sensible\", function () {",
+									"    pm.expect(Object.keys(jsonData)).to.have.lengthOf(1);",
+									"    pm.expect(jsonData).to.have.property('Plaintext');",
+									"});",
+									"",
+									"pm.test(\"The response is the correct length\", function () {",
+									"    var words = CryptoJS.enc.Base64.parse(jsonData.Plaintext);",
+									"    ",
+									"    // 1024 bytes equals 2048 characters",
+									"    pm.expect(words.toString().length).to.eql(2048);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "a7d1da28-b568-4a32-8054-9495847765f2",
+								"exec": [
+									"//console.log('Encrypting ' + pm.test_encryption_string)",
+									"",
+									"test_encryption_string = pm.globals.get('test_encryption_string')",
+									"",
+									"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+									"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+									"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+									"    ",
+									"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Amz-Target",
+								"type": "text",
+								"value": "TrentService.GenerateRandom"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-amz-json-1.1"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"NumberOfBytes\": 1024\n}"
+						},
+						"url": {
+							"raw": "{{Host}}",
+							"host": [
+								"{{Host}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Generate too much data",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4e3d4579-a1b5-4b65-8ec6-abee70f7cdf5",
+								"exec": [
+									"// Parsing the response returned by the request.",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"The response is JSON\", function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"Check expected error returned\", function () {",
+									"    // AWS do add fields, so keep this as a minimum number for now",
+									"    pm.expect(Object.keys(jsonData)).to.have.lengthOf(2);",
+									"    ",
+									"    pm.expect(jsonData).to.have.property('__type');",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"    ",
+									"    pm.expect(jsonData['__type']).to.equal('ValidationException')",
+									"    pm.expect(jsonData['message']).to.equal(\"1 validation error detected: Value '1025' at 'numberOfBytes' failed to satisfy constraint: Member must have value less than or equal to 1024\")",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "a7d1da28-b568-4a32-8054-9495847765f2",
+								"exec": [
+									"//console.log('Encrypting ' + pm.test_encryption_string)",
+									"",
+									"test_encryption_string = pm.globals.get('test_encryption_string')",
+									"",
+									"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+									"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+									"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+									"    ",
+									"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Amz-Target",
+								"type": "text",
+								"value": "TrentService.GenerateRandom"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-amz-json-1.1"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"NumberOfBytes\": 1025\n}"
+						},
+						"url": {
+							"raw": "{{Host}}",
+							"host": [
+								"{{Host}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "NumberOfBytes Missing",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4e3d4579-a1b5-4b65-8ec6-abee70f7cdf5",
+								"exec": [
+									"// Parsing the response returned by the request.",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"The response is JSON\", function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"Check expected error returned\", function () {",
+									"    // AWS do add fields, so keep this as a minimum number for now",
+									"    pm.expect(Object.keys(jsonData)).to.have.lengthOf(2);",
+									"    ",
+									"    pm.expect(jsonData).to.have.property('__type');",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"    ",
+									"    pm.expect(jsonData['__type']).to.equal('ValidationException')",
+									"    pm.expect(jsonData['message']).to.equal(\"Please specify either number of bytes or key spec.\")",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "a7d1da28-b568-4a32-8054-9495847765f2",
+								"exec": [
+									"//console.log('Encrypting ' + pm.test_encryption_string)",
+									"",
+									"test_encryption_string = pm.globals.get('test_encryption_string')",
+									"",
+									"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+									"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+									"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+									"    ",
+									"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Amz-Target",
+								"type": "text",
+								"value": "TrentService.GenerateRandom"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-amz-json-1.1"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\n}"
+						},
+						"url": {
+							"raw": "{{Host}}",
+							"host": [
+								"{{Host}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Ask for no data Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4e3d4579-a1b5-4b65-8ec6-abee70f7cdf5",
+								"exec": [
+									"// Parsing the response returned by the request.",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"The response is JSON\", function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"Check expected error returned\", function () {",
+									"    // AWS do add fields, so keep this as a minimum number for now",
+									"    pm.expect(Object.keys(jsonData)).to.have.lengthOf(2);",
+									"    ",
+									"    pm.expect(jsonData).to.have.property('__type');",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"    ",
+									"    pm.expect(jsonData['__type']).to.equal('ValidationException')",
+									"    pm.expect(jsonData['message']).to.equal(\"1 validation error detected: Value '0' at 'numberOfBytes' failed to satisfy constraint: Member must have value greater than or equal to 1\")",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "a7d1da28-b568-4a32-8054-9495847765f2",
+								"exec": [
+									"//console.log('Encrypting ' + pm.test_encryption_string)",
+									"",
+									"test_encryption_string = pm.globals.get('test_encryption_string')",
+									"",
+									"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+									"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+									"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+									"    ",
+									"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Amz-Target",
+								"type": "text",
+								"value": "TrentService.GenerateRandom"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-amz-json-1.1"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"NumberOfBytes\": 0\n}"
+						},
+						"url": {
+							"raw": "{{Host}}",
+							"host": [
+								"{{Host}}"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
