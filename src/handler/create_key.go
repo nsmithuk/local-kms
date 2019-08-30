@@ -1,13 +1,13 @@
 package handler
 
-import(
-	"github.com/nsmithuk/local-kms/src/service"
+import (
+	"fmt"
+	"github.com/aws/aws-sdk-go/service/kms"
 	"github.com/nsmithuk/local-kms/src/config"
 	"github.com/nsmithuk/local-kms/src/data"
-	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/nsmithuk/local-kms/src/service"
 	"github.com/satori/go.uuid"
 	"time"
-	"fmt"
 )
 
 func (r *RequestHandler) CreateKey() Response {
@@ -31,6 +31,17 @@ func (r *RequestHandler) CreateKey() Response {
 		return NewValidationExceptionResponse(msg)
 	}
 
+	response := r.validateTags(body.Tags)
+	if !response.Empty() {
+		return response
+	}
+
+	//----
+
+	if body.Description == nil {
+		empty := ""
+		body.Description = &empty
+	}
 
 	//--------------------------------
 	// Create the key set up
@@ -65,9 +76,24 @@ func (r *RequestHandler) CreateKey() Response {
 		return NewInternalFailureExceptionResponse(err.Error())
 	}
 
-	//---
-
 	r.logger.Infof("New key created: %s\n", key.Metadata.Arn)
+
+	//--------------------------------
+	// Create the tags
+
+	if body.Tags != nil && len(body.Tags) > 0 {
+		for _, kv := range body.Tags {
+			t := &data.Tag{
+				TagKey:   *kv.TagKey,
+				TagValue: *kv.TagValue,
+			}
+			_ = r.database.SaveTag(key, t)
+
+			r.logger.Infof("New tag created: %s / %s\n", t.TagKey, t.TagValue)
+		}
+	}
+
+	//---
 
 	return NewResponse( 200, map[string]data.KeyMetadata{
 		"KeyMetadata": key.Metadata,

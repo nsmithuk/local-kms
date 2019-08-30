@@ -27,8 +27,8 @@ func (r *RequestHandler) Decrypt() Response {
 	// Validation
 
 	if len(body.CiphertextBlob) == 0 {
-		msg := "1 validation error detected: Value 'java.nio.HeapByteBuffer[pos=0 lim=0 cap=0]' at 'ciphertextBlob' " +
-			"failed to satisfy constraint: Member must have length greater than or equal to 1"
+		msg := "1 validation error detected: Value at 'ciphertextBlob' failed to satisfy constraint: Member must " +
+			"have length greater than or equal to 1"
 
 		r.logger.Warnf(msg)
 		return NewValidationExceptionResponse(msg)

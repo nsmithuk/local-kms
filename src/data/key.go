@@ -17,7 +17,7 @@ type KeyMetadata struct {
 	Arn string 				`json:",omitempty"`
 	CreationDate int64 		`json:",omitempty"`
 	DeletionDate int64 		`json:",omitempty"`
-	Description *string		`json:",omitempty" yaml:"Description"`
+	Description *string						  `yaml:"Description"`
 	Enabled bool							  `yaml:"Enabled"`
 	ExpirationModel string	`json:",omitempty"`
 	KeyId string 			`json:",omitempty" yaml:"KeyId"`

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"github.com/aws/aws-sdk-go/service/kms"
 	"github.com/nsmithuk/local-kms/src/data"
 	"github.com/nsmithuk/local-kms/src/config"
 	"strings"
@@ -62,4 +63,40 @@ func (r *RequestHandler) getUsableKey(keyId string) (*data.Key, Response){
 	}
 
 	return key, Response{}
+}
+
+func (r *RequestHandler) validateTags(tags []*kms.Tag) Response {
+	if tags != nil && len(tags) > 0 {
+		for i, kv := range tags {
+
+			if len(*kv.TagKey) < 1 {
+				msg := fmt.Sprintf("1 validation error detected: Value '' at 'tags.%d.member.tagKey' failed to " +
+					"satisfy constraint: Member must have length greater than or equal to 1", i+1)
+
+				r.logger.Warnf(msg)
+				return NewValidationExceptionResponse(msg)
+			}
+
+			if len(*kv.TagKey) > 128 {
+				msg := fmt.Sprintf("1 validation error detected: Value '' at 'tags.%d.member.tagKey' failed to " +
+					"satisfy constraint: Member must have length less than or equal to 128", i+1)
+
+				r.logger.Warnf(msg)
+				return NewValidationExceptionResponse(msg)
+			}
+
+			if len(*kv.TagValue) > 256 {
+				msg := fmt.Sprintf("1 validation error detected: Value '' at 'tags.%d.member.tagValue' failed to " +
+					"satisfy constraint: Member must have length less than or equal to 256", i+1)
+
+				r.logger.Warnf(msg)
+				return NewValidationExceptionResponse(msg)
+			}
+
+			// TagValue is allowed to have len == 0
+		}
+	}
+
+	// Return an empty response if all is well
+	return Response{}
 }
