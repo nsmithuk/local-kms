@@ -19,6 +19,7 @@ development and testing against KMS; not for use in a production environment._
 * Decryption
 * Generating a data key, with or without plain text
 * Generating random data
+* Tags
 
 #### Seeding
 Seeding allow LKMS to be supplied with a set of pre-defined keys and aliases on startup, giving you a deterministic and versionable way to manage test keys.
@@ -27,7 +28,6 @@ If a key in the seeding file already exists, it will not be overwritten or amend
 
 ### Does not (yet) supported
 
-* Tags
 * Grants
 * Key Policies
 * Importing your own key material
