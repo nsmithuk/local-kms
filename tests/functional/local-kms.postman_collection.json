@@ -38,6 +38,7 @@
 									"    pm.expect(jsonData.KeyMetadata).to.have.property('AWSAccountId');",
 									"    pm.expect(jsonData.KeyMetadata).to.have.property('Arn');",
 									"    pm.expect(jsonData.KeyMetadata).to.have.property('CreationDate');",
+									"    pm.expect(jsonData.KeyMetadata).to.have.property('Description');",
 									"    pm.expect(jsonData.KeyMetadata).to.have.property('Enabled');",
 									"    pm.expect(jsonData.KeyMetadata).to.have.property('KeyId');",
 									"    pm.expect(jsonData.KeyMetadata).to.have.property('KeyManager');",
@@ -71,7 +72,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{}"
+							"raw": "{\n\t\"Tags\": [\n\t\t{\n\t\t\t\"TagKey\": \"My Key Name 1\",\n\t\t\t\"TagValue\": \"My Key Value 1\"\n\t\t},\n\t\t{\n\t\t\t\"TagKey\": \"My Key Name 2\",\n\t\t\t\"TagValue\": \"My Key Value 2\"\n\t\t}\n\t]\n}"
 						},
 						"url": {
 							"raw": "{{Host}}",
@@ -126,6 +127,751 @@
 						}
 					},
 					"response": []
+				}
+			]
+		},
+		{
+			"name": "View",
+			"item": [
+				{
+					"name": "ListKeys",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4e3d4579-a1b5-4b65-8ec6-abee70f7cdf5",
+								"exec": [
+									"// Parsing the response returned by the request.",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"The response is JSON\", function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"The response looks sensible\", function () {",
+									"    pm.expect(jsonData).to.have.property('Truncated');",
+									"    pm.expect(jsonData).to.have.property('Keys');",
+									"    ",
+									"    pm.expect(Object.keys(jsonData['Keys'])).to.have.lengthOf.at.least(9);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "a7d1da28-b568-4a32-8054-9495847765f2",
+								"exec": [
+									"//console.log('Encrypting ' + pm.test_encryption_string)",
+									"",
+									"test_encryption_string = pm.globals.get('test_encryption_string')",
+									"",
+									"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+									"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+									"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+									"    ",
+									"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Amz-Target",
+								"type": "text",
+								"value": "TrentService.ListKeys"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-amz-json-1.1"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\n}"
+						},
+						"url": {
+							"raw": "{{Host}}",
+							"host": [
+								"{{Host}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DescribeKey",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4e3d4579-a1b5-4b65-8ec6-abee70f7cdf5",
+								"exec": [
+									"// Parsing the response returned by the request.",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"The response is JSON\", function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"The response looks sensible\", function () {",
+									"    // AWS do add fields, so keep this as a minimum number for now",
+									"    pm.expect(Object.keys(jsonData['KeyMetadata'])).to.have.lengthOf.at.least(9);",
+									"    ",
+									"    pm.expect(jsonData.KeyMetadata).to.have.property('AWSAccountId');",
+									"    pm.expect(jsonData.KeyMetadata).to.have.property('Arn');",
+									"    pm.expect(jsonData.KeyMetadata).to.have.property('CreationDate');",
+									"    pm.expect(jsonData.KeyMetadata).to.have.property('Description');",
+									"    pm.expect(jsonData.KeyMetadata).to.have.property('Enabled');",
+									"    pm.expect(jsonData.KeyMetadata).to.have.property('KeyId');",
+									"    pm.expect(jsonData.KeyMetadata).to.have.property('KeyManager');",
+									"    pm.expect(jsonData.KeyMetadata).to.have.property('KeyState');",
+									"    pm.expect(jsonData.KeyMetadata).to.have.property('KeyUsage');",
+									"    pm.expect(jsonData.KeyMetadata).to.have.property('Origin');",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "a7d1da28-b568-4a32-8054-9495847765f2",
+								"exec": [
+									"//console.log('Encrypting ' + pm.test_encryption_string)",
+									"",
+									"test_encryption_string = pm.globals.get('test_encryption_string')",
+									"",
+									"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+									"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+									"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+									"    ",
+									"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Amz-Target",
+								"type": "text",
+								"value": "TrentService.DescribeKey"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-amz-json-1.1"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"KeyId\": \"{{test_key}}\"\n}"
+						},
+						"url": {
+							"raw": "{{Host}}",
+							"host": [
+								"{{Host}}"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "7347bae9-1c6d-4f75-aa7d-6b739d7e3d81",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "1e2ce235-5205-42d3-a168-e76ac80205e2",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Tags",
+			"item": [
+				{
+					"name": "ListResourceTags",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4e3d4579-a1b5-4b65-8ec6-abee70f7cdf5",
+								"exec": [
+									"// Parsing the response returned by the request.",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"The response is JSON\", function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"The response looks sensible\", function () {",
+									"    pm.expect(jsonData).to.have.property('Truncated');",
+									"    pm.expect(jsonData).to.have.property('Tags');",
+									"    ",
+									"    pm.expect(Object.keys(jsonData['Tags'])).to.have.lengthOf(2);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "a7d1da28-b568-4a32-8054-9495847765f2",
+								"exec": [
+									"//console.log('Encrypting ' + pm.test_encryption_string)",
+									"",
+									"test_encryption_string = pm.globals.get('test_encryption_string')",
+									"",
+									"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+									"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+									"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+									"    ",
+									"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Amz-Target",
+								"type": "text",
+								"value": "TrentService.ListResourceTags"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-amz-json-1.1"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"KeyId\": \"{{test_key}}\"\n}"
+						},
+						"url": {
+							"raw": "{{Host}}",
+							"host": [
+								"{{Host}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TagResource Error 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4e3d4579-a1b5-4b65-8ec6-abee70f7cdf5",
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"The response is JSON\", function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"Check expected error returned\", function () {",
+									"    // AWS do add fields, so keep this as a minimum number for now",
+									"    pm.expect(Object.keys(jsonData)).to.have.lengthOf(2);",
+									"    ",
+									"    pm.expect(jsonData).to.have.property('__type');",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"    ",
+									"    pm.expect(jsonData['__type']).to.equal('ValidationException')",
+									"    pm.expect(jsonData['message']).to.match(/^1 validation error detected: Value null at 'tags' failed to satisfy constraint: Member must not be null$/)",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "a7d1da28-b568-4a32-8054-9495847765f2",
+								"exec": [
+									"//console.log('Encrypting ' + pm.test_encryption_string)",
+									"",
+									"test_encryption_string = pm.globals.get('test_encryption_string')",
+									"",
+									"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+									"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+									"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+									"    ",
+									"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Amz-Target",
+								"type": "text",
+								"value": "TrentService.TagResource"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-amz-json-1.1"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"KeyId\": \"{{test_key}}\"\n}"
+						},
+						"url": {
+							"raw": "{{Host}}",
+							"host": [
+								"{{Host}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TagResource Error 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4e3d4579-a1b5-4b65-8ec6-abee70f7cdf5",
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"The response is JSON\", function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"Check expected error returned\", function () {",
+									"    // AWS do add fields, so keep this as a minimum number for now",
+									"    pm.expect(Object.keys(jsonData)).to.have.lengthOf(2);",
+									"    ",
+									"    pm.expect(jsonData).to.have.property('__type');",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"    ",
+									"    pm.expect(jsonData['__type']).to.equal('ValidationException')",
+									"    pm.expect(jsonData['message']).to.match(/^1 validation error detected: Value '' at 'tags.2.member.tagKey' failed to satisfy constraint: Member must have length greater than or equal to 1$/)",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "a7d1da28-b568-4a32-8054-9495847765f2",
+								"exec": [
+									"//console.log('Encrypting ' + pm.test_encryption_string)",
+									"",
+									"test_encryption_string = pm.globals.get('test_encryption_string')",
+									"",
+									"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+									"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+									"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+									"    ",
+									"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Amz-Target",
+								"type": "text",
+								"value": "TrentService.TagResource"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-amz-json-1.1"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"KeyId\": \"{{test_key}}\",\n\t\"Tags\": [\n\t\t{\n\t\t\t\"TagKey\": \"One\",\n\t\t\t\"TagValue\": \"My Value\"\n\t\t},\n\t\t{\n\t\t\t\"TagKey\": \"\",\n\t\t\t\"TagValue\": \"My Value\"\n\t\t}\n\t]\n}"
+						},
+						"url": {
+							"raw": "{{Host}}",
+							"host": [
+								"{{Host}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TagResource",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4e3d4579-a1b5-4b65-8ec6-abee70f7cdf5",
+								"exec": [
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "a7d1da28-b568-4a32-8054-9495847765f2",
+								"exec": [
+									"//console.log('Encrypting ' + pm.test_encryption_string)",
+									"",
+									"test_encryption_string = pm.globals.get('test_encryption_string')",
+									"",
+									"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+									"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+									"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+									"    ",
+									"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Amz-Target",
+								"type": "text",
+								"value": "TrentService.TagResource"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-amz-json-1.1"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"KeyId\": \"{{test_key}}\",\n\t\"Tags\": [\n\t\t{\n\t\t\t\"TagKey\": \"My Key Name 2\",\n\t\t\t\"TagValue\": \"My NEW Key Value 2\"\n\t\t},\n\t\t{\n\t\t\t\"TagKey\": \"My Key Name 3\",\n\t\t\t\"TagValue\": \"My Key Value 3\"\n\t\t}\n\t]\n}"
+						},
+						"url": {
+							"raw": "{{Host}}",
+							"host": [
+								"{{Host}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ListResourceTags 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4e3d4579-a1b5-4b65-8ec6-abee70f7cdf5",
+								"exec": [
+									"// Parsing the response returned by the request.",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"The response is JSON\", function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"The response looks sensible\", function () {",
+									"    pm.expect(jsonData).to.have.property('Truncated');",
+									"    pm.expect(jsonData).to.have.property('Tags');",
+									"    ",
+									"    pm.expect(Object.keys(jsonData['Tags'])).to.have.lengthOf(3);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "a7d1da28-b568-4a32-8054-9495847765f2",
+								"exec": [
+									"//console.log('Encrypting ' + pm.test_encryption_string)",
+									"",
+									"test_encryption_string = pm.globals.get('test_encryption_string')",
+									"",
+									"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+									"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+									"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+									"    ",
+									"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Amz-Target",
+								"type": "text",
+								"value": "TrentService.ListResourceTags"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-amz-json-1.1"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"KeyId\": \"{{test_key}}\"\n}"
+						},
+						"url": {
+							"raw": "{{Host}}",
+							"host": [
+								"{{Host}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UntagResource",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4e3d4579-a1b5-4b65-8ec6-abee70f7cdf5",
+								"exec": [
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "a7d1da28-b568-4a32-8054-9495847765f2",
+								"exec": [
+									"//console.log('Encrypting ' + pm.test_encryption_string)",
+									"",
+									"test_encryption_string = pm.globals.get('test_encryption_string')",
+									"",
+									"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+									"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+									"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+									"    ",
+									"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Amz-Target",
+								"type": "text",
+								"value": "TrentService.UntagResource"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-amz-json-1.1"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"KeyId\": \"{{test_key}}\",\n\t\"TagKeys\": [\"My Key Name 1\", \"My Key Name 2\"]\n}"
+						},
+						"url": {
+							"raw": "{{Host}}",
+							"host": [
+								"{{Host}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ListResourceTags 3",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4e3d4579-a1b5-4b65-8ec6-abee70f7cdf5",
+								"exec": [
+									"// Parsing the response returned by the request.",
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"The response is JSON\", function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"The response looks sensible\", function () {",
+									"    pm.expect(jsonData).to.have.property('Truncated');",
+									"    pm.expect(jsonData).to.have.property('Tags');",
+									"    ",
+									"    pm.expect(Object.keys(jsonData['Tags'])).to.have.lengthOf(1);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "a7d1da28-b568-4a32-8054-9495847765f2",
+								"exec": [
+									"//console.log('Encrypting ' + pm.test_encryption_string)",
+									"",
+									"test_encryption_string = pm.globals.get('test_encryption_string')",
+									"",
+									"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+									"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+									"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+									"    ",
+									"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Amz-Target",
+								"type": "text",
+								"value": "TrentService.ListResourceTags"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-amz-json-1.1"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"KeyId\": \"{{test_key}}\"\n}"
+						},
+						"url": {
+							"raw": "{{Host}}",
+							"host": [
+								"{{Host}}"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "7347bae9-1c6d-4f75-aa7d-6b739d7e3d81",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "1e2ce235-5205-42d3-a168-e76ac80205e2",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
 				}
 			]
 		},
@@ -774,7 +1520,9 @@
 									"    ",
 									"    pm.expect(jsonData['__type']).to.equal('ValidationException')",
 									"    ",
-									"    pm.expect(jsonData['message']).to.equal(\"1 validation error detected: Value 'java.nio.HeapByteBuffer[pos=0 lim=0 cap=0]' at 'ciphertextBlob' failed to satisfy constraint: Member must have length greater than or equal to 1\")",
+									"    pm.expect(jsonData['message']).to.equal(\"1 validation error detected: Value at 'ciphertextBlob' failed to satisfy constraint: Member must have length greater than or equal to 1\")",
+									"    ",
+									"    // pm.expect(jsonData['message']).to.equal(\"1 validation error detected: Value 'java.nio.HeapByteBuffer[pos=0 lim=0 cap=0]' at 'ciphertextBlob' failed to satisfy constraint: Member must have length greater than or equal to 1\")",
 									"    ",
 									"    // Message currently has an odd error response. See: https://forums.aws.amazon.com/thread.jspa?threadID=302054&tstart=0",
 									"});",
