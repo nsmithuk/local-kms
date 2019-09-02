@@ -89,6 +89,8 @@ func (r *RequestHandler) CreateKey() Response {
 
 		// Add the first backing key
 		BackingKeys: [][32]byte{ service.GenerateNewKey() },
+
+		Policy: *body.Policy,
 	}
 
 

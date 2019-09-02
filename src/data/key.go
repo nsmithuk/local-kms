@@ -10,6 +10,7 @@ type Key struct {
 	Metadata 		KeyMetadata
 	BackingKeys		[][32]byte
 	NextKeyRotation	time.Time
+	Policy 			string
 }
 
 type KeyMetadata struct {
@@ -25,7 +26,6 @@ type KeyMetadata struct {
 	KeyState string 		`json:",omitempty"`
 	KeyUsage string 		`json:",omitempty"`
 	Origin string 			`json:",omitempty"`
-	Policy string 			`json:",omitempty"`
 	ValidTo int64 			`json:",omitempty"`
 }
 
