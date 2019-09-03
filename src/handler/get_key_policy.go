@@ -25,6 +25,13 @@ func (r *RequestHandler) GetKeyPolicy() Response {
 		return NewMissingParameterResponse(msg)
 	}
 
+	if body.PolicyName == nil {
+		msg := "1 validation error detected: Value null at 'policyName' failed to satisfy constraint: Member must not be null"
+
+		r.logger.Warnf(msg)
+		return NewValidationExceptionResponse(msg)
+	}
+
 	//---
 
 	keyArn := config.EnsureArn("key/", *body.KeyId)
