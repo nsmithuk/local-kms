@@ -31,6 +31,14 @@ func (r *RequestHandler) CreateKey() Response {
 		return NewValidationExceptionResponse(msg)
 	}
 
+	if body.Policy != nil && len(*body.Policy) > 32768 {
+		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'policy' failed to satisfy "+
+			"constraint: Member must have length less than or equal to 32768", *body.Policy)
+
+		r.logger.Warnf(msg)
+		return NewValidationExceptionResponse(msg)
+	}
+
 	response := r.validateTags(body.Tags)
 	if !response.Empty() {
 		return response
@@ -41,6 +49,23 @@ func (r *RequestHandler) CreateKey() Response {
 	if body.Description == nil {
 		empty := ""
 		body.Description = &empty
+	}
+
+	if body.Policy == nil {
+		policy := fmt.Sprintf(`{
+			"Id": "key-default-policy",
+			"Version": "2012-10-17",
+			"Statement": [{
+				"Sid": "Enable IAM User Permissions",
+				"Effect": "Allow",
+				"Principal": {
+					"AWS": "arn:aws:iam::%s:root"
+				},
+				"Action": "kms:*",
+				"Resource": "*"
+			}]
+		}`, config.AWSAccountId)
+		body.Policy = &policy
 	}
 
 	//--------------------------------
@@ -64,6 +89,8 @@ func (r *RequestHandler) CreateKey() Response {
 
 		// Add the first backing key
 		BackingKeys: [][32]byte{ service.GenerateNewKey() },
+
+		Policy: *body.Policy,
 	}
 
 

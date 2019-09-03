@@ -10,6 +10,7 @@ type Key struct {
 	Metadata 		KeyMetadata
 	BackingKeys		[][32]byte
 	NextKeyRotation	time.Time
+	Policy 			string
 }
 
 type KeyMetadata struct {
