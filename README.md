@@ -129,9 +129,6 @@ The following environment variables can be set to configure LKMS.
 
 Warning: keys and aliases are stored under their ARN, thus their identity includes both ACCOUNT_ID and REGION. Changing these values will make pre-existing data inaccessible.
 
-## Configuration
-The following environment variables can be set to configure LKMS.
-
 ## Known Differences from AWS' KMS
 
 When successfully calling `ScheduleKeyDeletion`, the timestamp returned from AWS is in Scientific Notation/Standard Form.
