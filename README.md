@@ -188,7 +188,6 @@ curl -X "POST" "http://localhost:8080/" \
      -H 'X-Amz-Target: TrentService.Decrypt' \
      -H 'Content-Type: application/json; charset=utf-8' \
      -d $'{
-  "KeyId": "bc436485-5092-42b8-92a3-0aa8b93536dc",
   "CiphertextBlob": "S2Fybjphd3M6a21zOmV1LXdlc3QtMjoxMTExMjIyMjMzMzM6a2V5L2JjNDM2NDg1LTUwOTItNDJiOC05MmEzLTBhYThiOTM1MzZkYwAAAAD39qJkWhnxpBI+ZDosHf3vMcphFfUHYGQ9P9JMzGdLLsYHEWRaw80hxArEdRwt3eI1W6sJcSOjOXLyrvw="
 }'
 ```
