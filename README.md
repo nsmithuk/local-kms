@@ -23,7 +23,7 @@ development and testing against KMS; not for use in a production environment._
 * Key Policies: Get
 
 #### Seeding
-Seeding allow LKMS to be supplied with a set of pre-defined keys and aliases on startup, giving you a deterministic and versionable way to manage test keys.
+Seeding allows LKMS to be supplied with a set of pre-defined keys and aliases on startup, giving you a deterministic and versionable way to manage test keys.
 
 If a key in the seeding file already exists, it will not be overwritten or amended by the seeding process.
 
@@ -129,6 +129,9 @@ The following environment variables can be set to configure LKMS.
 
 Warning: keys and aliases are stored under their ARN, thus their identity includes both ACCOUNT_ID and REGION. Changing these values will make pre-existing data inaccessible.
 
+## Configuration
+The following environment variables can be set to configure LKMS.
+
 ## Known Differences from AWS' KMS
 
 When successfully calling `ScheduleKeyDeletion`, the timestamp returned from AWS is in Scientific Notation/Standard Form.
@@ -161,35 +164,146 @@ $GOPATH/bin/local-kms
 
 Local KMS runs on port http://localhost:8080 by default.
 
-### Direct HTTP examples
+### Using LKMS with the CLI
 
-Creating a Customer Master Key
-```console
-curl -X "POST" "http://localhost:8080/" \
-     -H 'X-Amz-Target: TrentService.CreateKey' \
-     -H 'Content-Type: application/json; charset=utf-8' \
-     -d $'{}'
+For a more in-depth guide to theses commands, please see [Using AWS KMS via the CLI](https://nsmith.net/aws-kms-cli).
+
+The examples here use `awslocal`, which wraps the `aws` command to include the required endpoint.
+
+e.g. The following two commands are equivalent
+```bash
+aws kms create-key --endpoint=http://localhost:4599
+and
+awslocal kms create-key
 ```
 
-Encrypting some (base64 encoded) data
-```console
-curl -X "POST" "http://localhost:8080/" \
-     -H 'X-Amz-Target: TrentService.Encrypt' \
-     -H 'Content-Type: application/json; charset=utf-8' \
-     -d $'{
-  "KeyId": "bc436485-5092-42b8-92a3-0aa8b93536dc",
-  "Plaintext": "SGVsbG8="
-}'
+#### Creating a Customer Master Key
+```bash
+awslocal kms create-key
 ```
 
-Decrypting some KMS cipher text
-```console
-curl -X "POST" "http://localhost:8080/" \
-     -H 'X-Amz-Target: TrentService.Decrypt' \
-     -H 'Content-Type: application/json; charset=utf-8' \
-     -d $'{
-  "CiphertextBlob": "S2Fybjphd3M6a21zOmV1LXdlc3QtMjoxMTExMjIyMjMzMzM6a2V5L2JjNDM2NDg1LTUwOTItNDJiOC05MmEzLTBhYThiOTM1MzZkYwAAAAD39qJkWhnxpBI+ZDosHf3vMcphFfUHYGQ9P9JMzGdLLsYHEWRaw80hxArEdRwt3eI1W6sJcSOjOXLyrvw="
-}'
+#### Encrypt data
+```bash
+awslocal kms Dncrypt \
+--key-id 0579fe9c-129b-490a-adb0-42589ac4a017 \
+--plaintext "My Test String"
+```
+
+#### Decrypt Data
+```bash
+awslocal kms decrypt \
+--ciphertext-blob fileb://encrypted.dat
+```
+
+#### Generate Data Key
+```bash
+awslocal kms generate-data-key \
+--key-id 0579fe9c-129b-490a-adb0-42589ac4a017 \
+--key-spec AES_128
+```
+
+### Using LKMS with HTTP(ie)
+
+#### Creating a Customer Master Key
+```bash
+http -v --json POST http://localhost:4599/ \
+X-Amz-Target:TrentService.CreateKey
+
+POST / HTTP/1.1
+Accept: application/json, */*
+Accept-Encoding: gzip, deflate
+Connection: keep-alive
+Content-Length: 0
+Content-Type: application/json
+Host: localhost:4599
+User-Agent: HTTPie/1.0.2
+X-Amz-Target: TrentService.CreateKey
+
+
+
+HTTP/1.1 200 OK
+Content-Length: 329
+Content-Type: application/x-amz-json-1.1
+Date: Thu, 24 Oct 2019 11:17:30 GMT
+
+{
+    "KeyMetadata": {
+        "AWSAccountId": "111122223333",
+        "Arn": "arn:aws:kms:eu-west-2:111122223333:key/f154ba79-0b7d-4f19-9983-309f706ebc83",
+        "CreationDate": 1571915850,
+        "Description": "",
+        "Enabled": true,
+        "KeyId": "f154ba79-0b7d-4f19-9983-309f706ebc83",
+        "KeyManager": "CUSTOMER",
+        "KeyState": "Enabled",
+        "KeyUsage": "ENCRYPT_DECRYPT",
+        "Origin": "AWS_KMS"
+    }
+}
+```
+
+#### Encrypting some (base64 encoded) data
+```bash
+http -v --json POST http://localhost:4599/ \
+X-Amz-Target:TrentService.Encrypt \
+KeyId=f154ba79-0b7d-4f19-9983-309f706ebc83 \
+Plaintext='SGVsbG8='
+
+POST / HTTP/1.1
+Accept: application/json, */*
+Accept-Encoding: gzip, deflate
+Connection: keep-alive
+Content-Length: 74
+Content-Type: application/json
+Host: localhost:4599
+User-Agent: HTTPie/1.0.2
+X-Amz-Target: TrentService.Encrypt
+
+{
+    "KeyId": "f154ba79-0b7d-4f19-9983-309f706ebc83",
+    "Plaintext": "SGVsbG8="
+}
+
+HTTP/1.1 200 OK
+Content-Length: 259
+Content-Type: application/x-amz-json-1.1
+Date: Thu, 24 Oct 2019 11:18:36 GMT
+
+{
+    "CiphertextBlob": "S2Fybjphd3M6a21zOmV1LXdlc3QtMjoxMTExMjIyMjMzMzM6a2V5L2YxNTRiYTc5LTBiN2QtNGYxOS05OTgzLTMwOWY3MDZlYmM4MwAAAABjIzzp52djy/L4prvuGoG+jZ6OJzgQGi6n2CRO5dmfJHw=",
+    "KeyId": "arn:aws:kms:eu-west-2:111122223333:key/f154ba79-0b7d-4f19-9983-309f706ebc83"
+}
+```
+
+#### Decrypting some KMS cipher text
+```bash
+http -v --json POST http://localhost:4599/ \
+X-Amz-Target:TrentService.Decrypt \
+CiphertextBlob='S2Fybjphd3M6a21zOmV1LXdlc3QtMjoxMTExMjIyMjMzMzM6a2V5L2YxNTRiYTc5LTBiN2QtNGYxOS05OTgzLTMwOWY3MDZlYmM4MwAAAABjIzzp52djy/L4prvuGoG+jZ6OJzgQGi6n2CRO5dmfJHw='
+
+POST / HTTP/1.1
+Accept: application/json, */*
+Accept-Encoding: gzip, deflate
+Connection: keep-alive
+Content-Length: 174
+Content-Type: application/json
+Host: localhost:4599
+User-Agent: HTTPie/1.0.2
+X-Amz-Target: TrentService.Decrypt
+
+{
+    "CiphertextBlob": "S2Fybjphd3M6a21zOmV1LXdlc3QtMjoxMTExMjIyMjMzMzM6a2V5L2YxNTRiYTc5LTBiN2QtNGYxOS05OTgzLTMwOWY3MDZlYmM4MwAAAABjIzzp52djy/L4prvuGoG+jZ6OJzgQGi6n2CRO5dmfJHw="
+}
+
+HTTP/1.1 200 OK
+Content-Length: 110
+Content-Type: application/x-amz-json-1.1
+Date: Thu, 24 Oct 2019 11:20:17 GMT
+
+{
+    "KeyId": "arn:aws:kms:eu-west-2:111122223333:key/f154ba79-0b7d-4f19-9983-309f706ebc83",
+    "Plaintext": "SGVsbG8="
+}
 ```
 
 ## License
