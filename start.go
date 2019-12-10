@@ -36,7 +36,6 @@ func main() {
 	if seedPath == "" {
 		seedPath = "/init/seed.yaml"
 	}
-	src.Seed(seedPath)
 
 	//-------------------------------
 	// Run
@@ -47,5 +46,5 @@ func main() {
 		port = "8080"
 	}
 
-	src.Run(port)
+	src.Run(port, seedPath)
 }

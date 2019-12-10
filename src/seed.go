@@ -1,18 +1,18 @@
 package src
 
 import (
-	"os"
 	"fmt"
-	"io/ioutil"
-	"gopkg.in/yaml.v2"
-	"github.com/nsmithuk/local-kms/src/data"
 	"github.com/nsmithuk/local-kms/src/config"
-	"time"
-	"path/filepath"
+	"github.com/nsmithuk/local-kms/src/data"
 	"github.com/syndtr/goleveldb/leveldb"
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"time"
 )
 
-func Seed(path string){
+func seed(path string, database *data.Database){
 
 	if path == "" {
 		logger.Infoln("No seed path passed; skipping.")
@@ -68,11 +68,6 @@ func Seed(path string){
 
 	//-----------------------------------------
 	// Save to database
-
-	database := getDatabase()
-	defer database.Close()
-
-	//---
 
 	keysAdded := 0
 	for _, key := range seed.Keys {
