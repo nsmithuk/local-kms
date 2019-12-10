@@ -1,9 +1,9 @@
 package handler
 
 import (
+	"fmt"
 	"github.com/aws/aws-sdk-go/service/kms"
 	"github.com/nsmithuk/local-kms/src/config"
-	"fmt"
 )
 
 func (r *RequestHandler) DisableKey() Response {

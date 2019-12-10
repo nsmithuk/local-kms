@@ -1,10 +1,10 @@
 package handler
 
 import (
-	"github.com/aws/aws-sdk-go/service/kms"
-	"strings"
-	"github.com/nsmithuk/local-kms/src/config"
 	"fmt"
+	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/nsmithuk/local-kms/src/config"
+	"strings"
 )
 
 func (r *RequestHandler) UpdateAlias() Response {

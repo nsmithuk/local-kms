@@ -1,8 +1,8 @@
 package service
 
 import (
-	"io"
 	"crypto/rand"
+	"io"
 )
 
 func GenerateRandomData(size uint16) []byte {

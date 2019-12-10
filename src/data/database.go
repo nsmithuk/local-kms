@@ -1,11 +1,11 @@
 package data
 
-import(
-	"github.com/syndtr/goleveldb/leveldb"
+import (
 	"encoding/json"
+	"github.com/nsmithuk/local-kms/src/service"
+	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/util"
 	"time"
-	"github.com/nsmithuk/local-kms/src/service"
 )
 
 type Database struct {

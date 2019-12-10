@@ -1,10 +1,10 @@
 package handler
 
-import(
-	"net/http"
-	log "github.com/sirupsen/logrus"
+import (
 	"encoding/json"
 	"github.com/nsmithuk/local-kms/src/data"
+	log "github.com/sirupsen/logrus"
+	"net/http"
 )
 
 //--------------------------------------------------------------------
