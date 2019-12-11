@@ -3,6 +3,7 @@ package src
 import (
 	"fmt"
 	"github.com/nsmithuk/local-kms/src/config"
+	"github.com/nsmithuk/local-kms/src/data"
 	"github.com/nsmithuk/local-kms/src/handler"
 	log "github.com/sirupsen/logrus"
 	"net/http"
@@ -10,9 +11,25 @@ import (
 	"strings"
 )
 
-func Run(port string) {
+func Run(port, seedPath string) {
 
-	http.HandleFunc("/", handleRequest)
+	//-----------
+	// DB Setup
+
+	database := data.NewDatabase(config.DatabasePath)
+	defer database.Close()
+
+	//-----------
+	// Seeding
+
+	seed(seedPath, database)
+
+	//-----------
+	// Start
+
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request){
+		handleRequest(w, r, database)
+	})
 
 	logger.Infof("Data will be stored in %s", config.DatabasePath)
 	logger.Infof("Local KMS started on 0.0.0.0:%s", port)
@@ -25,13 +42,8 @@ func Run(port string) {
 }
 
 
-func handleRequest(w http.ResponseWriter, r *http.Request) {
+func handleRequest(w http.ResponseWriter, r *http.Request, database *data.Database) {
 	logger.Debugf("%s %s %s\n", r.RemoteAddr, r.Method, r.URL)
-
-	database := getDatabase()
-	defer database.Close()
-
-	//---
 
 	if r.URL.Path != "/" {
 		error404(w)

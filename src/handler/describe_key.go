@@ -1,11 +1,11 @@
 package handler
 
 import (
-	"github.com/aws/aws-sdk-go/service/kms"
-	"strings"
-	"github.com/nsmithuk/local-kms/src/data"
-	"github.com/nsmithuk/local-kms/src/config"
 	"fmt"
+	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/nsmithuk/local-kms/src/config"
+	"github.com/nsmithuk/local-kms/src/data"
+	"strings"
 )
 
 func (r *RequestHandler) DescribeKey() Response {

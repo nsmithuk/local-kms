@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"github.com/aws/aws-sdk-go/service/kms"
 	"fmt"
+	"github.com/aws/aws-sdk-go/service/kms"
 	"github.com/nsmithuk/local-kms/src/service"
 )
 
