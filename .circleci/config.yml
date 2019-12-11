@@ -1,0 +1,86 @@
+version: 2.1
+
+workflows:
+  build:
+    jobs:
+      - build_docker
+      - linux-amd64
+      - linux-amd64-apline
+      - darwin-amd64
+
+jobs:
+  build_docker:
+    machine: true
+    steps:
+      - checkout
+      - run:
+          name: Build Docker container
+          command: |
+            docker build -t nsmithuk/local-kms:latest .
+
+  linux-amd64:
+    working_directory: /go/src/github.com/nsmithuk/local-kms
+    docker:
+      - image: circleci/golang:1
+    steps:
+      - checkout
+      - run:
+          name: Prep for build
+          command: |
+            go get -u github.com/golang/dep/cmd/dep
+            dep ensure
+            mkdir artifacts
+      - run:
+          name: Build amd64 linux
+          command: |
+            GOOS=linux GOARCH=amd64 go build -o artifacts/linux-amd64.bin
+            chmod +x artifacts/linux-amd64.bin
+      - store_artifacts:
+          path: artifacts/linux-amd64.bin
+          destination: linux-amd64.bin
+
+  linux-amd64-apline:
+    working_directory: /go/src/github.com/nsmithuk/local-kms
+    docker:
+      - image: golang:1-alpine
+    steps:
+      - checkout
+      - run:
+          name: Install git
+          command: |
+            apk add git
+      - run:
+          name: Prep for build
+          command: |
+            go get -u github.com/golang/dep/cmd/dep
+            dep ensure
+            mkdir artifacts
+      - run:
+          name: Build amd64 linux
+          command: |
+            GOOS=linux GOARCH=amd64 go build -o artifacts/linux-amd64-alpine.bin
+            chmod +x artifacts/linux-amd64-alpine.bin
+      - store_artifacts:
+          path: artifacts/linux-amd64-alpine.bin
+          destination: linux-amd64-alpine.bin
+
+  darwin-amd64:
+    working_directory: /go/src/github.com/nsmithuk/local-kms
+    docker:
+      - image: circleci/golang:1
+    steps:
+      - checkout
+      - run:
+          name: Prep for build
+          command: |
+            go get -u github.com/golang/dep/cmd/dep
+            dep ensure
+            mkdir artifacts
+      - run:
+          name: Build amd64 darwin
+          command: |
+            GOOS=darwin GOARCH=amd64 go build -o artifacts/darwin-amd64.bin
+            chmod +x artifacts/darwin-amd64.bin
+      - store_artifacts:
+          path: artifacts/darwin-amd64.bin
+          destination: darwin-amd64.bin

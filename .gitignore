@@ -1,5 +1,4 @@
 /.idea
-/Gopkg.lock
 /vendor
 /paw-setup.paw
 /data
