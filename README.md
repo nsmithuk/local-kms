@@ -120,14 +120,14 @@ Keys:
 The following environment variables can be set to configure LKMS.
 
 - **PORT**: Port on which LKMS will run. Default: 8080
-- **ACCOUNT_ID**: Dummy AWS account ID to use. Default: 111122223333
-- **REGION**: Dummy region to use. Default: eu-west-2
-- **SEED_PATH**: Path at which the seeding file is supplied. Default: `/init/seed.yaml`
-- **DATA_PATH**: Path LKMS will put its database.
+- **KMS_ACCOUNT_ID**: Dummy AWS account ID to use. Default: 111122223333
+- **KMS_REGION**: Dummy region to use. Default: eu-west-2
+- **KMS_SEED_PATH**: Path at which the seeding file is supplied. Default: `/init/seed.yaml`
+- **KMS_DATA_PATH**: Path LKMS will put its database.
 	- Docker default: `/data`
 	- Native default: `/tmp/local-kms`
 
-Warning: keys and aliases are stored under their ARN, thus their identity includes both ACCOUNT_ID and REGION. Changing these values will make pre-existing data inaccessible.
+Warning: keys and aliases are stored under their ARN, thus their identity includes both KMS_ACCOUNT_ID and KMS_REGION. Changing these values will make pre-existing data inaccessible.
 
 ## Configuration
 The following environment variables can be set to configure LKMS.
