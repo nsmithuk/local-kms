@@ -299,7 +299,7 @@
 					"response": []
 				},
 				{
-					"name": "Policy",
+					"name": "GetPolicy",
 					"event": [
 						{
 							"listen": "test",
@@ -364,6 +364,232 @@
 						"body": {
 							"mode": "raw",
 							"raw": "{\n   \"KeyId\": \"{{test_key}}\",\n   \"PolicyName\": \"default\"\n}"
+						},
+						"url": {
+							"raw": "{{Host}}",
+							"host": [
+								"{{Host}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PutPolicy Invalid Name",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4e3d4579-a1b5-4b65-8ec6-abee70f7cdf5",
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"The response is JSON\", function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"Check expected error returned\", function () {",
+									"    // AWS do add fields, so keep this as a minimum number for now",
+									"    pm.expect(Object.keys(jsonData)).to.have.lengthOf(2);",
+									"    ",
+									"    pm.expect(jsonData).to.have.property('__type');",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"    ",
+									"    pm.expect(jsonData['__type']).to.equal('ValidationException')",
+									"    pm.expect(jsonData['message']).to.equal(\"1 validation error detected: Value 'invalid-name' at 'policyName' failed to satisfy constraint: Member must satisfy regular expression pattern: [\\\\w]+\")",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "a7d1da28-b568-4a32-8054-9495847765f2",
+								"exec": [
+									"//console.log('Encrypting ' + pm.test_encryption_string)",
+									"",
+									"test_encryption_string = pm.globals.get('test_encryption_string')",
+									"",
+									"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+									"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+									"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+									"    ",
+									"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Amz-Target",
+								"type": "text",
+								"value": "TrentService.PutKeyPolicy"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-amz-json-1.1"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"KeyId\": \"{{test_key}}\",\n   \"PolicyName\": \"invalid-name\",\n   \"Policy\": \"{\\n  \\\"Version\\\" : \\\"2012-10-17\\\",\\n  \\\"Id\\\" : \\\"key-default-1\\\",\\n  \\\"Statement\\\" : [ {\\n    \\\"Sid\\\" : \\\"Enable IAM User Permissions\\\",\\n    \\\"Effect\\\" : \\\"Allow\\\",\\n    \\\"Principal\\\" : {\\n      \\\"AWS\\\" : \\\"arn:aws:iam::297498486599:root\\\"\\n    },\\n    \\\"Action\\\" : \\\"kms:*\\\",\\n    \\\"Resource\\\" : \\\"*\\\"\\n  } ]\\n}\"\n}"
+						},
+						"url": {
+							"raw": "{{Host}}",
+							"host": [
+								"{{Host}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PutPolicy Empty Policy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4e3d4579-a1b5-4b65-8ec6-abee70f7cdf5",
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"The response is JSON\", function () {",
+									"    pm.response.to.be.json;",
+									"});",
+									"",
+									"pm.test(\"Check expected error returned\", function () {",
+									"    // AWS do add fields, so keep this as a minimum number for now",
+									"    pm.expect(Object.keys(jsonData)).to.have.lengthOf(2);",
+									"    ",
+									"    pm.expect(jsonData).to.have.property('__type');",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"    ",
+									"    pm.expect(jsonData['__type']).to.equal('ValidationException')",
+									"    pm.expect(jsonData['message']).to.equal(\"1 validation error detected: Value null at 'policy' failed to satisfy constraint: Member must not be null\")",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "a7d1da28-b568-4a32-8054-9495847765f2",
+								"exec": [
+									"//console.log('Encrypting ' + pm.test_encryption_string)",
+									"",
+									"test_encryption_string = pm.globals.get('test_encryption_string')",
+									"",
+									"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+									"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+									"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+									"    ",
+									"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Amz-Target",
+								"type": "text",
+								"value": "TrentService.PutKeyPolicy"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-amz-json-1.1"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"KeyId\": \"{{test_key}}\",\n   \"PolicyName\": \"default\"\n}"
+						},
+						"url": {
+							"raw": "{{Host}}",
+							"host": [
+								"{{Host}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PutPolicy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4e3d4579-a1b5-4b65-8ec6-abee70f7cdf5",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "a7d1da28-b568-4a32-8054-9495847765f2",
+								"exec": [
+									"//console.log('Encrypting ' + pm.test_encryption_string)",
+									"",
+									"test_encryption_string = pm.globals.get('test_encryption_string')",
+									"",
+									"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+									"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+									"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+									"    ",
+									"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Amz-Target",
+								"type": "text",
+								"value": "TrentService.PutKeyPolicy"
+							},
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-amz-json-1.1"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"KeyId\": \"{{test_key}}\",\n   \"PolicyName\": \"default\",\n   \"Policy\": \"{\\n  \\\"Version\\\" : \\\"2012-10-17\\\",\\n  \\\"Id\\\" : \\\"key-default-1\\\",\\n  \\\"Statement\\\" : [ {\\n    \\\"Sid\\\" : \\\"Enable IAM User Permissions\\\",\\n    \\\"Effect\\\" : \\\"Allow\\\",\\n    \\\"Principal\\\" : {\\n      \\\"AWS\\\" : \\\"arn:aws:iam::297498486599:root\\\"\\n    },\\n    \\\"Action\\\" : \\\"kms:*\\\",\\n    \\\"Resource\\\" : \\\"*\\\"\\n  } ]\\n}\"\n}"
 						},
 						"url": {
 							"raw": "{{Host}}",
