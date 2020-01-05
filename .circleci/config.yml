@@ -27,19 +27,6 @@ workflows:
               only: /.*/
             branches:
               ignore: /.*/
-#      - build_docker:
-#          name: build_docker
-#      - release-artifacts-github:
-#          name: github-artifacts
-#          requires:
-#            - linux-amd64
-#            - linux-amd64-apline
-#            - darwin-amd64
-#          filters:
-#            tags:
-#              only: /^\d+\.\d+\.\d+$/
-#            branches:
-#              ignore: /.*/
       - release-artifacts-s3:
           name: s3-artifacts
           requires:
@@ -170,46 +157,3 @@ jobs:
             aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/localstack/v${VERSION_MAJOR}/local-kms.osx.bin
 
             # Access URL prefix: https://s3-eu-west-2.amazonaws.com/local-kms/
-
-  release-artifacts-github:
-    docker:
-      - image: circleci/python:latest
-    steps:
-      - attach_workspace:
-          at: ~/artifacts
-      - run:
-          name: Setup github fingerprint
-          command: |
-            ls ~/artifacts
-            mkdir ~/.ssh
-            touch ~/.ssh/known_hosts
-            chmod 600 ~/.ssh/known_hosts
-            echo "github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==" >> ~/.ssh/known_hosts
-
-            git config --global user.email "local-kms@nsmith.net"
-            git config --global user.name "Local KMS CI"
-      - run:
-          name: Commit new artifacts
-          command: |
-            git clone --depth=1 git@github.com:nsmithuk/local-kms-artifacts-test.git ./local-kms
-            cd local-kms
-
-            export VERSION_MAJOR=`echo << pipeline.git.tag >> | awk -F '.' '{print $1}'`
-            echo "Version Full << pipeline.git.tag >>"
-            echo "Version Major $VERSION_MAJOR"
-
-            export ARCH=linux-amd64
-            mkdir -p $ARCH/$VERSION_MAJOR && cp ~/artifacts/$ARCH.bin $ARCH/$VERSION_MAJOR/local-kms.bin
-            mkdir -p $ARCH/<< pipeline.git.tag >> && cp ~/artifacts/$ARCH.bin $ARCH/<< pipeline.git.tag >>/local-kms.bin
-
-            export ARCH=linux-amd64-alpine
-            mkdir -p $ARCH/$VERSION_MAJOR && cp ~/artifacts/$ARCH.bin $ARCH/$VERSION_MAJOR/local-kms.bin
-            mkdir -p $ARCH/<< pipeline.git.tag >> && cp ~/artifacts/$ARCH.bin $ARCH/<< pipeline.git.tag >>/local-kms.bin
-
-            export ARCH=darwin-amd64
-            mkdir -p $ARCH/$VERSION_MAJOR && cp ~/artifacts/$ARCH.bin $ARCH/$VERSION_MAJOR/local-kms.bin
-            mkdir -p $ARCH/<< pipeline.git.tag >> && cp ~/artifacts/$ARCH.bin $ARCH/<< pipeline.git.tag >>/local-kms.bin
-
-            git add *
-            git commit -a -m "Artifacts for release v<< pipeline.git.tag >>"
-            git push origin master
