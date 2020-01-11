@@ -49,7 +49,7 @@ func (r *RequestHandler) UpdateKeyDescription() Response {
 
 	//---
 
-	if key.Metadata.DeletionDate != 0 {
+	if key.GetMetadata().DeletionDate != 0 {
 		// Key is pending deletion; cannot create alias
 		msg := fmt.Sprintf("%s is pending deletion.", keyArn)
 
@@ -57,7 +57,7 @@ func (r *RequestHandler) UpdateKeyDescription() Response {
 		return NewKMSInvalidStateExceptionResponse(msg)
 	}
 
-	key.Metadata.Description = body.Description
+	key.GetMetadata().Description = body.Description
 
 	//--------------------------------
 	// Save the key
@@ -70,7 +70,7 @@ func (r *RequestHandler) UpdateKeyDescription() Response {
 
 	//---
 
-	r.logger.Infof("Key description updated: %s\n", key.Metadata.Arn)
+	r.logger.Infof("Key description updated: %s\n", key.GetArn())
 
 	return NewResponse(200, nil)
 }

@@ -83,7 +83,7 @@ func (r *RequestHandler) UpdateAlias() Response {
 
 	//---
 
-	if key.Metadata.DeletionDate != 0 {
+	if key.GetMetadata().DeletionDate != 0 {
 		// Key is pending deletion; cannot create alias
 		msg := fmt.Sprintf("%s is pending deletion.", keyArn)
 
@@ -93,13 +93,13 @@ func (r *RequestHandler) UpdateAlias() Response {
 
 	//---
 
-	alias.TargetKeyId = key.Metadata.KeyId
+	alias.TargetKeyId = key.GetMetadata().KeyId
 
 	r.database.SaveAlias(alias)
 
 	//---
 
-	r.logger.Infof("Alias updated: %s -> %s\n", alias.AliasArn, key.Metadata.Arn)
+	r.logger.Infof("Alias updated: %s -> %s\n", alias.AliasArn, key.GetArn())
 
 	return NewResponse(200, nil)
 }

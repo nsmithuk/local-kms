@@ -39,7 +39,7 @@ func (r *RequestHandler) UntagResource() Response {
 
 	if len(body.TagKeys) > 0 {
 		for _, k := range body.TagKeys {
-			err = r.database.DeleteObject(key.Metadata.Arn + "/tag/" + *k)
+			err = r.database.DeleteObject(key.GetArn() + "/tag/" + *k)
 			r.logger.Infof("Tag deleted: %s\n", *k)
 		}
 	}

@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/nsmithuk/local-kms/src/cmk"
 	"github.com/nsmithuk/local-kms/src/config"
 )
 
@@ -41,9 +42,9 @@ func (r *RequestHandler) GetKeyRotationStatus() Response {
 
 	//---
 
-	r.logger.Infof("Key rotation status returned: %s\n", key.Metadata.Arn)
+	r.logger.Infof("Key rotation status returned: %s\n", key.GetArn())
 
 	return NewResponse( 200, map[string]bool{
-		"KeyRotationEnabled": !key.NextKeyRotation.IsZero(),
+		"KeyRotationEnabled": !key.(*cmk.AesKey).NextKeyRotation.IsZero(),
 	})
 }

@@ -10,6 +10,5 @@ func GenerateRandomData(size uint16) []byte {
 	if _, err := io.ReadFull(rand.Reader, data); err != nil {
 		panic(err)
 	}
-
 	return data
 }

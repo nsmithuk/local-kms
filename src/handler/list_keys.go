@@ -69,7 +69,7 @@ func (r *RequestHandler) ListKeys() Response {
 	// If there are more than the limit, return the 'next' ID as the NextMarker
 	if int64(len(keys)) > limit {
 		response.Truncated = true
-		response.NextMarker = keys[len(keys)-1].Metadata.Arn
+		response.NextMarker = keys[len(keys)-1].GetArn()
 
 		// Strip out the extra result.
 		keys = keys[:limit]
@@ -79,8 +79,8 @@ func (r *RequestHandler) ListKeys() Response {
 
 	for i, key := range keys {
 		response.Keys[i] = &ListKeysOutputKey{
-			KeyArn: key.Metadata.Arn,
-			KeyId: key.Metadata.KeyId,
+			KeyArn: key.GetArn(),
+			KeyId: key.GetMetadata().KeyId,
 		}
 	}
 

@@ -3,8 +3,8 @@ package handler
 import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/nsmithuk/local-kms/src/cmk"
 	"github.com/nsmithuk/local-kms/src/config"
-	"github.com/nsmithuk/local-kms/src/data"
 	"strings"
 )
 
@@ -63,13 +63,13 @@ func (r *RequestHandler) DescribeKey() Response {
 
 	//---
 
-	response := map[string]data.KeyMetadata{
-		"KeyMetadata": key.Metadata,
+	response := map[string]*cmk.KeyMetadata{
+		"KeyMetadata": key.GetMetadata(),
 	}
 
 	//---
 
-	r.logger.Infof("Key described: %s\n", key.Metadata.Arn)
+	r.logger.Infof("Key described: %s\n", key.GetArn())
 
 	return NewResponse( 200, response)
 }

@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/nsmithuk/local-kms/src/cmk"
 	"github.com/nsmithuk/local-kms/src/config"
 	"time"
 )
@@ -42,7 +43,7 @@ func (r *RequestHandler) DisableKeyRotation() Response {
 
 	//---
 
-	if key.Metadata.DeletionDate != 0 {
+	if key.GetMetadata().DeletionDate != 0 {
 		// Key is pending deletion; cannot create alias
 		msg := fmt.Sprintf("%s is pending deletion.", keyArn)
 
@@ -52,7 +53,7 @@ func (r *RequestHandler) DisableKeyRotation() Response {
 
 	//---
 
-	if !key.Metadata.Enabled {
+	if !key.GetMetadata().Enabled {
 		// Key is pending deletion; cannot create alias
 		msg := fmt.Sprintf("%s is disabled.", keyArn)
 
@@ -63,7 +64,7 @@ func (r *RequestHandler) DisableKeyRotation() Response {
 	//---
 
 	// Disable by setting this to Time Zero.
-	key.NextKeyRotation = time.Time{}
+	key.(*cmk.AesKey).NextKeyRotation = time.Time{}
 
 	//--------------------------------
 	// Save the key
@@ -76,7 +77,7 @@ func (r *RequestHandler) DisableKeyRotation() Response {
 
 	//---
 
-	r.logger.Infof("Key rotation disabled: %s\n", key.Metadata.Arn)
+	r.logger.Infof("Key rotation disabled: %s\n", key.GetMetadata().Arn)
 
 	return NewResponse( 200, nil)
 }

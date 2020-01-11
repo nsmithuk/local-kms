@@ -56,7 +56,7 @@ func (r *RequestHandler) ListAliases() Response {
 
 		//---
 
-		keyFilter = key.Metadata.KeyId
+		keyFilter = key.GetMetadata().KeyId
 	}
 
 	//--------------------------------

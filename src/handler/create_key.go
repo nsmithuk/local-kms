@@ -3,9 +3,9 @@ package handler
 import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/nsmithuk/local-kms/src/cmk"
 	"github.com/nsmithuk/local-kms/src/config"
 	"github.com/nsmithuk/local-kms/src/data"
-	"github.com/nsmithuk/local-kms/src/service"
 	"github.com/satori/go.uuid"
 	"time"
 )
@@ -18,7 +18,6 @@ func (r *RequestHandler) CreateKey() Response {
 	if err != nil {
 		body = &kms.CreateKeyInput{}
 	}
-
 
 	//--------------------------------
 	// Validation
@@ -73,8 +72,8 @@ func (r *RequestHandler) CreateKey() Response {
 
 	keyId := uuid.NewV4().String()
 
-	key := &data.Key{
-		Metadata: data.KeyMetadata{
+	key := cmk.NewAesKey(
+		cmk.KeyMetadata{
 			Arn: config.ArnPrefix() + "key/" + keyId,
 			KeyId: keyId,
 			AWSAccountId: config.AWSAccountId,
@@ -86,13 +85,8 @@ func (r *RequestHandler) CreateKey() Response {
 			KeyUsage: "ENCRYPT_DECRYPT",
 			Origin: "AWS_KMS",
 		},
-
-		// Add the first backing key
-		BackingKeys: [][32]byte{ service.GenerateNewKey() },
-
-		Policy: *body.Policy,
-	}
-
+		*body.Policy,
+	)
 
 	//--------------------------------
 	// Save the key
@@ -122,7 +116,7 @@ func (r *RequestHandler) CreateKey() Response {
 
 	//---
 
-	return NewResponse( 200, map[string]data.KeyMetadata{
+	return NewResponse( 200, map[string]cmk.KeyMetadata{
 		"KeyMetadata": key.Metadata,
 	})
 }

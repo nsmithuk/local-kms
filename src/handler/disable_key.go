@@ -41,7 +41,7 @@ func (r *RequestHandler) DisableKey() Response {
 
 	//---
 
-	if key.Metadata.DeletionDate != 0 {
+	if key.GetMetadata().DeletionDate != 0 {
 		// Key is pending deletion; cannot create alias
 		msg := fmt.Sprintf("%s is pending deletion.", keyArn)
 
@@ -51,8 +51,8 @@ func (r *RequestHandler) DisableKey() Response {
 
 	//---
 
-	key.Metadata.Enabled = false
-	key.Metadata.KeyState = "Disabled"
+	key.GetMetadata().Enabled = false
+	key.GetMetadata().KeyState = "Disabled"
 
 	//--------------------------------
 	// Save the key
@@ -65,7 +65,7 @@ func (r *RequestHandler) DisableKey() Response {
 
 	//---
 
-	r.logger.Infof("Key disabled: %s\n", key.Metadata.Arn)
+	r.logger.Infof("Key disabled: %s\n", key.GetArn())
 
 	return NewResponse( 200, nil)
 

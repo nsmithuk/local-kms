@@ -3,8 +3,8 @@ package handler
 import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/nsmithuk/local-kms/src/cmk"
 	"github.com/nsmithuk/local-kms/src/config"
-	"github.com/nsmithuk/local-kms/src/data"
 	"strings"
 )
 
@@ -12,7 +12,7 @@ import (
 	Finds a key for a given key or alias name or ARN
 	And confirms that it's available to use for cryptographic operations.
  */
-func (r *RequestHandler) getUsableKey(keyId string) (*data.Key, Response){
+func (r *RequestHandler) getUsableKey(keyId string) (cmk.Key, Response){
 
 	// If it's an alias, map it to a key
 	if strings.Contains(keyId, "alias/") {
@@ -46,7 +46,7 @@ func (r *RequestHandler) getUsableKey(keyId string) (*data.Key, Response){
 
 	//----------------------------------
 
-	if key.Metadata.DeletionDate != 0 {
+	if key.GetMetadata().DeletionDate != 0 {
 		// Key is pending deletion; cannot create alias
 		msg := fmt.Sprintf("%s is pending deletion.", keyId)
 
@@ -54,7 +54,7 @@ func (r *RequestHandler) getUsableKey(keyId string) (*data.Key, Response){
 		return nil, NewKMSInvalidStateExceptionResponse(msg)
 	}
 
-	if !key.Metadata.Enabled {
+	if !key.GetMetadata().Enabled {
 		// Key is pending deletion; cannot create alias
 		msg := fmt.Sprintf("%s is disabled.", keyId)
 

@@ -60,7 +60,7 @@ func (r *RequestHandler) ListResourceTags() Response {
 	//---
 
 	// Load the tags for the key
-	tags, err := r.database.ListTags(key.Metadata.Arn, limit + 1, marker)
+	tags, err := r.database.ListTags(key.GetArn(), limit + 1, marker)
 
 	//---
 
@@ -81,7 +81,7 @@ func (r *RequestHandler) ListResourceTags() Response {
 
 	response.Tags = tags
 
-	r.logger.Infof("%d tags listed for key %s\n", len(tags), key.Metadata.Arn)
+	r.logger.Infof("%d tags listed for key %s\n", len(tags), key.GetMetadata().Arn)
 
 	return NewResponse(200, response)
 }

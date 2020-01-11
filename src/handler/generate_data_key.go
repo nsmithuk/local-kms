@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/nsmithuk/local-kms/src/cmk"
 	"github.com/nsmithuk/local-kms/src/service"
 )
 
@@ -108,16 +109,23 @@ func (r *RequestHandler) generateDataKey() (Response, *GenerateDataKeyResponse) 
 
 	plaintext := service.GenerateRandomData(bytesRequired)
 
-	keyVersion := len(key.BackingKeys) - 1
+	var cipherResponse []byte
 
-	dataKey := key.BackingKeys[keyVersion]
+	switch k := key.(type) {
+	case *cmk.AesKey:
 
-	ciphertext, err := service.Encrypt(dataKey, plaintext, body.EncryptionContext)
+		cipherResponse, err = k.EncryptAndPackage(plaintext, body.EncryptionContext)
+		if err != nil {
+			r.logger.Error(err.Error())
+			return NewInternalFailureExceptionResponse(err.Error()), nil
+		}
 
-	cipherResponse := service.ConstructCipherResponse(key.Metadata.Arn, uint32(keyVersion), ciphertext)
+	default:
+		return NewInternalFailureExceptionResponse("key type not yet supported for encryption"), nil
+	}
 
 	return Response{}, &GenerateDataKeyResponse {
-		KeyId: key.Metadata.Arn,
+		KeyId: key.GetArn(),
 		Plaintext: plaintext,
 		CiphertextBlob: cipherResponse,
 	}

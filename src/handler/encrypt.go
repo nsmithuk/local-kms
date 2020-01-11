@@ -3,7 +3,7 @@ package handler
 import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/service/kms"
-	"github.com/nsmithuk/local-kms/src/service"
+	"github.com/nsmithuk/local-kms/src/cmk"
 )
 
 func (r *RequestHandler) Encrypt() Response {
@@ -52,24 +52,30 @@ func (r *RequestHandler) Encrypt() Response {
 
 	//----------------------------------
 
-	// Starts from 0. We want the highest/latest key
-	keyVersion := len(key.BackingKeys) - 1
+	var cipherResponse []byte
 
-	dataKey := key.BackingKeys[keyVersion]
+	switch k := key.(type) {
+	case *cmk.AesKey:
 
-	ciphertext, _ := service.Encrypt(dataKey, body.Plaintext, body.EncryptionContext)
+		cipherResponse, err = k.EncryptAndPackage(body.Plaintext, body.EncryptionContext)
+		if err != nil {
+			r.logger.Error(err.Error())
+			return NewInternalFailureExceptionResponse(err.Error())
+		}
 
-	cipherResponse := service.ConstructCipherResponse(key.Metadata.Arn, uint32(keyVersion), ciphertext)
+	default:
+		return NewInternalFailureExceptionResponse("key type not yet supported for encryption")
+	}
 
 	//---
 
-	r.logger.Infof("Encryption called: %s\n", key.Metadata.Arn)
+	r.logger.Infof("Encryption called: %s\n", key.GetArn())
 
 	return NewResponse( 200, &struct {
 		KeyId			string
 		CiphertextBlob	[]byte
 	}{
-		KeyId: key.Metadata.Arn,
+		KeyId: key.GetArn(),
 		CiphertextBlob: cipherResponse,
 	})
 }

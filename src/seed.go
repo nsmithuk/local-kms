@@ -2,6 +2,7 @@ package src
 
 import (
 	"fmt"
+	"github.com/nsmithuk/local-kms/src/cmk"
 	"github.com/nsmithuk/local-kms/src/config"
 	"github.com/nsmithuk/local-kms/src/data"
 	"github.com/syndtr/goleveldb/leveldb"
@@ -35,7 +36,7 @@ func seed(path string, database *data.Database){
 	//---
 
 	type Input struct {
-		Keys	[]data.Key		`yaml:"Keys"`
+		Keys	[]cmk.AesKey	`yaml:"Keys"`
 		Aliases	[]data.Alias	`yaml:"Aliases"`
 	}
 
@@ -60,6 +61,8 @@ func seed(path string, database *data.Database){
 		seed.Keys[i].Metadata.KeyState		= "Enabled"
 		seed.Keys[i].Metadata.KeyUsage		= "ENCRYPT_DECRYPT"
 		seed.Keys[i].Metadata.Origin		= "AWS_KMS"
+
+		seed.Keys[i].Type					= cmk.TypeAes
 	}
 
 	for i, alias := range seed.Aliases {

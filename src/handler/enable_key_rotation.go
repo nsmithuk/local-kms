@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/nsmithuk/local-kms/src/cmk"
 	"github.com/nsmithuk/local-kms/src/config"
 	"time"
 )
@@ -42,7 +43,7 @@ func (r *RequestHandler) EnableKeyRotation() Response {
 
 	//---
 
-	if key.Metadata.DeletionDate != 0 {
+	if key.GetMetadata().DeletionDate != 0 {
 		// Key is pending deletion; cannot create alias
 		msg := fmt.Sprintf("%s is pending deletion.", keyArn)
 
@@ -52,7 +53,7 @@ func (r *RequestHandler) EnableKeyRotation() Response {
 
 	//---
 
-	if !key.Metadata.Enabled {
+	if !key.GetMetadata().Enabled {
 		// Key is pending deletion; cannot create alias
 		msg := fmt.Sprintf("%s is disabled.", keyArn)
 
@@ -63,8 +64,8 @@ func (r *RequestHandler) EnableKeyRotation() Response {
 	//---
 
 	// If it's already enabled, don't reset it to another year. TODO - is this correct?
-	if key.NextKeyRotation.IsZero() {
-		key.NextKeyRotation = time.Now().AddDate(1, 0, 0)
+	if key.(*cmk.AesKey).NextKeyRotation.IsZero() {
+		key.(*cmk.AesKey).NextKeyRotation = time.Now().AddDate(1, 0, 0)
 	}
 
 	// To allow testing...
@@ -81,7 +82,7 @@ func (r *RequestHandler) EnableKeyRotation() Response {
 
 	//---
 
-	r.logger.Infof("Key rotation enabled: %s\n", key.Metadata.Arn)
+	r.logger.Infof("Key rotation enabled: %s\n", key.GetArn())
 
 	return NewResponse( 200, nil)
 }

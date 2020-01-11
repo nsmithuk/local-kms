@@ -1,36 +1,80 @@
-package data
+package cmk
 
 import (
-	"time"
 	"encoding/hex"
 	"fmt"
+	"github.com/nsmithuk/local-kms/src/service"
+	"time"
 )
 
-type Key struct {
-	Metadata 		KeyMetadata
+type AesKey struct {
+	BaseKey
 	BackingKeys		[][32]byte
 	NextKeyRotation	time.Time
-	Policy 			string
 }
 
-type KeyMetadata struct {
-	AWSAccountId string 	`json:",omitempty"`
-	Arn string 				`json:",omitempty"`
-	CreationDate int64 		`json:",omitempty"`
-	DeletionDate int64 		`json:",omitempty"`
-	Description *string						  `yaml:"Description"`
-	Enabled bool							  `yaml:"Enabled"`
-	ExpirationModel string	`json:",omitempty"`
-	KeyId string 			`json:",omitempty" yaml:"KeyId"`
-	KeyManager string 		`json:",omitempty"`
-	KeyState string 		`json:",omitempty"`
-	KeyUsage string 		`json:",omitempty"`
-	Origin string 			`json:",omitempty"`
-	ValidTo int64 			`json:",omitempty"`
+func NewAesKey(metadata KeyMetadata, policy string) *AesKey {
+	k := &AesKey{
+		BackingKeys: [][32]byte{generateKey()},
+	}
+
+	k.Type = TypeAes
+	k.Metadata = metadata
+	k.Policy = policy
+
+	return k
 }
 
 //----------------------------------------------------
-// Construct key from YAML
+
+func (k *AesKey) GetArn() string {
+	return k.GetMetadata().Arn
+}
+
+func (k *AesKey) GetPolicy() string {
+	return k.Policy
+}
+
+func (k *AesKey) GetKeyType() KeyType {
+	return k.Type
+}
+
+func (k *AesKey) GetMetadata() *KeyMetadata {
+	return &k.Metadata
+}
+
+//----------------------------------------------------
+
+func (k *AesKey) RotateIfNeeded() bool {
+
+	if !k.NextKeyRotation.IsZero() && k.NextKeyRotation.Before(time.Now()){
+
+		k.BackingKeys = append(k.BackingKeys, generateKey())
+
+		// Reset the rotation timer
+		k.NextKeyRotation = time.Now().AddDate(1, 0, 0)
+
+		// The key did rotate
+		return true
+	}
+
+	// The key did not rotate
+	return false
+}
+
+//-----------------------
+
+/*
+	Generates a new 32 bytes key from random data
+*/
+func generateKey() [32]byte {
+	var key [32]byte
+	copy(key[:], service.GenerateRandomData(32))
+	return key
+}
+
+//----------------------------------------------------
+// Construct key from YAML (seeing)
 
 type UnmarshalYAMLError struct {
 	message string
@@ -42,7 +86,7 @@ func (e *UnmarshalYAMLError) Error() string {
 
 //---
 
-func (k *Key) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (k *AesKey) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 	// Cannot use embedded 'Key' struct
 	// https://github.com/go-yaml/yaml/issues/263
@@ -57,6 +101,7 @@ func (k *Key) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		return &UnmarshalYAMLError{ err.Error() }
 	}
 
+	k.Type = TypeAes
 	k.Metadata = yk.Metadata
 	k.NextKeyRotation = yk.NextKeyRotation
 
@@ -81,7 +126,7 @@ func (k *Key) UnmarshalYAML(unmarshal func(interface{}) error) error {
 				fmt.Sprintf(
 					"Backing key must be hex encoded and exactly 32 bytes (256 bit). %d bytes found",
 					len(keyBytes)),
-				}
+			}
 		}
 
 		copy(k.BackingKeys[i][:], keyBytes[:])
@@ -89,3 +134,5 @@ func (k *Key) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 	return nil
 }
+
+

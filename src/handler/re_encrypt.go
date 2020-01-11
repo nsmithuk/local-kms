@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/nsmithuk/local-kms/src/cmk"
 	"github.com/nsmithuk/local-kms/src/service"
 )
 
@@ -43,7 +44,7 @@ func (r *RequestHandler) ReEncrypt() Response {
 	//--------------------------------
 	// Decrypt
 
-	keyArn, keySourceVersion, ciphertext, _ := service.DeconstructCipherResponse(body.CiphertextBlob)
+	keyArn, keySourceVersion, ciphertext, _ := service.UnpackCiphertextBlob(body.CiphertextBlob)
 
 	keySource, response := r.getUsableKey(keyArn)
 
@@ -54,24 +55,21 @@ func (r *RequestHandler) ReEncrypt() Response {
 
 	//---
 
-	if keySourceVersion >= uint32(len(keySource.BackingKeys)) {
-		msg := "Required version of backing key is missing"
+	var plaintext []byte
 
-		r.logger.Warnf(msg)
-		return NewInternalFailureExceptionResponse(msg)
-	}
+	switch k := keySource.(type) {
+	case *cmk.AesKey:
 
-	//---
+		plaintext, err = k.Decrypt(keySourceVersion, ciphertext, body.SourceEncryptionContext)
+		if err != nil {
+			msg := fmt.Sprintf("Unable to decode Ciphertext: %s", err)
+			r.logger.Warnf(msg)
 
-	dataKey := keySource.BackingKeys[keySourceVersion]
+			return NewInvalidCiphertextExceptionResponse("")
+		}
 
-	plaintext, err := service.Decrypt(dataKey, ciphertext, body.SourceEncryptionContext)
-
-	if err != nil {
-		msg := "Unable to decode Ciphertext"
-
-		r.logger.Warnf(msg)
-		return NewInvalidCiphertextExceptionResponse(msg)
+	default:
+		return NewInternalFailureExceptionResponse("key type not yet supported for encryption")
 	}
 
 	//--------------------------------
@@ -86,25 +84,32 @@ func (r *RequestHandler) ReEncrypt() Response {
 
 	//---
 
-	keyDestinationVersion := len(keyDestination.BackingKeys) - 1
+	var cipherResponse []byte
 
-	dataKey = keyDestination.BackingKeys[keyDestinationVersion]
+	switch k := keyDestination.(type) {
+	case *cmk.AesKey:
 
-	ciphertext, _ = service.Encrypt(dataKey, plaintext, body.DestinationEncryptionContext)
+		cipherResponse, err = k.EncryptAndPackage(plaintext, body.DestinationEncryptionContext)
+		if err != nil {
+			r.logger.Error(err.Error())
+			return NewInternalFailureExceptionResponse(err.Error())
+		}
 
-	cipherResponse := service.ConstructCipherResponse(keyDestination.Metadata.Arn, uint32(keyDestinationVersion), ciphertext)
+	default:
+		return NewInternalFailureExceptionResponse("key type not yet supported for encryption")
+	}
 
 	//---
 
-	r.logger.Infof("ReEncrypt called: %s -> %s\n", keySource.Metadata.Arn, keyDestination.Metadata.Arn)
+	r.logger.Infof("ReEncrypt called: %s -> %s\n", keySource.GetArn(), keyDestination.GetArn())
 
 	return NewResponse( 200, &struct {
 		KeyId			string
 		SourceKeyId		string
 		CiphertextBlob	[]byte
 	}{
-		KeyId: keyDestination.Metadata.Arn,
-		SourceKeyId: keySource.Metadata.Arn,
+		KeyId: keyDestination.GetArn(),
+		SourceKeyId: keySource.GetArn(),
 		CiphertextBlob: cipherResponse,
 	})
 }

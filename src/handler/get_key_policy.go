@@ -48,9 +48,9 @@ func (r *RequestHandler) GetKeyPolicy() Response {
 
 	//---
 
-	r.logger.Infof("Key policy returned: %s\n", key.Metadata.Arn)
+	r.logger.Infof("Key policy returned: %s\n", key.GetArn())
 
 	return NewResponse( 200, map[string]string{
-		"Policy": key.Policy,
+		"Policy": key.GetPolicy(),
 	})
 }

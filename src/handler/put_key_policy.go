@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/nsmithuk/local-kms/src/cmk"
 	"github.com/nsmithuk/local-kms/src/config"
 )
 
@@ -63,7 +64,7 @@ func (r *RequestHandler) PutKeyPolicy() Response {
 
 	//---
 
-	if key.Metadata.DeletionDate != 0 {
+	if key.GetMetadata().DeletionDate != 0 {
 		// Key is pending deletion; cannot create alias
 		msg := fmt.Sprintf("%s is pending deletion.", keyArn)
 
@@ -73,7 +74,7 @@ func (r *RequestHandler) PutKeyPolicy() Response {
 
 	//---
 
-	key.Policy = *body.Policy
+	key.(*cmk.AesKey).Policy = *body.Policy
 
 	//--------------------------------
 	// Save the key
@@ -86,7 +87,7 @@ func (r *RequestHandler) PutKeyPolicy() Response {
 
 	//---
 
-	r.logger.Infof("New Key Policy set for: %s\n", key.Metadata.Arn)
+	r.logger.Infof("New Key Policy set for: %s\n", key.GetArn())
 
 	return NewResponse( 200, nil)
 }

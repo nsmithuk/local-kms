@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/nsmithuk/local-kms/src/cmk"
 	"github.com/nsmithuk/local-kms/src/service"
 )
 
@@ -44,7 +45,7 @@ func (r *RequestHandler) Decrypt() Response {
 
 	//--------------------------------
 
-	keyArn, keyVersion, ciphertext, ok := service.DeconstructCipherResponse(body.CiphertextBlob)
+	keyArn, keyVersion, ciphertext, ok := service.UnpackCiphertextBlob(body.CiphertextBlob)
 
 	// If we unable to deconstruct the message
 	if !ok {
@@ -58,7 +59,6 @@ func (r *RequestHandler) Decrypt() Response {
 	if !response.Empty() {
 
 		// We override the returned error on decrypt. The message is more generic such that it doesn't leak any metadata.
-
 		msg := "The ciphertext refers to a customer master key that does not exist, does not exist in this region, " +
 			"or you are not allowed to access."
 
@@ -67,35 +67,32 @@ func (r *RequestHandler) Decrypt() Response {
 
 	//--------------------------------
 
-	if keyVersion >= uint32(len(key.BackingKeys)) {
-		msg := "Required version of backing key is missing"
+	var plaintext []byte
 
-		r.logger.Warnf(msg)
-		return NewInternalFailureExceptionResponse(msg)
-	}
+	switch k := key.(type) {
+	case *cmk.AesKey:
 
-	//---
+		plaintext, err = k.Decrypt(keyVersion, ciphertext, body.EncryptionContext)
+		if err != nil {
+			msg := fmt.Sprintf("Unable to decode Ciphertext: %s", err)
+			r.logger.Warnf(msg)
 
-	dataKey := key.BackingKeys[keyVersion]
+			return NewInvalidCiphertextExceptionResponse("")
+		}
 
-	plaintext, err := service.Decrypt(dataKey, ciphertext, body.EncryptionContext)
-
-	if err != nil {
-		msg := fmt.Sprintf("Unable to decode Ciphertext: %s", err)
-		r.logger.Warnf(msg)
-
-		return NewInvalidCiphertextExceptionResponse("")
+	default:
+		return NewInternalFailureExceptionResponse("key type not yet supported for encryption")
 	}
 
 	//--------------------------------
 
-	r.logger.Infof("Decryption called: %s\n", key.Metadata.Arn)
+	r.logger.Infof("Decryption called: %s\n", key.GetArn())
 
 	return NewResponse( 200, &struct {
 		KeyId			string
 		Plaintext		[]byte
 	}{
-		KeyId: key.Metadata.Arn,
+		KeyId: key.GetArn(),
 		Plaintext: plaintext,
 	})
 }

@@ -41,7 +41,7 @@ func (r *RequestHandler) CancelKeyDeletion() Response {
 
 	//---
 
-	if key.Metadata.DeletionDate == 0 {
+	if key.GetMetadata().DeletionDate == 0 {
 		// Key is pending deletion; cannot re-schedule
 		msg := fmt.Sprintf("%s is not pending deletion.", target)
 
@@ -51,9 +51,9 @@ func (r *RequestHandler) CancelKeyDeletion() Response {
 
 	//---
 
-	key.Metadata.Enabled = true
-	key.Metadata.KeyState = "Enabled"
-	key.Metadata.DeletionDate = 0
+	key.GetMetadata().Enabled = true
+	key.GetMetadata().KeyState = "Enabled"
+	key.GetMetadata().DeletionDate = 0
 
 	//--------------------------------
 	// Save the key
@@ -66,9 +66,9 @@ func (r *RequestHandler) CancelKeyDeletion() Response {
 
 	//---
 
-	r.logger.Infof("Key deletion canceled: %s\n", key.Metadata.Arn)
+	r.logger.Infof("Key deletion canceled: %s\n", key.GetArn())
 
 	return NewResponse( 200, map[string]interface{}{
-		"KeyId": key.Metadata.Arn,
+		"KeyId": key.GetArn(),
 	})
 }
