@@ -5,6 +5,7 @@ import (
 	"github.com/nsmithuk/local-kms/src/service"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/util"
+	"strings"
 	"time"
 )
 
@@ -146,6 +147,11 @@ func (d *Database) ListKeys(prefix string, limit int64, marker string) (keys []*
 	pastMarker := false
 
 	for count < limit && iter.Next() {
+
+		// Exclude tags
+		if strings.Contains(string(iter.Key()), "/tag/") {
+			continue
+		}
 
 		// If there's a marker, and we're not already past it, and the current item does not match the marker:
 		if marker != "" && !pastMarker && marker != string(iter.Key()) {
