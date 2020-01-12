@@ -41,6 +41,16 @@ func (r *RequestHandler) ReEncrypt() Response {
 		return NewValidationExceptionResponse(msg)
 	}
 
+	if body.SourceEncryptionAlgorithm == nil {
+		d := "SYMMETRIC_DEFAULT"
+		body.SourceEncryptionAlgorithm = &d
+	}
+
+	if body.DestinationEncryptionAlgorithm == nil {
+		d := "SYMMETRIC_DEFAULT"
+		body.DestinationEncryptionAlgorithm = &d
+	}
+
 	//--------------------------------
 	// Decrypt
 
@@ -107,9 +117,13 @@ func (r *RequestHandler) ReEncrypt() Response {
 		KeyId			string
 		SourceKeyId		string
 		CiphertextBlob	[]byte
+		SourceEncryptionAlgorithm		cmk.EncryptionAlgorithm
+		DestinationEncryptionAlgorithm	cmk.EncryptionAlgorithm
 	}{
 		KeyId: keyDestination.GetArn(),
 		SourceKeyId: keySource.GetArn(),
 		CiphertextBlob: cipherResponse,
+		SourceEncryptionAlgorithm: cmk.EncryptionAlgorithm(*body.SourceEncryptionAlgorithm),
+		DestinationEncryptionAlgorithm: cmk.EncryptionAlgorithm(*body.DestinationEncryptionAlgorithm),
 	})
 }

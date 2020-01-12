@@ -59,8 +59,11 @@ func seed(path string, database *data.Database){
 		seed.Keys[i].Metadata.Enabled		= true
 		seed.Keys[i].Metadata.KeyManager	= "CUSTOMER"
 		seed.Keys[i].Metadata.KeyState		= "Enabled"
-		seed.Keys[i].Metadata.KeyUsage		= "ENCRYPT_DECRYPT"
+		seed.Keys[i].Metadata.KeyUsage		= cmk.UsageEncryptDecrypt
 		seed.Keys[i].Metadata.Origin		= "AWS_KMS"
+
+		seed.Keys[i].Metadata.CustomerMasterKeySpec		= cmk.SpecSymmetricDefault
+		seed.Keys[i].Metadata.EncryptionAlgorithms		= []cmk.EncryptionAlgorithm{cmk.EncryptionAlgorithmAes}
 
 		seed.Keys[i].Type					= cmk.TypeAes
 	}

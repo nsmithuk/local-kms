@@ -52,12 +52,12 @@ func (r *RequestHandler) DescribeKey() Response {
 	// Lookup the key
 	keyId = config.EnsureArn("key/", keyId)
 
-	key, _ := r.database.LoadKey(keyId)
+	key, err := r.database.LoadKey(keyId)
 
 	if key == nil {
-		msg := fmt.Sprintf("Key '%s' does not exist", keyId)
+		msg := fmt.Sprintf("error loading key: %s", err.Error())
+		r.logger.Errorf(msg)
 
-		r.logger.Warnf(msg)
 		return NewNotFoundExceptionResponse(msg)
 	}
 

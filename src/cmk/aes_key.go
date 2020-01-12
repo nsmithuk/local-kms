@@ -22,6 +22,12 @@ func NewAesKey(metadata KeyMetadata, policy string) *AesKey {
 	k.Metadata = metadata
 	k.Policy = policy
 
+	//---
+
+	k.Metadata.KeyUsage = UsageEncryptDecrypt
+	k.Metadata.CustomerMasterKeySpec = SpecSymmetricDefault
+	k.Metadata.EncryptionAlgorithms = []EncryptionAlgorithm{EncryptionAlgorithmAes}
+
 	return k
 }
 

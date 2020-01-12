@@ -41,6 +41,11 @@ func (r *RequestHandler) Encrypt() Response {
 		return NewValidationExceptionResponse(msg)
 	}
 
+	if body.EncryptionAlgorithm == nil {
+		d := "SYMMETRIC_DEFAULT"
+		body.EncryptionAlgorithm = &d
+	}
+
 	//----------------------------------
 
 	key, response := r.getUsableKey(*body.KeyId)
@@ -72,10 +77,12 @@ func (r *RequestHandler) Encrypt() Response {
 	r.logger.Infof("Encryption called: %s\n", key.GetArn())
 
 	return NewResponse( 200, &struct {
-		KeyId			string
-		CiphertextBlob	[]byte
+		KeyId				string
+		CiphertextBlob		[]byte
+		EncryptionAlgorithm	cmk.EncryptionAlgorithm
 	}{
 		KeyId: key.GetArn(),
 		CiphertextBlob: cipherResponse,
+		EncryptionAlgorithm: cmk.EncryptionAlgorithm(*body.EncryptionAlgorithm),
 	})
 }
