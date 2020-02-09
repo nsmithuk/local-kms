@@ -108,6 +108,10 @@ func NewKMSInvalidStateExceptionResponse(message string) Response {
 	return New400ExceptionResponse("KMSInvalidStateException", message)
 }
 
+func NewInvalidKeyUsageException(message string) Response {
+	return New400ExceptionResponse("InvalidKeyUsageException", message)
+}
+
 func NewInvalidCiphertextExceptionResponse(message string) Response {
 	return New400ExceptionResponse("InvalidCiphertextException", message)
 }
@@ -118,6 +122,10 @@ func NewSerializationExceptionResponse(message string) Response {
 
 func NewAccessDeniedExceptionResponse(message string) Response {
 	return New400ExceptionResponseFormatted("AccessDeniedException", message, true)
+}
+
+func NewUnsupportedOperationException(message string) Response {
+	return New400ExceptionResponseFormatted("UnsupportedOperationException", message, true)
 }
 
 //---

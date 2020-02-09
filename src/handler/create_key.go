@@ -122,7 +122,7 @@ func (r *RequestHandler) CreateKey() Response {
 	default:
 		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'customerMasterKeySpec' " +
 			"failed to satisfy constraint: Member must satisfy enum value set: [RSA_2048, ECC_NIST_P384, " +
-			"ECC_NIST_P256, ECC_NIST_P521, RSA_3072, ECC_SECsG_P256K1, RSA_4096, SYMMETRIC_DEFAULT]", *body.CustomerMasterKeySpec)
+			"ECC_NIST_P256, ECC_NIST_P521, RSA_3072, ECC_SECG_P256K1, RSA_4096, SYMMETRIC_DEFAULT]", *body.CustomerMasterKeySpec)
 
 		r.logger.Warnf(msg)
 		r.logger.Warnf("Local KMS does not yet support RSA keys")

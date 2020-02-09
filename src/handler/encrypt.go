@@ -69,6 +69,14 @@ func (r *RequestHandler) Encrypt() Response {
 		}
 
 	default:
+
+		if k.GetMetadata().KeyUsage == cmk.UsageSignVerify {
+			msg := fmt.Sprintf("%s key usage is SIGN_VERIFY which is not valid for Encrypt.", k.GetArn())
+
+			r.logger.Warnf(msg)
+			return NewInvalidKeyUsageException(msg)
+		}
+
 		return NewInternalFailureExceptionResponse("key type not yet supported for encryption")
 	}
 
