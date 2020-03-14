@@ -43,6 +43,8 @@ const (
 type SigningAlgorithm string
 const (
 	SigningAlgorithmEcdsaSha256		SigningAlgorithm = "ECDSA_SHA_256"
+	SigningAlgorithmEcdsaSha384		SigningAlgorithm = "ECDSA_SHA_384"
+	SigningAlgorithmEcdsaSha512		SigningAlgorithm = "ECDSA_SHA_512"
 )
 
 //---
@@ -60,6 +62,12 @@ type Key interface {
 	GetPolicy() string
 	GetKeyType() KeyType
 	GetMetadata() *KeyMetadata
+}
+
+type SigningKey interface {
+	Key
+	Sign(digest []byte, algorithm SigningAlgorithm) ([]byte, error)
+	HashAndSign(message []byte, algorithm SigningAlgorithm) ([]byte, error)
 }
 
 //------------------------------------------
