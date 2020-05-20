@@ -120,6 +120,10 @@ func NewSerializationExceptionResponse(message string) Response {
 	return New400ExceptionResponse("SerializationException", message)
 }
 
+func NewKMSInvalidSignatureException(message string) Response {
+	return New400ExceptionResponse("KMSInvalidSignatureException", message)
+}
+
 func NewAccessDeniedExceptionResponse(message string) Response {
 	return New400ExceptionResponseFormatted("AccessDeniedException", message, true)
 }

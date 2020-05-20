@@ -68,6 +68,8 @@ type SigningKey interface {
 	Key
 	Sign(digest []byte, algorithm SigningAlgorithm) ([]byte, error)
 	HashAndSign(message []byte, algorithm SigningAlgorithm) ([]byte, error)
+	Verify(signature []byte, digest []byte) (bool, error)
+	HashAndVerify(signature []byte, digest []byte, algorithm SigningAlgorithm) (bool, error)
 }
 
 //------------------------------------------

@@ -6,10 +6,12 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"crypto/sha512"
+	"encoding/asn1"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"hash"
+	"math/big"
 	"os"
 )
 
@@ -35,6 +37,10 @@ type EcdsaPrivateKey ecdsa.PrivateKey
 type EccKey struct {
 	BaseKey
 	PrivateKey EcdsaPrivateKey
+}
+
+type ecdsaSignature struct {
+	R, S *big.Int
 }
 
 func NewEccKey(spec CustomerMasterKeySpec, metadata KeyMetadata, policy string) (*EccKey, error) {
@@ -148,10 +154,55 @@ func (k *EccKey) Sign(digest []byte, algorithm SigningAlgorithm) ([]byte, error)
 
 	key := ecdsa.PrivateKey(k.PrivateKey)
 
-	return key.Sign(rand.Reader, digest, nil)
+	r, s, err := ecdsa.Sign(rand.Reader, &key, digest)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	return asn1.Marshal(ecdsaSignature{r, s})
 }
 
 func (k *EccKey) HashAndSign(message []byte, algorithm SigningAlgorithm) ([]byte, error) {
+
+	digest, err := k.hash(message, algorithm)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	return k.Sign(digest, algorithm)
+}
+
+//----------------------------------------------------
+
+func (k *EccKey) Verify(signature []byte, digest []byte) (bool, error) {
+
+	ecdsaSignature := ecdsaSignature{}
+
+	_, err := asn1.Unmarshal(signature, &ecdsaSignature)
+	if err != nil {
+		return false, err
+	}
+
+	key := ecdsa.PrivateKey(k.PrivateKey)
+
+	valid := ecdsa.Verify(&key.PublicKey, digest, ecdsaSignature.R, ecdsaSignature.S)
+
+	return valid, nil
+}
+
+func (k *EccKey) HashAndVerify(signature []byte, message []byte, algorithm SigningAlgorithm) (bool, error) {
+
+	digest, err := k.hash(message, algorithm)
+	if err != nil {
+		return false, err
+	}
+
+	return k.Verify(signature, digest)
+}
+
+//----------------------------------------------------
+
+func (k *EccKey) hash(message []byte, algorithm SigningAlgorithm) ([]byte, error) {
 
 	//--------------------------
 	// Hash the message
@@ -170,11 +221,7 @@ func (k *EccKey) HashAndSign(message []byte, algorithm SigningAlgorithm) ([]byte
 	}
 
 	digest.Write(message)
-	digestResult := digest.Sum(nil)
-
-	//--------------------------
-
-	return k.Sign(digestResult, algorithm)
+	return digest.Sum(nil), nil
 }
 
 //----------------------------------------------------
