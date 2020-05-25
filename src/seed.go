@@ -118,8 +118,8 @@ func seed(path string, database *data.Database){
 		aesKeys[i].Type					= cmk.TypeAes
 	}
 
-	for i, alias := range seed.Aliases {
-		seed.Aliases[i].AliasArn = config.ArnPrefix() + alias.AliasName
+	for i, alias := range aliases {
+		aliases[i].AliasArn = config.ArnPrefix() + alias.AliasName
 	}
 
 	//-----------------------------------------
