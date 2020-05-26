@@ -9,6 +9,7 @@ development and testing against KMS; not for use in a production environment._
 
 ### Supports
 
+* Symmetric and ECC_NIST keys
 * Management of Customer Master Keys; including:
     * Enabling and disabling keys
     * Scheduling key deletion
@@ -19,6 +20,8 @@ development and testing against KMS; not for use in a production environment._
 * Decryption
 * Generating a data key, with or without plain text
 * Generating random data
+* Signing and verifying messages
+    * RAW and DIGEST
 * Tags
 * Key Policies: Get & Put
 
@@ -29,7 +32,7 @@ If a key in the seeding file already exists, it will not be overwritten or amend
 
 ### Does not (yet) support
 
-* Asymmetric Operations (coming soon)
+* RSA or ECC_SECG_P256K1 keys
 * Grants
 * Importing your own key material
 * Operations relating to a Custom Key Store
@@ -60,6 +63,8 @@ nsmithuk/local-kms
 ```
 
 ## Seeding file format
+
+_Currently only Symmetric keys are supported in the seeding file._
 
 A simple seeding file looks like
 ```yaml
