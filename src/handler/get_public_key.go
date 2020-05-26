@@ -3,6 +3,7 @@ package handler
 import (
 	"crypto/ecdsa"
 	"crypto/x509"
+	"fmt"
 	"github.com/aws/aws-sdk-go/service/kms"
 	"github.com/nsmithuk/local-kms/src/cmk"
 )
@@ -33,6 +34,14 @@ func (r *RequestHandler) GetPublicKey() Response {
 	// If the response is not empty, there was an error
 	if !response.Empty() {
 		return response
+	}
+
+	//---
+
+	// Check the key is ECC.
+	if _,ok := key.(*cmk.EccKey); !ok {
+		r.logger.Warnf(fmt.Sprintf("Key '%s' does does not support returning a public key", key.GetArn()))
+		return NewUnsupportedOperationException("")
 	}
 
 	//---
