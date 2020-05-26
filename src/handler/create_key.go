@@ -119,13 +119,25 @@ func (r *RequestHandler) CreateKey() Response {
 			return NewInternalFailureExceptionResponse(err.Error())
 		}
 
+	case "ECC_SECG_P256K1":
+
+		msg := fmt.Sprintf("Local KMS does not yet support ECC_SECG_P256K1 keys. Symmetric keys and ECC_NIST_* keys are supported.")
+		r.logger.Warnf(msg)
+		return NewUnsupportedOperationException(msg)
+
+	case "RSA_2048", "RSA_3072", "RSA_4096":
+
+		msg := fmt.Sprintf("Local KMS does not yet support RSA keys. Symmetric keys and ECC_NIST_* keys are supported.")
+		r.logger.Warnf(msg)
+		return NewUnsupportedOperationException(msg)
+
 	default:
+
 		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'customerMasterKeySpec' " +
 			"failed to satisfy constraint: Member must satisfy enum value set: [RSA_2048, ECC_NIST_P384, " +
 			"ECC_NIST_P256, ECC_NIST_P521, RSA_3072, ECC_SECG_P256K1, RSA_4096, SYMMETRIC_DEFAULT]", *body.CustomerMasterKeySpec)
 
 		r.logger.Warnf(msg)
-		r.logger.Warnf("Local KMS does not yet support RSA keys")
 
 		return NewValidationExceptionResponse(msg)
 	}
