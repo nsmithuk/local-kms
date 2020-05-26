@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/service/kms"
 	"github.com/nsmithuk/local-kms/src/config"
+	"reflect"
 	"strings"
 )
 
@@ -69,13 +70,26 @@ func (r *RequestHandler) UpdateAlias() Response {
 
 	//---
 
-	keyArn := config.EnsureArn("key/", *body.TargetKeyId)
+	originalKeyArn := config.EnsureArn("key/", alias.TargetKeyId)
 
 	// Lookup the key
-	key, _ := r.database.LoadKey(keyArn)
+	originalKey, _ := r.database.LoadKey(originalKeyArn)
 
-	if key == nil {
-		msg := fmt.Sprintf("Key '%s' does not exist", keyArn)
+	if originalKey == nil {
+		msg := fmt.Sprintf("Original key '%s' does not exist", originalKeyArn)
+		r.logger.Errorf(msg)
+		return NewInternalFailureExceptionResponse(msg)
+	}
+
+	//---
+
+	targetKeyArn := config.EnsureArn("key/", *body.TargetKeyId)
+
+	// Lookup the key
+	targetKey, _ := r.database.LoadKey(targetKeyArn)
+
+	if targetKey == nil {
+		msg := fmt.Sprintf("Key '%s' does not exist", targetKeyArn)
 
 		r.logger.Warnf(msg)
 		return NewNotFoundExceptionResponse(msg)
@@ -83,9 +97,33 @@ func (r *RequestHandler) UpdateAlias() Response {
 
 	//---
 
-	if key.GetMetadata().DeletionDate != 0 {
+	// Key usage cannot change
+	if originalKey.GetMetadata().KeyUsage != targetKey.GetMetadata().KeyUsage {
+		msg := fmt.Sprintf("Alias %s cannot be changed from a CMK with key usage %s to a CMK with key " +
+			"usage %s. The key usage of the current CMK and the new CMK must be the same.",
+			*body.AliasName, originalKey.GetMetadata().KeyUsage, targetKey.GetMetadata().KeyUsage)
+
+		r.logger.Warnf(msg)
+		return NewValidationExceptionResponse(msg)
+	}
+
+	// Key type cannot change
+	if reflect.TypeOf(originalKey) != reflect.TypeOf(targetKey) {
+
+		// TODO The wording of this validation message needs amending to match AWS.
+		msg := fmt.Sprintf("Alias %s cannot be changed from a CMK with key type %s to a CMK with key " +
+			"type %s. The key type of the current CMK and the new CMK must be the same.",
+			*body.AliasName, reflect.TypeOf(originalKey), reflect.TypeOf(targetKey))
+
+		r.logger.Warnf(msg)
+		return NewValidationExceptionResponse(msg)
+	}
+
+	//---
+
+	if targetKey.GetMetadata().DeletionDate != 0 {
 		// Key is pending deletion; cannot create alias
-		msg := fmt.Sprintf("%s is pending deletion.", keyArn)
+		msg := fmt.Sprintf("%s is pending deletion.", targetKeyArn)
 
 		r.logger.Warnf(msg)
 		return NewKMSInvalidStateExceptionResponse(msg)
@@ -93,13 +131,13 @@ func (r *RequestHandler) UpdateAlias() Response {
 
 	//---
 
-	alias.TargetKeyId = key.GetMetadata().KeyId
+	alias.TargetKeyId = targetKey.GetMetadata().KeyId
 
 	r.database.SaveAlias(alias)
 
 	//---
 
-	r.logger.Infof("Alias updated: %s -> %s\n", alias.AliasArn, key.GetArn())
+	r.logger.Infof("Alias updated: %s -> %s\n", alias.AliasArn, targetKey.GetArn())
 
 	return NewResponse(200, nil)
 }

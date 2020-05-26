@@ -43,6 +43,15 @@ func (r *RequestHandler) EnableKeyRotation() Response {
 
 	//---
 
+	// Check the key supports rotation
+	if _,ok := key.(*cmk.AesKey); !ok {
+		r.logger.Warnf(fmt.Sprintf("Key '%s' does does not support rotation", keyArn))
+
+		return NewUnsupportedOperationException("")
+	}
+
+	//---
+
 	if key.GetMetadata().DeletionDate != 0 {
 		// Key is pending deletion; cannot create alias
 		msg := fmt.Sprintf("%s is pending deletion.", keyArn)

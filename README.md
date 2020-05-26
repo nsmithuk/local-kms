@@ -9,6 +9,7 @@ development and testing against KMS; not for use in a production environment._
 
 ### Supports
 
+* Symmetric and ECC_NIST keys
 * Management of Customer Master Keys; including:
     * Enabling and disabling keys
     * Scheduling key deletion
@@ -19,6 +20,8 @@ development and testing against KMS; not for use in a production environment._
 * Decryption
 * Generating a data key, with or without plain text
 * Generating random data
+* Signing and verifying messages
+    * RAW and DIGEST
 * Tags
 * Key Policies: Get & Put
 
@@ -29,7 +32,7 @@ If a key in the seeding file already exists, it will not be overwritten or amend
 
 ### Does not (yet) support
 
-* Asymmetric Operations (coming soon)
+* RSA or ECC_SECG_P256K1 keys
 * Grants
 * Importing your own key material
 * Operations relating to a Custom Key Store
@@ -61,13 +64,17 @@ nsmithuk/local-kms
 
 ## Seeding file format
 
+_Currently only Symmetric keys are supported in the seeding file._
+
 A simple seeding file looks like
 ```yaml
 Keys:
-  - Metadata:
-      KeyId: bc436485-5092-42b8-92a3-0aa8b93536dc
-    BackingKeys:
-      - 5cdaead27fe7da2de47945d73cd6d79e36494e73802f3cd3869f1d2cb0b5d7a9
+  Symmetric:
+    Aes:
+      - Metadata:
+          KeyId: bc436485-5092-42b8-92a3-0aa8b93536dc
+        BackingKeys:
+          - 5cdaead27fe7da2de47945d73cd6d79e36494e73802f3cd3869f1d2cb0b5d7a9
 
 Aliases:
   - AliasName: alias/testing
@@ -81,16 +88,18 @@ Seeding files also support multiple keys, aliases and backing keys.
 
 ```yaml
 Keys:
-  - Metadata:
-      KeyId: bc436485-5092-42b8-92a3-0aa8b93536dc
-    BackingKeys:
-      - 34743777217A25432A46294A404E635266556A586E3272357538782F413F4428
-      - 614E645267556B58703273357638792F423F4528472B4B6250655368566D5971
-  
-  - Metadata:
-      KeyId: 49c5492b-b1bc-42a8-9a5c-b2015e810c1c
-    BackingKeys:
-      - 5cdaead27fe7da2de47945d73cd6d79e36494e73802f3cd3869f1d2cb0b5d7a9
+  Symmetric:
+    Aes:
+      - Metadata:
+          KeyId: bc436485-5092-42b8-92a3-0aa8b93536dc
+        BackingKeys:
+          - 34743777217A25432A46294A404E635266556A586E3272357538782F413F4428
+          - 614E645267556B58703273357638792F423F4528472B4B6250655368566D5971
+      
+      - Metadata:
+          KeyId: 49c5492b-b1bc-42a8-9a5c-b2015e810c1c
+        BackingKeys:
+          - 5cdaead27fe7da2de47945d73cd6d79e36494e73802f3cd3869f1d2cb0b5d7a9
 
 
 Aliases:
@@ -108,12 +117,14 @@ Keys also support the following optional fields:
 
 ```yaml
 Keys:
-  - Metadata:
-      KeyId: bc436485-5092-42b8-92a3-0aa8b93536dc
-      Description: "Your key description"
-    NextKeyRotation: "2019-09-12T15:19:21+00:00"
-    BackingKeys:
-      - 34743777217A25432A46294A404E635266556A586E3272357538782F413F4428
+  Symmetric:
+    Aes:
+      - Metadata:
+          KeyId: bc436485-5092-42b8-92a3-0aa8b93536dc
+          Description: "Your key description"
+        NextKeyRotation: "2019-09-12T15:19:21+00:00"
+        BackingKeys:
+          - 34743777217A25432A46294A404E635266556A586E3272357538782F413F4428
 ```
 
 ## Configuration

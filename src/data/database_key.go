@@ -45,6 +45,9 @@ func (d *Database) LoadKey(arn string) (cmk.Key, error) {
 		}
 
 		key = k
+	case *cmk.EccKey:
+		// This section/switch isn't really needed?
+		key = k
 	default:
 		return nil, errors.New("key type not yet supported")
 	}
@@ -134,9 +137,15 @@ func unmarshalKey(encoded []byte) (cmk.Key, error) {
 
 	var key cmk.Key
 
+	// If no key type has been set, the value of kt.Type will be 0 (an empty int).
+	// Therefore no key type being set will default to an AesKey.
+	// This is the desired behaviour for backwards compatibility.
+
 	switch kt.Type {
 	case cmk.TypeAes:
 		key = new(cmk.AesKey)
+	case cmk.TypeEcc:
+		key = new(cmk.EccKey)
 	default:
 		return nil, errors.New("key type not yet supported")
 	}

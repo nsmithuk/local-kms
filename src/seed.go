@@ -35,16 +35,66 @@ func seed(path string, database *data.Database){
 
 	//---
 
+	type InputSymmetric struct {
+		Aes	[]cmk.AesKey	`yaml:"Aes"`
+	}
+
+	type InputKeys struct {
+		Symmetric	InputSymmetric	`yaml:"Symmetric"`
+	}
+
 	type Input struct {
-		Keys	[]cmk.AesKey	`yaml:"Keys"`
+		Keys	InputKeys		`yaml:"Keys"`
 		Aliases	[]data.Alias	`yaml:"Aliases"`
 	}
 
 	seed := Input{}
 
+	var aesKeys []cmk.AesKey
+	var aliases []data.Alias
+
 	err = yaml.Unmarshal([]byte(context), &seed)
 	if err != nil {
-		logger.Errorln(fmt.Sprintf("Error parsing YAML at path %s: %s; skipping.", path, err))
+
+		//------------------------------------------------------
+		// Try processing the document in the legacy format
+
+		// TODO Support for the legacy format will be removed in future versions.
+
+		type InputOld struct {
+			Keys	[]cmk.AesKey	`yaml:"Keys"`
+			Aliases	[]data.Alias	`yaml:"Aliases"`
+		}
+
+		seed := InputOld{}
+		err = yaml.Unmarshal([]byte(context), &seed)
+		if err != nil {
+			logger.Errorln(fmt.Sprintf("Error parsing YAML at path %s: %s; skipping.", path, err))
+			return
+		}
+
+		if len(seed.Keys) > 0 {
+			logger.Warnf("The seed file is using a legacy format. Please update to the latest version. " +
+				"Support for the legacy version will be removed in future versions.\n")
+		}
+
+		for _, key := range seed.Keys {
+			aesKeys = append(aesKeys, key)
+		}
+
+		for _, alias := range seed.Aliases {
+			aliases = append(aliases, alias)
+		}
+
+		//------------------------------------------------------
+
+	} else {
+		for _, key := range seed.Keys.Symmetric.Aes {
+			aesKeys = append(aesKeys, key)
+		}
+		for _, alias := range seed.Aliases {
+			aliases = append(aliases, alias)
+		}
 	}
 
 	logger.Infof("Importing data from seed file %s\n", path)
@@ -52,28 +102,31 @@ func seed(path string, database *data.Database){
 	//-----------------------------------------
 	// Apply defaults
 
-	for i, key := range seed.Keys {
-		seed.Keys[i].Metadata.Arn			= config.ArnPrefix() + "key/" + key.Metadata.KeyId
-		seed.Keys[i].Metadata.AWSAccountId = config.AWSAccountId
-		seed.Keys[i].Metadata.CreationDate = time.Now().Unix()
-		seed.Keys[i].Metadata.Enabled		= true
-		seed.Keys[i].Metadata.KeyManager	= "CUSTOMER"
-		seed.Keys[i].Metadata.KeyState		= "Enabled"
-		seed.Keys[i].Metadata.KeyUsage		= "ENCRYPT_DECRYPT"
-		seed.Keys[i].Metadata.Origin		= "AWS_KMS"
+	for i, key := range aesKeys {
+		aesKeys[i].Metadata.Arn			= config.ArnPrefix() + "key/" + key.Metadata.KeyId
+		aesKeys[i].Metadata.AWSAccountId = config.AWSAccountId
+		aesKeys[i].Metadata.CreationDate = time.Now().Unix()
+		aesKeys[i].Metadata.Enabled		= true
+		aesKeys[i].Metadata.KeyManager	= "CUSTOMER"
+		aesKeys[i].Metadata.KeyState		= "Enabled"
+		aesKeys[i].Metadata.KeyUsage		= cmk.UsageEncryptDecrypt
+		aesKeys[i].Metadata.Origin		= "AWS_KMS"
 
-		seed.Keys[i].Type					= cmk.TypeAes
+		aesKeys[i].Metadata.CustomerMasterKeySpec		= cmk.SpecSymmetricDefault
+		aesKeys[i].Metadata.EncryptionAlgorithms		= []cmk.EncryptionAlgorithm{cmk.EncryptionAlgorithmAes}
+
+		aesKeys[i].Type					= cmk.TypeAes
 	}
 
-	for i, alias := range seed.Aliases {
-		seed.Aliases[i].AliasArn = config.ArnPrefix() + alias.AliasName
+	for i, alias := range aliases {
+		aliases[i].AliasArn = config.ArnPrefix() + alias.AliasName
 	}
 
 	//-----------------------------------------
 	// Save to database
 
 	keysAdded := 0
-	for _, key := range seed.Keys {
+	for _, key := range aesKeys {
 
 		if _, err := database.LoadKey(key.Metadata.Arn); err != leveldb.ErrNotFound {
 			logger.Warnf("Key %s already exists; skipping key", key.Metadata.KeyId)
@@ -85,7 +138,7 @@ func seed(path string, database *data.Database){
 	}
 
 	aliasesAdded := 0
-	for _, alias := range seed.Aliases {
+	for _, alias := range aliases {
 
 		if _, err := database.LoadAlias(alias.AliasArn); err != leveldb.ErrNotFound {
 			logger.Warnf("Alias %s already exists; skipping alias\n", alias.AliasName)

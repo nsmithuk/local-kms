@@ -19,6 +19,21 @@ func (r *RequestHandler) CreateKey() Response {
 		body = &kms.CreateKeyInput{}
 	}
 
+	//---
+
+	keyId := uuid.NewV4().String()
+
+	metadata := cmk.KeyMetadata{
+		Arn:                   config.ArnPrefix() + "key/" + keyId,
+		KeyId:                 keyId,
+		AWSAccountId:          config.AWSAccountId,
+		CreationDate:          time.Now().Unix(),
+		Enabled:               true,
+		KeyManager:            "CUSTOMER",
+		KeyState:              "Enabled",
+		Origin:                "AWS_KMS",
+	}
+
 	//--------------------------------
 	// Validation
 
@@ -43,11 +58,8 @@ func (r *RequestHandler) CreateKey() Response {
 		return response
 	}
 
-	//----
-
-	if body.Description == nil {
-		empty := ""
-		body.Description = &empty
+	if body.Description != nil {
+		metadata.Description = body.Description
 	}
 
 	if body.Policy == nil {
@@ -67,26 +79,68 @@ func (r *RequestHandler) CreateKey() Response {
 		body.Policy = &policy
 	}
 
-	//--------------------------------
-	// Create the key set up
+	if body.CustomerMasterKeySpec == nil {
+		sd := "SYMMETRIC_DEFAULT"
+		body.CustomerMasterKeySpec = &sd
+	}
 
-	keyId := uuid.NewV4().String()
+	//---
 
-	key := cmk.NewAesKey(
-		cmk.KeyMetadata{
-			Arn: config.ArnPrefix() + "key/" + keyId,
-			KeyId: keyId,
-			AWSAccountId: config.AWSAccountId,
-			CreationDate: time.Now().Unix(),
-			Description: body.Description,
-			Enabled: true,
-			KeyManager: "CUSTOMER",
-			KeyState: "Enabled",
-			KeyUsage: "ENCRYPT_DECRYPT",
-			Origin: "AWS_KMS",
-		},
-		*body.Policy,
-	)
+	var key cmk.Key
+
+	switch *body.CustomerMasterKeySpec {
+	case "SYMMETRIC_DEFAULT":
+
+		if body.KeyUsage != nil && *body.KeyUsage == "SIGN_VERIFY" {
+			msg := fmt.Sprintf("KeyUsage SIGN_VERIFY is not compatible with KeySpec SYMMETRIC_DEFAULT")
+			r.logger.Warnf(msg)
+			return NewValidationExceptionResponse(msg)
+		}
+
+		key = cmk.NewAesKey(metadata, *body.Policy)
+
+	case "ECC_NIST_P256", "ECC_NIST_P384", "ECC_NIST_P521":
+
+		if body.KeyUsage == nil {
+			msg := fmt.Sprintf("You must specify a KeyUsage value for an asymmetric CMK.")
+			r.logger.Warnf(msg)
+			return NewValidationExceptionResponse(msg)
+		}
+
+		if *body.KeyUsage != "SIGN_VERIFY" {
+			msg := fmt.Sprintf("KeyUsage ENCRYPT_DECRYPT is not compatible with KeySpec %s", *body.CustomerMasterKeySpec)
+			r.logger.Warnf(msg)
+			return NewValidationExceptionResponse(msg)
+		}
+
+		key, err = cmk.NewEccKey(cmk.CustomerMasterKeySpec(*body.CustomerMasterKeySpec), metadata, *body.Policy)
+		if err != nil {
+			r.logger.Error(err)
+			return NewInternalFailureExceptionResponse(err.Error())
+		}
+
+	case "ECC_SECG_P256K1":
+
+		msg := fmt.Sprintf("Local KMS does not yet support ECC_SECG_P256K1 keys. Symmetric keys and ECC_NIST_* keys are supported.")
+		r.logger.Warnf(msg)
+		return NewUnsupportedOperationException(msg)
+
+	case "RSA_2048", "RSA_3072", "RSA_4096":
+
+		msg := fmt.Sprintf("Local KMS does not yet support RSA keys. Symmetric keys and ECC_NIST_* keys are supported.")
+		r.logger.Warnf(msg)
+		return NewUnsupportedOperationException(msg)
+
+	default:
+
+		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'customerMasterKeySpec' " +
+			"failed to satisfy constraint: Member must satisfy enum value set: [RSA_2048, ECC_NIST_P384, " +
+			"ECC_NIST_P256, ECC_NIST_P521, RSA_3072, ECC_SECG_P256K1, RSA_4096, SYMMETRIC_DEFAULT]", *body.CustomerMasterKeySpec)
+
+		r.logger.Warnf(msg)
+
+		return NewValidationExceptionResponse(msg)
+	}
 
 	//--------------------------------
 	// Save the key
@@ -97,7 +151,7 @@ func (r *RequestHandler) CreateKey() Response {
 		return NewInternalFailureExceptionResponse(err.Error())
 	}
 
-	r.logger.Infof("New key created: %s\n", key.Metadata.Arn)
+	r.logger.Infof("New key created: %s\n", key.GetArn())
 
 	//--------------------------------
 	// Create the tags
@@ -116,7 +170,7 @@ func (r *RequestHandler) CreateKey() Response {
 
 	//---
 
-	return NewResponse( 200, map[string]cmk.KeyMetadata{
-		"KeyMetadata": key.Metadata,
+	return NewResponse( 200, map[string]*cmk.KeyMetadata{
+		"KeyMetadata": key.GetMetadata(),
 	})
 }

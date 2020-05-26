@@ -43,6 +43,20 @@ func (r *RequestHandler) DisableKeyRotation() Response {
 
 	//---
 
+	// Check the key supports rotation
+	if _,ok := key.(*cmk.AesKey); !ok {
+
+		r.logger.Warnf(fmt.Sprintf("Key '%s' does does not support rotation", keyArn))
+
+		// I suspect that it's an error to return a 200, but it is what AWS currently do.
+		return NewResponse( 200, nil)
+
+		// This is what I'd expect:
+		//return NewUnsupportedOperationException("")
+	}
+
+	//---
+
 	if key.GetMetadata().DeletionDate != 0 {
 		// Key is pending deletion; cannot create alias
 		msg := fmt.Sprintf("%s is pending deletion.", keyArn)

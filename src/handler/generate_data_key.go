@@ -121,6 +121,14 @@ func (r *RequestHandler) generateDataKey() (Response, *GenerateDataKeyResponse) 
 		}
 
 	default:
+
+		if k.GetMetadata().KeyUsage == cmk.UsageSignVerify {
+			msg := fmt.Sprintf("%s key usage is SIGN_VERIFY which is not valid for GenerateDataKey.", k.GetArn())
+
+			r.logger.Warnf(msg)
+			return NewInvalidKeyUsageException(msg), nil
+		}
+
 		return NewInternalFailureExceptionResponse("key type not yet supported for encryption"), nil
 	}
 

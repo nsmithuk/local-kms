@@ -41,6 +41,11 @@ func (r *RequestHandler) Encrypt() Response {
 		return NewValidationExceptionResponse(msg)
 	}
 
+	if body.EncryptionAlgorithm == nil {
+		d := "SYMMETRIC_DEFAULT"
+		body.EncryptionAlgorithm = &d
+	}
+
 	//----------------------------------
 
 	key, response := r.getUsableKey(*body.KeyId)
@@ -64,6 +69,14 @@ func (r *RequestHandler) Encrypt() Response {
 		}
 
 	default:
+
+		if k.GetMetadata().KeyUsage == cmk.UsageSignVerify {
+			msg := fmt.Sprintf("%s key usage is SIGN_VERIFY which is not valid for Encrypt.", k.GetArn())
+
+			r.logger.Warnf(msg)
+			return NewInvalidKeyUsageException(msg)
+		}
+
 		return NewInternalFailureExceptionResponse("key type not yet supported for encryption")
 	}
 
@@ -72,10 +85,12 @@ func (r *RequestHandler) Encrypt() Response {
 	r.logger.Infof("Encryption called: %s\n", key.GetArn())
 
 	return NewResponse( 200, &struct {
-		KeyId			string
-		CiphertextBlob	[]byte
+		KeyId				string
+		CiphertextBlob		[]byte
+		EncryptionAlgorithm	cmk.EncryptionAlgorithm
 	}{
 		KeyId: key.GetArn(),
 		CiphertextBlob: cipherResponse,
+		EncryptionAlgorithm: cmk.EncryptionAlgorithm(*body.EncryptionAlgorithm),
 	})
 }
