@@ -76,14 +76,15 @@ func (r *RequestHandler) Sign() Response {
 
 		if k.GetMetadata().KeyUsage == cmk.UsageEncryptDecrypt {
 			msg := fmt.Sprintf("%s key usage is ENCRYPT_DECRYPT which is not valid for signing.", k.GetArn())
-
 			r.logger.Warnf(msg)
 			return NewInvalidKeyUsageException(msg)
 		}
 
 		signingKey = k
 	default:
-		return NewInternalFailureExceptionResponse("key type not yet supported for signing")
+		msg := fmt.Sprintf("%s key usage is ENCRYPT_DECRYPT which is not valid for Sign.", k.GetArn())
+		r.logger.Warnf(msg)
+		return NewInvalidKeyUsageException(msg)
 	}
 
 	//---

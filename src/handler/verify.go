@@ -90,7 +90,9 @@ func (r *RequestHandler) Verify() Response {
 
 		signingKey = k
 	default:
-		return NewInternalFailureExceptionResponse("key type not yet supported for signing")
+		msg := fmt.Sprintf("%s key usage is ENCRYPT_DECRYPT which is not valid for Verify.", k.GetArn())
+		r.logger.Warnf(msg)
+		return NewInvalidKeyUsageException(msg)
 	}
 
 	//---
