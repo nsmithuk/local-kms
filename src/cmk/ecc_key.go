@@ -4,32 +4,13 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
-	"crypto/sha256"
-	"crypto/sha512"
 	"encoding/asn1"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"hash"
 	"math/big"
 	"os"
 )
-
-//---
-
-type InvalidSigningAlgorithm struct {}
-func (v *InvalidSigningAlgorithm) Error() string {
-	return "invalid signing algorithm"
-}
-
-//---
-
-type InvalidDigestLength struct {}
-func (v *InvalidDigestLength) Error() string {
-	return "invalid digest length"
-}
-
-//---
 
 // We create our own type to manage JSON Marshaling
 type EcdsaPrivateKey ecdsa.PrivateKey
@@ -164,7 +145,7 @@ func (k *EccKey) Sign(digest []byte, algorithm SigningAlgorithm) ([]byte, error)
 
 func (k *EccKey) HashAndSign(message []byte, algorithm SigningAlgorithm) ([]byte, error) {
 
-	digest, err := k.hash(message, algorithm)
+	digest, err := hashMessage(message, algorithm)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -174,7 +155,7 @@ func (k *EccKey) HashAndSign(message []byte, algorithm SigningAlgorithm) ([]byte
 
 //----------------------------------------------------
 
-func (k *EccKey) Verify(signature []byte, digest []byte) (bool, error) {
+func (k *EccKey) Verify(signature []byte, digest []byte, algorithm SigningAlgorithm) (bool, error) {
 
 	ecdsaSignature := ecdsaSignature{}
 
@@ -192,36 +173,12 @@ func (k *EccKey) Verify(signature []byte, digest []byte) (bool, error) {
 
 func (k *EccKey) HashAndVerify(signature []byte, message []byte, algorithm SigningAlgorithm) (bool, error) {
 
-	digest, err := k.hash(message, algorithm)
+	digest, err := hashMessage(message, algorithm)
 	if err != nil {
 		return false, err
 	}
 
-	return k.Verify(signature, digest)
-}
-
-//----------------------------------------------------
-
-func (k *EccKey) hash(message []byte, algorithm SigningAlgorithm) ([]byte, error) {
-
-	//--------------------------
-	// Hash the message
-
-	var digest hash.Hash
-
-	switch algorithm {
-	case SigningAlgorithmEcdsaSha256:
-		digest = sha256.New()
-	case SigningAlgorithmEcdsaSha384:
-		digest = sha512.New384()
-	case SigningAlgorithmEcdsaSha512:
-		digest = sha512.New()
-	default:
-		return []byte{}, errors.New("unknown signing algorithm")
-	}
-
-	digest.Write(message)
-	return digest.Sum(nil), nil
+	return k.Verify(signature, digest, algorithm)
 }
 
 //----------------------------------------------------

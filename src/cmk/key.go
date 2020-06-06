@@ -17,6 +17,9 @@ const (
 	SpecEccNistP256				CustomerMasterKeySpec = "ECC_NIST_P256"
 	SpecEccNistP384				CustomerMasterKeySpec = "ECC_NIST_P384"
 	SpecEccNistP521				CustomerMasterKeySpec = "ECC_NIST_P521"
+	SpecRsa2048					CustomerMasterKeySpec = "RSA_2048"
+	SpecRsa3072					CustomerMasterKeySpec = "RSA_3072"
+	SpecRsa4096					CustomerMasterKeySpec = "RSA_4096"
 )
 
 func IsValidSpec(t string) bool {
@@ -45,6 +48,12 @@ const (
 	SigningAlgorithmEcdsaSha256		SigningAlgorithm = "ECDSA_SHA_256"
 	SigningAlgorithmEcdsaSha384		SigningAlgorithm = "ECDSA_SHA_384"
 	SigningAlgorithmEcdsaSha512		SigningAlgorithm = "ECDSA_SHA_512"
+	SigningAlgorithmRsaPssSha256	SigningAlgorithm = "RSASSA_PSS_SHA_256"
+	SigningAlgorithmRsaPssSha384	SigningAlgorithm = "RSASSA_PSS_SHA_384"
+	SigningAlgorithmRsaPssSha512	SigningAlgorithm = "RSASSA_PSS_SHA_512"
+	SigningAlgorithmRsaPkcsSha256	SigningAlgorithm = "RSASSA_PKCS1_V1_5_SHA_256"
+	SigningAlgorithmRsaPkcsSha384	SigningAlgorithm = "RSASSA_PKCS1_V1_5_SHA_384"
+	SigningAlgorithmRsaPkcsSha512	SigningAlgorithm = "RSASSA_PKCS1_V1_5_SHA_512"
 )
 
 //---
@@ -68,7 +77,7 @@ type SigningKey interface {
 	Key
 	Sign(digest []byte, algorithm SigningAlgorithm) ([]byte, error)
 	HashAndSign(message []byte, algorithm SigningAlgorithm) ([]byte, error)
-	Verify(signature []byte, digest []byte) (bool, error)
+	Verify(signature []byte, digest []byte, algorithm SigningAlgorithm) (bool, error)
 	HashAndVerify(signature []byte, digest []byte, algorithm SigningAlgorithm) (bool, error)
 }
 

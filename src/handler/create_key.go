@@ -127,9 +127,23 @@ func (r *RequestHandler) CreateKey() Response {
 
 	case "RSA_2048", "RSA_3072", "RSA_4096":
 
-		msg := fmt.Sprintf("Local KMS does not yet support RSA keys. Symmetric keys and ECC_NIST_* keys are supported.")
-		r.logger.Warnf(msg)
-		return NewUnsupportedOperationException(msg)
+		if body.KeyUsage == nil {
+			msg := fmt.Sprintf("You must specify a KeyUsage value for an asymmetric CMK.")
+			r.logger.Warnf(msg)
+			return NewValidationExceptionResponse(msg)
+		}
+
+		if *body.KeyUsage != "SIGN_VERIFY" {
+			msg := fmt.Sprintf("Local KMS currently only supports SIGN_VERIFY for RSA keys. ENCRYPT_DECRYPT is on the roadmap.")
+			r.logger.Warnf(msg)
+			return NewUnsupportedOperationException(msg)
+		}
+
+		key, err = cmk.NewRsaKey(cmk.CustomerMasterKeySpec(*body.CustomerMasterKeySpec), cmk.KeyUsage(*body.KeyUsage), metadata, *body.Policy)
+		if err != nil {
+			r.logger.Error(err)
+			return NewInternalFailureExceptionResponse(err.Error())
+		}
 
 	default:
 
