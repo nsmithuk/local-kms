@@ -38,20 +38,28 @@ func (r *RequestHandler) GetPublicKey() Response {
 
 	//---
 
-	// Check the key is ECC.
-	if _,ok := key.(*cmk.EccKey); !ok {
+	var publicKey []byte
+
+	switch k := key.(type) {
+	case *cmk.RsaKey:
+
+		publicKey, err = x509.MarshalPKIXPublicKey(&k.PrivateKey.PublicKey)
+		if err != nil {
+			return NewInternalFailureExceptionResponse(err.Error())
+		}
+
+	case *cmk.EccKey:
+
+		privateKey := ecdsa.PrivateKey(k.PrivateKey)
+
+		publicKey, err = x509.MarshalPKIXPublicKey(&privateKey.PublicKey)
+		if err != nil {
+			return NewInternalFailureExceptionResponse(err.Error())
+		}
+
+	default:
 		r.logger.Warnf(fmt.Sprintf("Key '%s' does does not support returning a public key", key.GetArn()))
 		return NewUnsupportedOperationException("")
-	}
-
-	//---
-
-	k1 := key.(*cmk.EccKey)
-	k2 := ecdsa.PrivateKey(k1.PrivateKey)
-
-	publicKey, err := x509.MarshalPKIXPublicKey(&k2.PublicKey)
-	if err != nil {
-		return NewInternalFailureExceptionResponse(err.Error())
 	}
 
 	//---
