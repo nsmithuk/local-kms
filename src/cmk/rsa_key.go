@@ -81,6 +81,24 @@ func (k *RsaKey) GetMetadata() *KeyMetadata {
 
 func (k *RsaKey) Sign(digest []byte, algorithm SigningAlgorithm) ([]byte, error) {
 
+	//--------------------------
+	// Check the requested Signing Algorithm is supported by this key
+
+	validSigningAlgorithm := false
+
+	for _,a := range k.Metadata.SigningAlgorithms {
+		if a == algorithm {
+			validSigningAlgorithm = true
+			break
+		}
+	}
+
+	if !validSigningAlgorithm {
+		return []byte{}, &InvalidSigningAlgorithm{}
+	}
+
+	//--------------------------
+
 	var hash crypto.Hash
 
 	switch algorithm {

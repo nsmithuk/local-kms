@@ -22,18 +22,6 @@ const (
 	SpecRsa4096					CustomerMasterKeySpec = "RSA_4096"
 )
 
-func IsValidSpec(t string) bool {
-	needle := CustomerMasterKeySpec(t)
-	haystack := []CustomerMasterKeySpec{SpecSymmetricDefault, SpecEccNistP256, SpecEccNistP384, SpecEccNistP521}
-
-	for _, v := range haystack {
-		if v == needle {
-			return true
-		}
-	}
-	return false
-}
-
 //---
 
 type EncryptionAlgorithm string
@@ -104,7 +92,7 @@ type KeyMetadata struct {
 	Origin string 					`json:",omitempty"`
 	ValidTo int64 					`json:",omitempty"`
 
-	SigningAlgorithms []SigningAlgorithm		`json:",omitempty"`
+	SigningAlgorithms []SigningAlgorithm			`json:",omitempty"`
 	EncryptionAlgorithms []EncryptionAlgorithm		`json:",omitempty"`
 	CustomerMasterKeySpec CustomerMasterKeySpec		`json:",omitempty"`
 }
