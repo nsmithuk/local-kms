@@ -185,7 +185,9 @@ Local KMS runs on port http://localhost:8080 by default.
 
 ### Using LKMS with the CLI
 
-For a more in-depth guide to theses commands, please see [Using AWS KMS via the CLI](https://nsmith.net/aws-kms-cli).
+For a more in-depth guide to these commands, please see:
+* [Using AWS KMS via the CLI with a Symmetric Key](https://nsmith.net/aws-kms-cli)
+* [Using AWS KMS via the CLI with Elliptic Curve (ECC) Keys](https://nsmith.net/aws-kms-cli-ecc)
 
 The examples here use `awslocal`, which wraps the `aws` command to include the required endpoint.
 
