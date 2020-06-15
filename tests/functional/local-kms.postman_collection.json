@@ -3988,7 +3988,7 @@
 											"pm.test(\"The KeyMetadata looks sensible\", function () {",
 											"    // AWS do add fields, so keep this as a minimum number for now",
 											"    pm.expect(Object.keys(jsonData['KeyMetadata'])).to.have.lengthOf.at.least(12);",
-											"    ",
+											"",
 											"    pm.expect(jsonData.KeyMetadata).to.have.property('AWSAccountId');",
 											"    pm.expect(jsonData.KeyMetadata).to.have.property('Arn');",
 											"    pm.expect(jsonData.KeyMetadata).to.have.property('CreationDate');",
@@ -3999,10 +3999,12 @@
 											"    pm.expect(jsonData.KeyMetadata).to.have.property('KeyState');",
 											"    pm.expect(jsonData.KeyMetadata).to.have.property('KeyUsage');",
 											"    pm.expect(jsonData.KeyMetadata).to.have.property('Origin');",
-											"    ",
+											"",
 											"    pm.expect(jsonData.KeyMetadata).to.have.property('CustomerMasterKeySpec');",
 											"    pm.expect(jsonData.KeyMetadata).to.have.property('SigningAlgorithms');",
-											"    ",
+											"",
+											"    pm.expect(Object.keys(jsonData.KeyMetadata['SigningAlgorithms'])).to.have.lengthOf(1);",
+											"",
 											"    pm.expect(jsonData.KeyMetadata['CustomerMasterKeySpec']).to.equal('ECC_NIST_P256')",
 											"});",
 											"",
@@ -4031,7 +4033,10 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n\t\"CustomerMasterKeySpec\": \"ECC_NIST_P256\",\n\t\"KeyUsage\": \"SIGN_VERIFY\",\n\t\"Tags\": [\n\t\t{\n\t\t\t\"TagKey\": \"My Key Name 1\",\n\t\t\t\"TagValue\": \"My Key Value 1\"\n\t\t},\n\t\t{\n\t\t\t\"TagKey\": \"My Key Name 2\",\n\t\t\t\"TagValue\": \"My Key Value 2\"\n\t\t}\n\t]\n}"
+									"raw": "{\n\t\"CustomerMasterKeySpec\": \"ECC_NIST_P256\",\n\t\"KeyUsage\": \"SIGN_VERIFY\",\n\t\"Tags\": [\n\t\t{\n\t\t\t\"TagKey\": \"My Key Name 1\",\n\t\t\t\"TagValue\": \"My Key Value 1\"\n\t\t},\n\t\t{\n\t\t\t\"TagKey\": \"My Key Name 2\",\n\t\t\t\"TagValue\": \"My Key Value 2\"\n\t\t}\n\t]\n}",
+									"options": {
+										"raw": {}
+									}
 								},
 								"url": {
 									"raw": "{{Host}}",
@@ -6282,6 +6287,2481 @@
 					],
 					"protocolProfileBehavior": {},
 					"_postman_isSubFolder": true
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "RSA Signing",
+			"item": [
+				{
+					"name": "Create Key",
+					"item": [
+						{
+							"name": "Invalid Spec",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "7906b6cb-a2d1-4206-94ee-ca662238bb7f",
+										"exec": [
+											"var jsonData = pm.response.json();",
+											"",
+											"pm.test(\"Status code is 400\", function () {",
+											"    pm.response.to.have.status(400);",
+											"});",
+											"",
+											"pm.test(\"The response is JSON\", function () {",
+											"    pm.response.to.be.json;",
+											"});",
+											"",
+											"pm.test(\"Check expected error returned\", function () {",
+											"    // AWS do add fields, so keep this as a minimum number for now",
+											"    pm.expect(Object.keys(jsonData)).to.have.lengthOf(2);",
+											"",
+											"    pm.expect(jsonData).to.have.property('__type');",
+											"    pm.expect(jsonData).to.have.property('message');",
+											"",
+											"    pm.expect(jsonData['__type']).to.equal('ValidationException')",
+											"    pm.expect(jsonData['message']).to.equal(\"1 validation error detected: Value 'RSA_1024' at 'customerMasterKeySpec' failed to satisfy constraint: Member must satisfy enum value set: [RSA_2048, ECC_NIST_P384, ECC_NIST_P256, ECC_NIST_P521, RSA_3072, ECC_SECG_P256K1, RSA_4096, SYMMETRIC_DEFAULT]\")",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Amz-Target",
+										"type": "text",
+										"value": "TrentService.CreateKey"
+									},
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-amz-json-1.1"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"CustomerMasterKeySpec\": \"RSA_1024\",\n\t\"Tags\": [\n\t\t{\n\t\t\t\"TagKey\": \"My Key Name 1\",\n\t\t\t\"TagValue\": \"My Key Value 1\"\n\t\t},\n\t\t{\n\t\t\t\"TagKey\": \"My Key Name 2\",\n\t\t\t\"TagValue\": \"My Key Value 2\"\n\t\t}\n\t]\n}",
+									"options": {
+										"raw": {}
+									}
+								},
+								"url": {
+									"raw": "{{Host}}",
+									"host": [
+										"{{Host}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "RSA sans Key Usage",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "4ad0b10c-ad2b-455e-8006-0d676bda5aa4",
+										"exec": [
+											"var jsonData = pm.response.json();",
+											"",
+											"pm.test(\"Status code is 400\", function () {",
+											"    pm.response.to.have.status(400);",
+											"});",
+											"",
+											"pm.test(\"The response is JSON\", function () {",
+											"    pm.response.to.be.json;",
+											"});",
+											"",
+											"pm.test(\"Check expected error returned\", function () {",
+											"    // AWS do add fields, so keep this as a minimum number for now",
+											"    pm.expect(Object.keys(jsonData)).to.have.lengthOf(2);",
+											"    ",
+											"    pm.expect(jsonData).to.have.property('__type');",
+											"    pm.expect(jsonData).to.have.property('message');",
+											"    ",
+											"    pm.expect(jsonData['__type']).to.equal('ValidationException')",
+											"    pm.expect(jsonData['message']).to.equal('You must specify a KeyUsage value for an asymmetric CMK.')",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Amz-Target",
+										"type": "text",
+										"value": "TrentService.CreateKey"
+									},
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-amz-json-1.1"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"CustomerMasterKeySpec\": \"RSA_2048\",\n\t\"Tags\": [\n\t\t{\n\t\t\t\"TagKey\": \"My Key Name 1\",\n\t\t\t\"TagValue\": \"My Key Value 1\"\n\t\t},\n\t\t{\n\t\t\t\"TagKey\": \"My Key Name 2\",\n\t\t\t\"TagValue\": \"My Key Value 2\"\n\t\t}\n\t]\n}",
+									"options": {
+										"raw": {}
+									}
+								},
+								"url": {
+									"raw": "{{Host}}",
+									"host": [
+										"{{Host}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create RSA Signing Key",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "beff11f4-900e-4089-ae19-9a7ccd4ae4d8",
+										"exec": [
+											"// Parsing the response returned by the request.",
+											"var jsonData = pm.response.json();",
+											"",
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"The response is JSON\", function () {",
+											"    pm.response.to.be.json;",
+											"});",
+											"",
+											"pm.test(\"There is a KeyMetadata key\", function () {",
+											"    pm.expect(jsonData).to.have.property('KeyMetadata');",
+											"});",
+											"",
+											"pm.test(\"The KeyMetadata looks sensible\", function () {",
+											"    // AWS do add fields, so keep this as a minimum number for now",
+											"    pm.expect(Object.keys(jsonData['KeyMetadata'])).to.have.lengthOf.at.least(12);",
+											"",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('AWSAccountId');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('Arn');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('CreationDate');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('Description');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('Enabled');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('KeyId');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('KeyManager');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('KeyState');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('KeyUsage');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('Origin');",
+											"",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('CustomerMasterKeySpec');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('SigningAlgorithms');",
+											"",
+											"    pm.expect(Object.keys(jsonData.KeyMetadata['SigningAlgorithms'])).to.have.lengthOf(6);",
+											"",
+											"    pm.expect(jsonData.KeyMetadata['CustomerMasterKeySpec']).to.equal('RSA_2048')",
+											"});",
+											"",
+											"pm.environment.set(\"test_key_rsa_sign\", jsonData.KeyMetadata.KeyId);",
+											"pm.environment.set(\"test_key_rsa_sign_arn\", jsonData.KeyMetadata.Arn);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Amz-Target",
+										"type": "text",
+										"value": "TrentService.CreateKey"
+									},
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-amz-json-1.1"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"CustomerMasterKeySpec\": \"RSA_2048\",\n\t\"KeyUsage\": \"SIGN_VERIFY\",\n\t\"Tags\": [\n\t\t{\n\t\t\t\"TagKey\": \"My Key Name 1\",\n\t\t\t\"TagValue\": \"My Key Value 1\"\n\t\t},\n\t\t{\n\t\t\t\"TagKey\": \"My Key Name 2\",\n\t\t\t\"TagValue\": \"My Key Value 2\"\n\t\t}\n\t]\n}",
+									"options": {
+										"raw": {}
+									}
+								},
+								"url": {
+									"raw": "{{Host}}",
+									"host": [
+										"{{Host}}"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Key Management",
+					"item": [
+						{
+							"name": "DescribeKey",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "6d5df288-007c-4d50-8d9f-3c9fb2ce1aa8",
+										"exec": [
+											"// Parsing the response returned by the request.",
+											"var jsonData = pm.response.json();",
+											"",
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"The response is JSON\", function () {",
+											"    pm.response.to.be.json;",
+											"});",
+											"",
+											"pm.test(\"The response looks sensible\", function () {",
+											"    // AWS do add fields, so keep this as a minimum number for now",
+											"    pm.expect(Object.keys(jsonData['KeyMetadata'])).to.have.lengthOf.at.least(12);",
+											"    ",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('AWSAccountId');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('Arn');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('CreationDate');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('Description');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('Enabled');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('KeyId');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('KeyManager');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('KeyState');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('KeyUsage');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('Origin');",
+											"    ",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('CustomerMasterKeySpec');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('SigningAlgorithms');",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "730cba11-b6e3-4232-b7f8-fa5d11d6e44b",
+										"exec": [
+											"//console.log('Encrypting ' + pm.test_encryption_string)",
+											"",
+											"test_encryption_string = pm.globals.get('test_encryption_string')",
+											"",
+											"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+											"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+											"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+											"    ",
+											"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Amz-Target",
+										"type": "text",
+										"value": "TrentService.DescribeKey"
+									},
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-amz-json-1.1"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"KeyId\": \"{{test_key_rsa_sign}}\"\n}",
+									"options": {
+										"raw": {}
+									}
+								},
+								"url": {
+									"raw": "{{Host}}",
+									"host": [
+										"{{Host}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Public Key",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "aa5bc73a-39b8-48ef-975f-e6fb969636b9",
+										"exec": [
+											"// Parsing the response returned by the request.",
+											"var jsonData = pm.response.json();",
+											"",
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"The response is JSON\", function () {",
+											"    pm.response.to.be.json;",
+											"});",
+											"",
+											"pm.test(\"The response looks sensible\", function () {",
+											"",
+											"    pm.expect(Object.keys(jsonData)).to.have.lengthOf(5);",
+											"    ",
+											"    pm.expect(jsonData).to.have.property('KeyId');",
+											"    pm.expect(jsonData).to.have.property('CustomerMasterKeySpec');",
+											"    pm.expect(jsonData).to.have.property('SigningAlgorithms');",
+											"    pm.expect(jsonData).to.have.property('KeyUsage');",
+											"    pm.expect(jsonData).to.have.property('PublicKey');",
+											"    ",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "5e0e77a3-f87e-4dc3-844c-4cbc20855bd2",
+										"exec": [
+											"//console.log('Encrypting ' + pm.test_encryption_string)",
+											"",
+											"test_encryption_string = pm.globals.get('test_encryption_string')",
+											"",
+											"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+											"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+											"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+											"    ",
+											"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Amz-Target",
+										"type": "text",
+										"value": "TrentService.GetPublicKey"
+									},
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-amz-json-1.1"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"KeyId\": \"{{test_key_rsa_sign}}\"\n}",
+									"options": {
+										"raw": {}
+									}
+								},
+								"url": {
+									"raw": "{{Host}}",
+									"host": [
+										"{{Host}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "EnableKeyRotation",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "3d2660d1-6e4c-4e69-824b-8e97b9f10ff2",
+										"exec": [
+											"var jsonData = pm.response.json();",
+											"",
+											"pm.test(\"Status code is 400\", function () {",
+											"    pm.response.to.have.status(400);",
+											"});",
+											"",
+											"pm.test(\"The response is JSON\", function () {",
+											"    pm.response.to.be.json;",
+											"});",
+											"",
+											"pm.test(\"Check expected error returned\", function () {",
+											"    pm.expect(Object.keys(jsonData)).to.have.lengthOf(1);",
+											"    pm.expect(jsonData).to.have.property('__type');",
+											"        pm.expect(jsonData['__type']).to.equal('UnsupportedOperationException')",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "3a587e9a-f56b-4f56-b819-6906b8384e33",
+										"exec": [
+											"//console.log('Encrypting ' + pm.test_encryption_string)",
+											"",
+											"test_encryption_string = pm.globals.get('test_encryption_string')",
+											"",
+											"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+											"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+											"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+											"    ",
+											"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Amz-Target",
+										"type": "text",
+										"value": "TrentService.EnableKeyRotation"
+									},
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-amz-json-1.1"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"KeyId\": \"{{test_key_rsa_sign}}\"\n}",
+									"options": {
+										"raw": {}
+									}
+								},
+								"url": {
+									"raw": "{{Host}}",
+									"host": [
+										"{{Host}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "DisableKeyRotation",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "c603efca-0ea1-4a4e-a52a-7eec484617fb",
+										"exec": [
+											"",
+											"// Seems strange, but it's currently how AWS responds.",
+											"",
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "9035a05a-ed86-4534-bc5f-ce9d26257a55",
+										"exec": [
+											"//console.log('Encrypting ' + pm.test_encryption_string)",
+											"",
+											"test_encryption_string = pm.globals.get('test_encryption_string')",
+											"",
+											"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+											"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+											"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+											"    ",
+											"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Amz-Target",
+										"type": "text",
+										"value": "TrentService.DisableKeyRotation"
+									},
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-amz-json-1.1"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"KeyId\": \"{{test_key_rsa_sign}}\"\n}",
+									"options": {
+										"raw": {}
+									}
+								},
+								"url": {
+									"raw": "{{Host}}",
+									"host": [
+										"{{Host}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "GetKeyRotationStatus",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "8cce886a-443e-43b2-a933-7626d083c165",
+										"exec": [
+											"var jsonData = pm.response.json();",
+											"",
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"The response is JSON\", function () {",
+											"    pm.response.to.be.json;",
+											"});",
+											"",
+											"pm.test(\"Check response is expected\", function () {",
+											"    pm.expect(jsonData).to.have.property('KeyRotationEnabled');",
+											"    pm.expect(jsonData['KeyRotationEnabled']).to.equal(false);",
+											"});",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "dc4b25bd-819c-4858-8e9a-9e8e1aeea46c",
+										"exec": [
+											"//console.log('Encrypting ' + pm.test_encryption_string)",
+											"",
+											"test_encryption_string = pm.globals.get('test_encryption_string')",
+											"",
+											"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+											"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+											"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+											"    ",
+											"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Amz-Target",
+										"type": "text",
+										"value": "TrentService.GetKeyRotationStatus"
+									},
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-amz-json-1.1"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"KeyId\": \"{{test_key_ecc}}\"\n}"
+								},
+								"url": {
+									"raw": "{{Host}}",
+									"host": [
+										"{{Host}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create alias",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "524d1bd1-f53a-4ace-8411-6b0e725d7f6f",
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Amz-Target",
+										"type": "text",
+										"value": "TrentService.CreateAlias"
+									},
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-amz-json-1.1"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"AliasName\": \"{{test_alias_rsa_sign}}\",\n   \"TargetKeyId\": \"{{test_key_rsa_sign}}\"\n}",
+									"options": {
+										"raw": {}
+									}
+								},
+								"url": {
+									"raw": "{{Host}}",
+									"host": [
+										"{{Host}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "DescribeKey (Alias)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "1be5cbdc-8c8e-42c0-adeb-2c109732119c",
+										"exec": [
+											"// Parsing the response returned by the request.",
+											"var jsonData = pm.response.json();",
+											"",
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"The response is JSON\", function () {",
+											"    pm.response.to.be.json;",
+											"});",
+											"",
+											"pm.test(\"The response looks sensible\", function () {",
+											"    // AWS do add fields, so keep this as a minimum number for now",
+											"    pm.expect(Object.keys(jsonData['KeyMetadata'])).to.have.lengthOf.at.least(12);",
+											"    ",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('AWSAccountId');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('Arn');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('CreationDate');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('Description');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('Enabled');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('KeyId');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('KeyManager');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('KeyState');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('KeyUsage');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('Origin');",
+											"    ",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('CustomerMasterKeySpec');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('SigningAlgorithms');",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "08c49be2-ee5b-422f-ab1d-1b43581aab23",
+										"exec": [
+											"//console.log('Encrypting ' + pm.test_encryption_string)",
+											"",
+											"test_encryption_string = pm.globals.get('test_encryption_string')",
+											"",
+											"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+											"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+											"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+											"    ",
+											"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Amz-Target",
+										"type": "text",
+										"value": "TrentService.DescribeKey"
+									},
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-amz-json-1.1"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"KeyId\": \"{{test_alias_rsa_sign}}\"\n}",
+									"options": {
+										"raw": {}
+									}
+								},
+								"url": {
+									"raw": "{{Host}}",
+									"host": [
+										"{{Host}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create an AES key",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "c015719a-9ed9-4337-9c3f-ba7d97596b7a",
+										"exec": [
+											"// Parsing the response returned by the request.",
+											"var jsonData = pm.response.json();",
+											"",
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"The response is JSON\", function () {",
+											"    pm.response.to.be.json;",
+											"});",
+											"",
+											"pm.test(\"There is a KeyMetadata key\", function () {",
+											"    pm.expect(jsonData).to.have.property('KeyMetadata');",
+											"});",
+											"",
+											"pm.environment.set(\"test_symmetric_key\", jsonData.KeyMetadata.KeyId);",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Amz-Target",
+										"type": "text",
+										"value": "TrentService.CreateKey"
+									},
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-amz-json-1.1"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{}"
+								},
+								"url": {
+									"raw": "{{Host}}",
+									"host": [
+										"{{Host}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "UpdateAlias Fail",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "3ea50225-707b-47ef-9b58-395bf3b6613e",
+										"exec": [
+											"var jsonData = pm.response.json();",
+											"",
+											"pm.test(\"Status code is 400\", function () {",
+											"    pm.response.to.have.status(400);",
+											"});",
+											"",
+											"pm.test(\"The response is JSON\", function () {",
+											"    pm.response.to.be.json;",
+											"});",
+											"",
+											"pm.test(\"Check expected error returned\", function () {",
+											"    // AWS do add fields, so keep this as a minimum number for now",
+											"    pm.expect(Object.keys(jsonData)).to.have.lengthOf(2);",
+											"",
+											"    pm.expect(jsonData).to.have.property('__type');",
+											"    pm.expect(jsonData).to.have.property('message');",
+											"",
+											"    pm.expect(jsonData['__type']).to.equal('ValidationException')",
+											"    pm.expect(jsonData['message']).to.match(/^Alias alias\\/testing-local-kms-rsa-sign cannot be changed from a CMK with key usage SIGN_VERIFY to a CMK with key usage ENCRYPT_DECRYPT. The key usage of the current CMK and the new CMK must be the same.$/)",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "3ef87e5d-6f66-402d-8f6b-35a39753b65c",
+										"exec": [
+											"//console.log('Encrypting ' + pm.test_encryption_string)",
+											"",
+											"test_encryption_string = pm.globals.get('test_encryption_string')",
+											"",
+											"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+											"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+											"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+											"    ",
+											"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Amz-Target",
+										"type": "text",
+										"value": "TrentService.UpdateAlias"
+									},
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-amz-json-1.1"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"AliasName\": \"{{test_alias_rsa_sign}}\",\n   \"TargetKeyId\": \"{{test_symmetric_key}}\"\n}",
+									"options": {
+										"raw": {}
+									}
+								},
+								"url": {
+									"raw": "{{Host}}",
+									"host": [
+										"{{Host}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create 2nd RSA Key",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "0c09d7c4-1e67-4cf6-ac3e-f79583a06903",
+										"exec": [
+											"// Parsing the response returned by the request.",
+											"var jsonData = pm.response.json();",
+											"",
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"The response is JSON\", function () {",
+											"    pm.response.to.be.json;",
+											"});",
+											"",
+											"pm.test(\"There is a KeyMetadata key\", function () {",
+											"    pm.expect(jsonData).to.have.property('KeyMetadata');",
+											"});",
+											"",
+											"pm.test(\"The KeyMetadata looks sensible\", function () {",
+											"    // AWS do add fields, so keep this as a minimum number for now",
+											"    pm.expect(Object.keys(jsonData['KeyMetadata'])).to.have.lengthOf.at.least(12);",
+											"",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('AWSAccountId');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('Arn');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('CreationDate');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('Description');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('Enabled');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('KeyId');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('KeyManager');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('KeyState');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('KeyUsage');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('Origin');",
+											"",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('CustomerMasterKeySpec');",
+											"    pm.expect(jsonData.KeyMetadata).to.have.property('SigningAlgorithms');",
+											"",
+											"    pm.expect(jsonData.KeyMetadata['CustomerMasterKeySpec']).to.equal('RSA_4096')",
+											"});",
+											"",
+											"pm.environment.set(\"test_key_rsa_2\", jsonData.KeyMetadata.KeyId);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Amz-Target",
+										"type": "text",
+										"value": "TrentService.CreateKey"
+									},
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-amz-json-1.1"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"CustomerMasterKeySpec\": \"RSA_4096\",\n\t\"KeyUsage\": \"SIGN_VERIFY\",\n\t\"Tags\": [\n\t\t{\n\t\t\t\"TagKey\": \"My Key Name 1\",\n\t\t\t\"TagValue\": \"My Key Value 1\"\n\t\t},\n\t\t{\n\t\t\t\"TagKey\": \"My Key Name 2\",\n\t\t\t\"TagValue\": \"My Key Value 2\"\n\t\t}\n\t]\n}",
+									"options": {
+										"raw": {}
+									}
+								},
+								"url": {
+									"raw": "{{Host}}",
+									"host": [
+										"{{Host}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "UpdateAlias",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "8d15ed67-c526-46b0-830e-f2e276809f4f",
+										"exec": [
+											"",
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "53e6441a-3620-4c34-8107-c60ff78078fe",
+										"exec": [
+											"//console.log('Encrypting ' + pm.test_encryption_string)",
+											"",
+											"test_encryption_string = pm.globals.get('test_encryption_string')",
+											"",
+											"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+											"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+											"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+											"    ",
+											"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Amz-Target",
+										"type": "text",
+										"value": "TrentService.UpdateAlias"
+									},
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-amz-json-1.1"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"AliasName\": \"{{test_alias_rsa_sign}}\",\n   \"TargetKeyId\": \"{{test_key_rsa_2}}\"\n}",
+									"options": {
+										"raw": {}
+									}
+								},
+								"url": {
+									"raw": "{{Host}}",
+									"host": [
+										"{{Host}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "DeleteAlias",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "05fbfa71-a46c-4e47-9bd7-1372f13570df",
+										"exec": [
+											"",
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "d8c7f695-5afb-498c-aed9-7a2fed737c94",
+										"exec": [
+											"//console.log('Encrypting ' + pm.test_encryption_string)",
+											"",
+											"test_encryption_string = pm.globals.get('test_encryption_string')",
+											"",
+											"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+											"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+											"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+											"    ",
+											"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Amz-Target",
+										"type": "text",
+										"value": "TrentService.DeleteAlias"
+									},
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-amz-json-1.1"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"AliasName\": \"{{test_alias_rsa_sign}}\"\n}",
+									"options": {
+										"raw": {}
+									}
+								},
+								"url": {
+									"raw": "{{Host}}",
+									"host": [
+										"{{Host}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Remove AES testing key",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "cfd3f43e-f942-43e2-970d-da77de36d202",
+										"exec": [
+											"var jsonData = pm.response.json();",
+											"",
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"The response is JSON\", function () {",
+											"    pm.response.to.be.json;",
+											"});",
+											"",
+											"pm.test(\"Check we have the expected properties\", function () {",
+											"    pm.expect(jsonData).to.have.property('KeyId');",
+											"    pm.expect(jsonData).to.have.property('DeletionDate');",
+											"});",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Amz-Target",
+										"type": "text",
+										"value": "TrentService.ScheduleKeyDeletion"
+									},
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-amz-json-1.1"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"KeyId\": \"{{test_symmetric_key}}\",\n   \"PendingWindowInDays\": 7\n}\n"
+								},
+								"url": {
+									"raw": "{{Host}}",
+									"host": [
+										"{{Host}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Remove 2nd ECC testing key",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "fbd807ae-12d6-493b-8300-bc04620a0638",
+										"exec": [
+											"var jsonData = pm.response.json();",
+											"",
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"The response is JSON\", function () {",
+											"    pm.response.to.be.json;",
+											"});",
+											"",
+											"pm.test(\"Check we have the expected properties\", function () {",
+											"    pm.expect(jsonData).to.have.property('KeyId');",
+											"    pm.expect(jsonData).to.have.property('DeletionDate');",
+											"});",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Amz-Target",
+										"type": "text",
+										"value": "TrentService.ScheduleKeyDeletion"
+									},
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-amz-json-1.1"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"KeyId\": \"{{test_key_rsa_2}}\",\n   \"PendingWindowInDays\": 7\n}\n",
+									"options": {
+										"raw": {}
+									}
+								},
+								"url": {
+									"raw": "{{Host}}",
+									"host": [
+										"{{Host}}"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Encrypt & Date key",
+					"item": [
+						{
+							"name": "Encrypt not allowed",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "376571e2-028d-4855-8a4f-2d8a737783d6",
+										"exec": [
+											"var jsonData = pm.response.json();",
+											"",
+											"pm.test(\"Status code is 400\", function () {",
+											"    pm.response.to.have.status(400);",
+											"});",
+											"",
+											"pm.test(\"The response is JSON\", function () {",
+											"    pm.response.to.be.json;",
+											"});",
+											"",
+											"pm.test(\"Check expected error returned\", function () {",
+											"    // AWS do add fields, so keep this as a minimum number for now",
+											"    pm.expect(Object.keys(jsonData)).to.have.lengthOf(2);",
+											"    ",
+											"    pm.expect(jsonData).to.have.property('__type');",
+											"    pm.expect(jsonData).to.have.property('message');",
+											"    ",
+											"    pm.expect(jsonData['__type']).to.equal('InvalidKeyUsageException')",
+											"    pm.expect(jsonData['message']).to.match(/^arn:aws:kms:[\\w-]+:[\\d]+:key\\/[\\da-f-]+ key usage is SIGN_VERIFY which is not valid for Encrypt.$/)",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "326ff312-66f8-4e08-8081-29fe4d403478",
+										"exec": [
+											"//console.log('Encrypting ' + pm.test_encryption_string)",
+											"",
+											"test_encryption_string = pm.globals.get('test_encryption_string')",
+											"",
+											"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+											"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+											"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+											"    ",
+											"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Amz-Target",
+										"type": "text",
+										"value": "TrentService.Encrypt"
+									},
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-amz-json-1.1"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"KeyId\": \"{{test_key_rsa_sign}}\",\n   \"Plaintext\": \"{{encoded_plaintext}}\"\n}",
+									"options": {
+										"raw": {}
+									}
+								},
+								"url": {
+									"raw": "{{Host}}",
+									"host": [
+										"{{Host}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "DataKey not allowed",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "b2b0c8d2-9b6c-4478-88ef-508282bb2db7",
+										"exec": [
+											"var jsonData = pm.response.json();",
+											"",
+											"pm.test(\"Status code is 400\", function () {",
+											"    pm.response.to.have.status(400);",
+											"});",
+											"",
+											"pm.test(\"The response is JSON\", function () {",
+											"    pm.response.to.be.json;",
+											"});",
+											"",
+											"pm.test(\"Check expected error returned\", function () {",
+											"    // AWS do add fields, so keep this as a minimum number for now",
+											"    pm.expect(Object.keys(jsonData)).to.have.lengthOf(2);",
+											"    ",
+											"    pm.expect(jsonData).to.have.property('__type');",
+											"    pm.expect(jsonData).to.have.property('message');",
+											"    ",
+											"    pm.expect(jsonData['__type']).to.equal('InvalidKeyUsageException')",
+											"    pm.expect(jsonData['message']).to.match(/^arn:aws:kms:[\\w-]+:[\\d]+:key\\/[\\da-f-]+ key usage is SIGN_VERIFY which is not valid for GenerateDataKey.$/)",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "1ee45380-2438-40a2-9ccc-1be9818ffd01",
+										"exec": [
+											"//console.log('Encrypting ' + pm.test_encryption_string)",
+											"",
+											"test_encryption_string = pm.globals.get('test_encryption_string')",
+											"",
+											"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+											"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+											"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+											"    ",
+											"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Amz-Target",
+										"type": "text",
+										"value": "TrentService.GenerateDataKey"
+									},
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-amz-json-1.1"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"KeyId\": \"{{test_key_rsa_sign}}\",\n   \"KeySpec\": \"AES_256\"\n}\n",
+									"options": {
+										"raw": {}
+									}
+								},
+								"url": {
+									"raw": "{{Host}}",
+									"host": [
+										"{{Host}}"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Signing - raw",
+					"item": [
+						{
+							"name": "Can sign a message",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "3c2a4e95-411f-4d07-8f57-d35f3ad36580",
+										"exec": [
+											"// Parsing the response returned by the request.",
+											"var jsonData = pm.response.json();",
+											"",
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"The response is JSON\", function () {",
+											"    pm.response.to.be.json;",
+											"});",
+											"",
+											"pm.test(\"The response looks sensible\", function () {",
+											"    pm.expect(Object.keys(jsonData)).to.have.lengthOf(3);",
+											"",
+											"    pm.expect(jsonData).to.have.property('KeyId');",
+											"    pm.expect(jsonData).to.have.property('Signature');",
+											"    pm.expect(jsonData).to.have.property('SigningAlgorithm');",
+											"",
+											"    pm.expect(jsonData['SigningAlgorithm']).to.equal('RSASSA_PSS_SHA_384')",
+											"});",
+											"",
+											"pm.environment.set(\"signature_raw\", jsonData.Signature);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "fab1fa5e-d5d6-4028-b769-020ea92de571",
+										"exec": [
+											"//console.log('Encrypting ' + pm.test_encryption_string)",
+											"",
+											"test_encryption_string = pm.globals.get('test_encryption_string')",
+											"",
+											"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+											"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+											"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+											"    ",
+											"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Amz-Target",
+										"type": "text",
+										"value": "TrentService.Sign"
+									},
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-amz-json-1.1"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"KeyId\": \"{{test_key_rsa_sign}}\",\n   \"Message\": \"{{encoded_plaintext}}\",\n   \"MessageType\": \"RAW\",\n   \"SigningAlgorithm\": \"RSASSA_PSS_SHA_384\"\n}",
+									"options": {
+										"raw": {}
+									}
+								},
+								"url": {
+									"raw": "{{Host}}",
+									"host": [
+										"{{Host}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Invalid Message Type",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "0b48d6f4-e0f9-444f-b19c-dae91cc14157",
+										"exec": [
+											"var jsonData = pm.response.json();",
+											"",
+											"pm.test(\"Status code is 400\", function () {",
+											"    pm.response.to.have.status(400);",
+											"});",
+											"",
+											"pm.test(\"The response is JSON\", function () {",
+											"    pm.response.to.be.json;",
+											"});",
+											"",
+											"pm.test(\"Check expected error returned\", function () {",
+											"    // AWS do add fields, so keep this as a minimum number for now",
+											"    pm.expect(Object.keys(jsonData)).to.have.lengthOf(2);",
+											"    ",
+											"    pm.expect(jsonData).to.have.property('__type');",
+											"    pm.expect(jsonData).to.have.property('message');",
+											"    ",
+											"    pm.expect(jsonData['__type']).to.equal('ValidationException')",
+											"    pm.expect(jsonData['message']).to.equal(\"1 validation error detected: Value 'INVALID' at 'messageType' failed to satisfy constraint: Member must satisfy enum value set: [DIGEST, RAW]\")",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "0f182100-99b2-4eef-85bc-f34747a65b35",
+										"exec": [
+											"//console.log('Encrypting ' + pm.test_encryption_string)",
+											"",
+											"test_encryption_string = pm.globals.get('test_encryption_string')",
+											"",
+											"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+											"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+											"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+											"    ",
+											"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Amz-Target",
+										"type": "text",
+										"value": "TrentService.Sign"
+									},
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-amz-json-1.1"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"KeyId\": \"{{test_key_rsa_sign}}\",\n   \"Message\": \"{{encoded_plaintext}}\",\n   \"MessageType\": \"INVALID\",\n   \"SigningAlgorithm\": \"RSASSA_PSS_SHA_384\"\n}",
+									"options": {
+										"raw": {}
+									}
+								},
+								"url": {
+									"raw": "{{Host}}",
+									"host": [
+										"{{Host}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Invalid Signing Algorithm",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "d923e486-9830-42e6-8038-68d5461f806e",
+										"exec": [
+											"var jsonData = pm.response.json();",
+											"",
+											"pm.test(\"Status code is 400\", function () {",
+											"    pm.response.to.have.status(400);",
+											"});",
+											"",
+											"pm.test(\"The response is JSON\", function () {",
+											"    pm.response.to.be.json;",
+											"});",
+											"",
+											"pm.test(\"Check expected error returned\", function () {",
+											"    // AWS do add fields, so keep this as a minimum number for now",
+											"    pm.expect(Object.keys(jsonData)).to.have.lengthOf(2);",
+											"",
+											"    pm.expect(jsonData).to.have.property('__type');",
+											"    pm.expect(jsonData).to.have.property('message');",
+											"",
+											"    pm.expect(jsonData['__type']).to.equal('InvalidKeyUsageException')",
+											"    pm.expect(jsonData['message']).to.equal(\"Algorithm ECDSA_SHA_384 is incompatible with key spec RSA_2048.\")",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "76c104d9-e0e1-48bf-86a9-7ea06babd300",
+										"exec": [
+											"//console.log('Encrypting ' + pm.test_encryption_string)",
+											"",
+											"test_encryption_string = pm.globals.get('test_encryption_string')",
+											"",
+											"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+											"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+											"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+											"    ",
+											"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Amz-Target",
+										"type": "text",
+										"value": "TrentService.Sign"
+									},
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-amz-json-1.1"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"KeyId\": \"{{test_key_rsa_sign}}\",\n   \"Message\": \"{{encoded_plaintext}}\",\n   \"MessageType\": \"RAW\",\n   \"SigningAlgorithm\": \"ECDSA_SHA_384\"\n}",
+									"options": {
+										"raw": {}
+									}
+								},
+								"url": {
+									"raw": "{{Host}}",
+									"host": [
+										"{{Host}}"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "b6549eca-6e40-482e-89dd-a21a9598bf41",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "0e509f5c-c05e-472a-8279-89e84d132942",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Verify - raw",
+					"item": [
+						{
+							"name": "Can verify a message",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "daf30603-b07a-4a2e-8d49-6711b6a39c4b",
+										"exec": [
+											"// Parsing the response returned by the request.",
+											"var jsonData = pm.response.json();",
+											"",
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"The response is JSON\", function () {",
+											"    pm.response.to.be.json;",
+											"});",
+											"",
+											"pm.test(\"The response looks sensible\", function () {",
+											"    pm.expect(Object.keys(jsonData)).to.have.lengthOf(3);",
+											"",
+											"    pm.expect(jsonData).to.have.property('KeyId');",
+											"    pm.expect(jsonData).to.have.property('SignatureValid');",
+											"    pm.expect(jsonData).to.have.property('SigningAlgorithm');",
+											"",
+											"    pm.expect(jsonData['SigningAlgorithm']).to.equal('RSASSA_PSS_SHA_384');",
+											"    pm.expect(jsonData['SignatureValid']).to.equal(true);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "60147cbc-7195-400f-8e4f-378ab8b3e7cd",
+										"exec": [
+											"//console.log('Encrypting ' + pm.test_encryption_string)",
+											"",
+											"test_encryption_string = pm.globals.get('test_encryption_string')",
+											"",
+											"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+											"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+											"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+											"    ",
+											"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Amz-Target",
+										"type": "text",
+										"value": "TrentService.Verify"
+									},
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-amz-json-1.1"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"KeyId\": \"{{test_key_rsa_sign}}\",\n   \"Message\": \"{{encoded_plaintext}}\",\n   \"MessageType\": \"RAW\",\n   \"SigningAlgorithm\": \"RSASSA_PSS_SHA_384\",\n   \"Signature\": \"{{signature_raw}}\"\n}",
+									"options": {
+										"raw": {}
+									}
+								},
+								"url": {
+									"raw": "{{Host}}",
+									"host": [
+										"{{Host}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Incorrect Message",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "2fcf1759-4caf-4eae-8328-80442d354e65",
+										"exec": [
+											"var jsonData = pm.response.json();",
+											"",
+											"pm.test(\"Status code is 400\", function () {",
+											"    pm.response.to.have.status(400);",
+											"});",
+											"",
+											"pm.test(\"The response is JSON\", function () {",
+											"    pm.response.to.be.json;",
+											"});",
+											"",
+											"pm.test(\"Check expected error returned\", function () {",
+											"    // AWS do add fields, so keep this as a minimum number for now",
+											"    pm.expect(Object.keys(jsonData)).to.have.lengthOf(1);",
+											"    ",
+											"    pm.expect(jsonData).to.have.property('__type');",
+											"    pm.expect(jsonData['__type']).to.equal('KMSInvalidSignatureException')",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "e32b12dd-ecd4-4d22-b1ca-4496f3ad8959",
+										"exec": [
+											"//console.log('Encrypting ' + pm.test_encryption_string)",
+											"",
+											"test_encryption_string = pm.globals.get('test_encryption_string')",
+											"",
+											"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+											"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+											"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+											"    ",
+											"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Amz-Target",
+										"type": "text",
+										"value": "TrentService.Verify"
+									},
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-amz-json-1.1"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"KeyId\": \"{{test_key_rsa_sign}}\",\n   \"Message\": \"{{encoded_plaintext}}{{encoded_plaintext}}\",\n   \"MessageType\": \"RAW\",\n   \"SigningAlgorithm\": \"RSASSA_PSS_SHA_384\",\n   \"Signature\": \"{{signature_raw}}\"\n}",
+									"options": {
+										"raw": {}
+									}
+								},
+								"url": {
+									"raw": "{{Host}}",
+									"host": [
+										"{{Host}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Incorrect Signature",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "af1c7711-883e-47f9-aa14-800cd4b6ba65",
+										"exec": [
+											"var jsonData = pm.response.json();",
+											"",
+											"pm.test(\"Status code is 400\", function () {",
+											"    pm.response.to.have.status(400);",
+											"});",
+											"",
+											"pm.test(\"The response is JSON\", function () {",
+											"    pm.response.to.be.json;",
+											"});",
+											"",
+											"pm.test(\"Check expected error returned\", function () {",
+											"    // AWS do add fields, so keep this as a minimum number for now",
+											"    pm.expect(Object.keys(jsonData)).to.have.lengthOf(1);",
+											"    ",
+											"    pm.expect(jsonData).to.have.property('__type');",
+											"    pm.expect(jsonData['__type']).to.equal('KMSInvalidSignatureException')",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "c7d1cd00-dec4-42d6-8e5b-fe71e52c1873",
+										"exec": [
+											"//console.log('Encrypting ' + pm.test_encryption_string)",
+											"",
+											"test_encryption_string = pm.globals.get('test_encryption_string')",
+											"",
+											"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+											"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+											"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+											"    ",
+											"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Amz-Target",
+										"type": "text",
+										"value": "TrentService.Verify"
+									},
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-amz-json-1.1"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"KeyId\": \"{{test_key_rsa_sign}}\",\n   \"Message\": \"{{encoded_plaintext}}\",\n   \"MessageType\": \"RAW\",\n   \"SigningAlgorithm\": \"RSASSA_PSS_SHA_384\",\n   \"Signature\": \"MEUCIBbcfPQDK9avN9A7lMAdxWVEzFtTw5s8/7qoo717Rn5KAiEAjnpB9xk7kvHQjEhLY58hYx1pm6liuH3PznlScvHBq0c=\"\n}",
+									"options": {
+										"raw": {}
+									}
+								},
+								"url": {
+									"raw": "{{Host}}",
+									"host": [
+										"{{Host}}"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "785b4038-a001-4045-a73e-cc4b129b1045",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "52d2ee5e-720c-4960-8d7a-3249d8221cfa",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Signing - digest",
+					"item": [
+						{
+							"name": "Can sign a message",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "660a7b7b-020a-42c9-b1b4-df70954d85b2",
+										"exec": [
+											"// Parsing the response returned by the request.",
+											"var jsonData = pm.response.json();",
+											"",
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"The response is JSON\", function () {",
+											"    pm.response.to.be.json;",
+											"});",
+											"",
+											"pm.test(\"The response looks sensible\", function () {",
+											"    pm.expect(Object.keys(jsonData)).to.have.lengthOf(3);",
+											"",
+											"    pm.expect(jsonData).to.have.property('KeyId');",
+											"    pm.expect(jsonData).to.have.property('Signature');",
+											"    pm.expect(jsonData).to.have.property('SigningAlgorithm');",
+											"",
+											"    pm.expect(jsonData['SigningAlgorithm']).to.equal('RSASSA_PKCS1_V1_5_SHA_256')",
+											"",
+											"});",
+											"",
+											"pm.environment.set(\"signature_digest\", jsonData.Signature);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "5f5c2190-9a64-4b2e-8352-50a0c0f6890d",
+										"exec": [
+											"//console.log('Encrypting ' + pm.test_encryption_string)",
+											"",
+											"test_encryption_string = pm.globals.get('test_encryption_string')",
+											"",
+											"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+											"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+											"var digest = CryptoJS.enc.Base64.stringify(CryptoJS.SHA256(words));",
+											"    ",
+											"pm.environment.set(\"encoded_digest\", digest);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Amz-Target",
+										"type": "text",
+										"value": "TrentService.Sign"
+									},
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-amz-json-1.1"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"KeyId\": \"{{test_key_rsa_sign}}\",\n   \"Message\": \"{{encoded_digest}}\",\n   \"MessageType\": \"DIGEST\",\n   \"SigningAlgorithm\": \"RSASSA_PKCS1_V1_5_SHA_256\"\n}",
+									"options": {
+										"raw": {}
+									}
+								},
+								"url": {
+									"raw": "{{Host}}",
+									"host": [
+										"{{Host}}"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "1fd4e0c3-9ec2-4cb6-a0c0-c7beeea67ce2",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "ea785e95-becb-4187-86c2-80660dd60fb5",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Verify - digest",
+					"item": [
+						{
+							"name": "Can verify a message",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "af26c71a-92bc-4793-bcb8-72171d9e31a5",
+										"exec": [
+											"// Parsing the response returned by the request.",
+											"var jsonData = pm.response.json();",
+											"",
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"The response is JSON\", function () {",
+											"    pm.response.to.be.json;",
+											"});",
+											"",
+											"pm.test(\"The response looks sensible\", function () {",
+											"    pm.expect(Object.keys(jsonData)).to.have.lengthOf(3);",
+											"",
+											"    pm.expect(jsonData).to.have.property('KeyId');",
+											"    pm.expect(jsonData).to.have.property('SignatureValid');",
+											"    pm.expect(jsonData).to.have.property('SigningAlgorithm');",
+											"",
+											"    pm.expect(jsonData['SigningAlgorithm']).to.equal('RSASSA_PKCS1_V1_5_SHA_256');",
+											"    pm.expect(jsonData['SignatureValid']).to.equal(true);",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "3789fd6f-28a3-4558-959d-e77666cb98ff",
+										"exec": [
+											"//console.log('Encrypting ' + pm.test_encryption_string)",
+											"",
+											"test_encryption_string = pm.globals.get('test_encryption_string')",
+											"",
+											"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+											"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+											"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+											"    ",
+											"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Amz-Target",
+										"type": "text",
+										"value": "TrentService.Verify"
+									},
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-amz-json-1.1"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"KeyId\": \"{{test_key_rsa_sign}}\",\n   \"Message\": \"{{encoded_digest}}\",\n   \"MessageType\": \"DIGEST\",\n   \"SigningAlgorithm\": \"RSASSA_PKCS1_V1_5_SHA_256\",\n   \"Signature\": \"{{signature_digest}}\"\n}",
+									"options": {
+										"raw": {}
+									}
+								},
+								"url": {
+									"raw": "{{Host}}",
+									"host": [
+										"{{Host}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Incorrect Message",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "3dca62de-8d7d-4fee-99f2-7a06d3a45111",
+										"exec": [
+											"var jsonData = pm.response.json();",
+											"",
+											"pm.test(\"Status code is 400\", function () {",
+											"    pm.response.to.have.status(400);",
+											"});",
+											"",
+											"pm.test(\"The response is JSON\", function () {",
+											"    pm.response.to.be.json;",
+											"});",
+											"",
+											"pm.test(\"Check expected error returned\", function () {",
+											"    // AWS do add fields, so keep this as a minimum number for now",
+											"    pm.expect(Object.keys(jsonData)).to.have.lengthOf(1);",
+											"    ",
+											"    pm.expect(jsonData).to.have.property('__type');",
+											"    pm.expect(jsonData['__type']).to.equal('KMSInvalidSignatureException')",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "649b1a74-0a63-4d83-9147-6d941ba3dc36",
+										"exec": [
+											"//console.log('Encrypting ' + pm.test_encryption_string)",
+											"",
+											"test_encryption_string = pm.globals.get('test_encryption_string')",
+											"",
+											"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+											"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+											"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+											"    ",
+											"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Amz-Target",
+										"type": "text",
+										"value": "TrentService.Verify"
+									},
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-amz-json-1.1"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"KeyId\": \"{{test_key_rsa_sign}}\",\n   \"Message\": \"GF+NsyJx/iX1Yab8k4suJkMG7DBO2lGAB9F2SCY4GWk=\",\n   \"MessageType\": \"DIGEST\",\n   \"SigningAlgorithm\": \"RSASSA_PKCS1_V1_5_SHA_256\",\n   \"Signature\": \"{{signature_digest}}\"\n}",
+									"options": {
+										"raw": {}
+									}
+								},
+								"url": {
+									"raw": "{{Host}}",
+									"host": [
+										"{{Host}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Incorrect Signature",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "b487d6e2-8408-4c21-9295-e30f0ad295ac",
+										"exec": [
+											"var jsonData = pm.response.json();",
+											"",
+											"pm.test(\"Status code is 400\", function () {",
+											"    pm.response.to.have.status(400);",
+											"});",
+											"",
+											"pm.test(\"The response is JSON\", function () {",
+											"    pm.response.to.be.json;",
+											"});",
+											"",
+											"pm.test(\"Check expected error returned\", function () {",
+											"    // AWS do add fields, so keep this as a minimum number for now",
+											"    pm.expect(Object.keys(jsonData)).to.have.lengthOf(1);",
+											"    ",
+											"    pm.expect(jsonData).to.have.property('__type');",
+											"    pm.expect(jsonData['__type']).to.equal('KMSInvalidSignatureException')",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"id": "bec049a6-073f-42a9-a7bc-7196d94dc94a",
+										"exec": [
+											"//console.log('Encrypting ' + pm.test_encryption_string)",
+											"",
+											"test_encryption_string = pm.globals.get('test_encryption_string')",
+											"",
+											"//var encoded_plaintext = CryptoJS.enc.Base64.parse(pm.test_encryption_string);",
+											"var words = CryptoJS.enc.Utf8.parse(test_encryption_string);",
+											"var encoded_plaintext = CryptoJS.enc.Base64.stringify(words);",
+											"    ",
+											"pm.environment.set(\"encoded_plaintext\", encoded_plaintext);",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Amz-Target",
+										"type": "text",
+										"value": "TrentService.Verify"
+									},
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-amz-json-1.1"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"KeyId\": \"{{test_key_rsa_sign}}\",\n   \"Message\": \"{{encoded_digest}}\",\n   \"MessageType\": \"DIGEST\",\n   \"SigningAlgorithm\": \"RSASSA_PKCS1_V1_5_SHA_256\",\n   \"Signature\": \"MEUCIBbcfPQDK9avN9A7lMAdxWVEzFtTw5s8/7qoo717Rn5KAiEAjnpB9xk7kvHQjEhLY58hYx1pm6liuH3PznlScvHBq0c=\"\n}",
+									"options": {
+										"raw": {}
+									}
+								},
+								"url": {
+									"raw": "{{Host}}",
+									"host": [
+										"{{Host}}"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "93b4bdd9-e875-49ad-aafe-0472fd13f5e9",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "9e041886-5a96-48cc-8219-4e31fd6962d6",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Delete Key",
+					"item": [
+						{
+							"name": "Schedule test key deletion Copy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "25bdd39b-0832-4191-8747-6b53caea8895",
+										"exec": [
+											"var jsonData = pm.response.json();",
+											"",
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"The response is JSON\", function () {",
+											"    pm.response.to.be.json;",
+											"});",
+											"",
+											"pm.test(\"Check we have the expected properties\", function () {",
+											"    pm.expect(jsonData).to.have.property('KeyId');",
+											"    pm.expect(jsonData).to.have.property('DeletionDate');",
+											"});",
+											"",
+											"pm.test(\"Check we have correct ARN\", function () {",
+											"    pm.expect(jsonData.KeyId).to.equal(pm.environment.get(\"test_key_rsa_sign_arn\"));",
+											"});",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-Amz-Target",
+										"type": "text",
+										"value": "TrentService.ScheduleKeyDeletion"
+									},
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"type": "text",
+										"value": "application/x-amz-json-1.1"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"KeyId\": \"{{test_key_rsa_sign}}\",\n   \"PendingWindowInDays\": 7\n}\n",
+									"options": {
+										"raw": {}
+									}
+								},
+								"url": {
+									"raw": "{{Host}}",
+									"host": [
+										"{{Host}}"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "31e0d573-d28f-4332-ad81-39c7a0f2bde1",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "bdfa6ba7-076d-402c-95c9-7f27c164bfdc",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
 				}
 			],
 			"protocolProfileBehavior": {}
