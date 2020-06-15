@@ -5,7 +5,7 @@ A mock version of AWS' Key Management Service, for local development and testing
 _Whilst this service does use [real encryption](https://golang.org/pkg/crypto/aes/), it is designed for 
 development and testing against KMS; not for use in a production environment._
 
-##### (Local) KMS Usage Guides
+#### (Local) KMS Usage Guides
 * [Using AWS KMS via the CLI with a Symmetric Key](https://nsmith.net/aws-kms-cli)
 * [Using AWS KMS via the CLI with Elliptic Curve (ECC) Keys](https://nsmith.net/aws-kms-cli-ecc)
 
