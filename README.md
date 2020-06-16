@@ -2,7 +2,7 @@
 
 A mock version of AWS' Key Management Service, for local development and testing. Written in Go.
 
-_Whilst this service does use [real encryption](https://golang.org/pkg/crypto/aes/), it is designed for 
+_Whilst this project does use real encryption ([AES](https://golang.org/pkg/crypto/aes/), [ECDSA](https://golang.org/pkg/crypto/ecdsa/) and [RSA](https://golang.org/pkg/crypto/rsa/)), it is designed for 
 development and testing against KMS; not for use in a production environment._
 
 #### (Local) KMS Usage Guides
