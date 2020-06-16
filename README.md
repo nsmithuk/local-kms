@@ -2,14 +2,22 @@
 
 A mock version of AWS' Key Management Service, for local development and testing. Written in Go.
 
-_Whilst this service does use [real encryption](https://golang.org/pkg/crypto/aes/), it is designed for 
+_Whilst this project does use real encryption ([AES](https://golang.org/pkg/crypto/aes/), [ECDSA](https://golang.org/pkg/crypto/ecdsa/) and [RSA](https://golang.org/pkg/crypto/rsa/)), it is designed for 
 development and testing against KMS; not for use in a production environment._
+
+#### (Local) KMS Usage Guides
+* [Using AWS KMS via the CLI with a Symmetric Key](https://nsmith.net/aws-kms-cli)
+* [Using AWS KMS via the CLI with Elliptic Curve (ECC) Keys](https://nsmith.net/aws-kms-cli-ecc)
+* [Using AWS KMS via the CLI with RSA Keys for Message Signing](https://nsmith.net/aws-kms-cli-rsa-signing)
 
 ## Features
 
 ### Supports
 
-* Symmetric and ECC_NIST keys
+* Symmetric (AES) keys
+* Asymmetric keys
+    * ECC_NIST keys
+    * RSA keys with a usage set to SIGN_VERIFY
 * Management of Customer Master Keys; including:
     * Enabling and disabling keys
     * Scheduling key deletion
@@ -32,7 +40,8 @@ If a key in the seeding file already exists, it will not be overwritten or amend
 
 ### Does not (yet) support
 
-* RSA or ECC_SECG_P256K1 keys
+* RSA keys with a usage set to ENCRYPT_DECRYPT
+* ECC_SECG_P256K1 keys
 * Grants
 * Importing your own key material
 * Operations relating to a Custom Key Store
@@ -177,7 +186,9 @@ Local KMS runs on port http://localhost:8080 by default.
 
 ### Using LKMS with the CLI
 
-For a more in-depth guide to theses commands, please see [Using AWS KMS via the CLI](https://nsmith.net/aws-kms-cli).
+For a more in-depth guide to these commands, please see:
+* [Using AWS KMS via the CLI with a Symmetric Key](https://nsmith.net/aws-kms-cli)
+* [Using AWS KMS via the CLI with Elliptic Curve (ECC) Keys](https://nsmith.net/aws-kms-cli-ecc)
 
 The examples here use `awslocal`, which wraps the `aws` command to include the required endpoint.
 

@@ -72,6 +72,15 @@ func (r *RequestHandler) Sign() Response {
 	var signingKey cmk.SigningKey
 
 	switch k := key.(type) {
+	case *cmk.RsaKey:
+
+		if k.GetMetadata().KeyUsage == cmk.UsageEncryptDecrypt {
+			msg := fmt.Sprintf("%s key usage is ENCRYPT_DECRYPT which is not valid for signing.", k.GetArn())
+			r.logger.Warnf(msg)
+			return NewInvalidKeyUsageException(msg)
+		}
+
+		signingKey = k
 	case *cmk.EccKey:
 
 		if k.GetMetadata().KeyUsage == cmk.UsageEncryptDecrypt {
