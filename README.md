@@ -8,6 +8,7 @@ development and testing against KMS; not for use in a production environment._
 #### (Local) KMS Usage Guides
 * [Using AWS KMS via the CLI with a Symmetric Key](https://nsmith.net/aws-kms-cli)
 * [Using AWS KMS via the CLI with Elliptic Curve (ECC) Keys](https://nsmith.net/aws-kms-cli-ecc)
+* [Using AWS KMS via the CLI with RSA Keys for Message Signing](https://nsmith.net/aws-kms-cli-rsa-signing)
 
 ## Features
 
