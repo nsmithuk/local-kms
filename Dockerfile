@@ -7,8 +7,7 @@ COPY . /go/src/github.com/nsmithuk/local-kms
 
 WORKDIR /go/src/github.com/nsmithuk/local-kms
 
-RUN go get -u github.com/golang/dep/cmd/dep
-RUN dep ensure && go install
+RUN go install
 
 
 # Build the final container with just the resulting binary

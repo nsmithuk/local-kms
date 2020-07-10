@@ -171,7 +171,6 @@ Tested with Go 1.12
 ```sh
 go get -u github.com/nsmithuk/local-kms
 cd $GOPATH/src/github.com/nsmithuk/local-kms
-dep ensure
 go install
 ```
 
