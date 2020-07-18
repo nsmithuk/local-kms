@@ -58,8 +58,6 @@ jobs:
       - run:
           name: Prep for build
           command: |
-            go get -u github.com/golang/dep/cmd/dep
-            dep ensure
             mkdir ~/artifacts
       - run:
           name: Build amd64 linux
@@ -87,8 +85,6 @@ jobs:
       - run:
           name: Prep for build
           command: |
-            go get -u github.com/golang/dep/cmd/dep
-            dep ensure
             mkdir /artifacts
       - run:
           name: Build amd64 linux
@@ -112,8 +108,6 @@ jobs:
       - run:
           name: Prep for build
           command: |
-            go get -u github.com/golang/dep/cmd/dep
-            dep ensure
             mkdir ~/artifacts
       - run:
           name: Build amd64 darwin
