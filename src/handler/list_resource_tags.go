@@ -9,7 +9,7 @@ import (
 
 /*
 Note: Tags can be viewed even if a key is disabled or pending deletion.
- */
+*/
 
 func (r *RequestHandler) ListResourceTags() Response {
 
@@ -25,14 +25,18 @@ func (r *RequestHandler) ListResourceTags() Response {
 	var marker string
 	var limit int64 = 50
 
-	if body.Marker != nil { marker = *body.Marker }
-	if body.Limit != nil { limit = *body.Limit }
+	if body.Marker != nil {
+		marker = *body.Marker
+	}
+	if body.Limit != nil {
+		limit = *body.Limit
+	}
 
 	//--------------------------------
 	// Validation
 
 	if limit < 1 || limit > 50 {
-		msg := fmt.Sprintf("1 validation error detected: Value '%d' at 'limit' failed to satisfy " +
+		msg := fmt.Sprintf("1 validation error detected: Value '%d' at 'limit' failed to satisfy "+
 			"constraint: Minimum value of 1. Maximum value of 50.", limit)
 
 		r.logger.Warnf(msg)
@@ -60,14 +64,14 @@ func (r *RequestHandler) ListResourceTags() Response {
 	//---
 
 	// Load the tags for the key
-	tags, err := r.database.ListTags(key.GetArn(), limit + 1, marker)
+	tags, err := r.database.ListTags(key.GetArn(), limit+1, marker)
 
 	//---
 
 	response := &struct {
-		NextMarker 	string `json:",omitempty"`
-		Truncated 	bool
-		Tags 	[]*data.Tag
+		NextMarker string `json:",omitempty"`
+		Truncated  bool
+		Tags       []*data.Tag
 	}{}
 
 	// If there are more than the limit, return the 'next' ID as the NextMarker

@@ -89,5 +89,5 @@ func (r *RequestHandler) PutKeyPolicy() Response {
 
 	r.logger.Infof("New Key Policy set for: %s\n", key.GetArn())
 
-	return NewResponse( 200, nil)
+	return NewResponse(200, nil)
 }

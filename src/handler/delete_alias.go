@@ -36,12 +36,12 @@ func (r *RequestHandler) DeleteAlias() Response {
 
 	if strings.HasPrefix(*body.AliasName, "alias/aws") {
 		r.logger.Warnf("Cannot remove alias with prefix 'alias/aws/'")
-		return NewNotAuthorizedExceptionResponse( "")
+		return NewNotAuthorizedExceptionResponse("")
 	}
 
 	//--------------------------------
 
-	aliasArn :=  config.ArnPrefix() + *body.AliasName
+	aliasArn := config.ArnPrefix() + *body.AliasName
 
 	_, err = r.database.LoadAlias(aliasArn)
 

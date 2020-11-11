@@ -71,5 +71,5 @@ func (r *RequestHandler) DescribeKey() Response {
 
 	r.logger.Infof("Key described: %s\n", key.GetArn())
 
-	return NewResponse( 200, response)
+	return NewResponse(200, response)
 }

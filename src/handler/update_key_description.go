@@ -26,7 +26,7 @@ func (r *RequestHandler) UpdateKeyDescription() Response {
 	}
 
 	if body.Description != nil && len(*body.Description) > 8192 {
-		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'description' failed to satisfy " +
+		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'description' failed to satisfy "+
 			"constraint: Member must have length less than or equal to 8192", *body.Description)
 
 		r.logger.Warnf(msg)

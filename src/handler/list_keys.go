@@ -21,14 +21,18 @@ func (r *RequestHandler) ListKeys() Response {
 	var marker string
 	var limit int64 = 100
 
-	if body.Marker != nil { marker = *body.Marker }
-	if body.Limit != nil { limit = *body.Limit }
+	if body.Marker != nil {
+		marker = *body.Marker
+	}
+	if body.Limit != nil {
+		limit = *body.Limit
+	}
 
 	//--------------------------------
 	// Validation
 
 	if limit < 1 || limit > 1000 {
-		msg := fmt.Sprintf("1 validation error detected: Value '%d' at 'limit' failed to satisfy " +
+		msg := fmt.Sprintf("1 validation error detected: Value '%d' at 'limit' failed to satisfy "+
 			"constraint: Minimum value of 1. Maximum value of 1000.", limit)
 
 		r.logger.Warnf(msg)
@@ -40,7 +44,7 @@ func (r *RequestHandler) ListKeys() Response {
 	//---
 
 	// Return 1 extra result to determine if there are > limit
-	keys, err := r.database.ListKeys(config.ArnPrefix() + "key/", limit + 1, marker)
+	keys, err := r.database.ListKeys(config.ArnPrefix()+"key/", limit+1, marker)
 	if err != nil {
 
 		if _, ok := err.(*data.InvalidMarkerExceptionError); ok {
@@ -56,15 +60,14 @@ func (r *RequestHandler) ListKeys() Response {
 
 	type ListKeysOutputKey struct {
 		KeyArn string
-		KeyId string
+		KeyId  string
 	}
 
 	response := &struct {
-		NextMarker 	string `json:",omitempty"`
-		Truncated 	bool
-		Keys 		[]*ListKeysOutputKey
+		NextMarker string `json:",omitempty"`
+		Truncated  bool
+		Keys       []*ListKeysOutputKey
 	}{}
-
 
 	// If there are more than the limit, return the 'next' ID as the NextMarker
 	if int64(len(keys)) > limit {
@@ -80,7 +83,7 @@ func (r *RequestHandler) ListKeys() Response {
 	for i, key := range keys {
 		response.Keys[i] = &ListKeysOutputKey{
 			KeyArn: key.GetArn(),
-			KeyId: key.GetMetadata().KeyId,
+			KeyId:  key.GetMetadata().KeyId,
 		}
 	}
 
@@ -88,5 +91,5 @@ func (r *RequestHandler) ListKeys() Response {
 
 	r.logger.Infof("%d keys listed\n", len(keys))
 
-	return NewResponse( 200, response)
+	return NewResponse(200, response)
 }

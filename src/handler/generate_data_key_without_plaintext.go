@@ -14,5 +14,5 @@ func (r *RequestHandler) GenerateDataKeyWithoutPlaintext() Response {
 
 	r.logger.Infof("Data key generated without plaintext: %s\n", keyResponse.KeyId)
 
-	return NewResponse( 200, keyResponse)
+	return NewResponse(200, keyResponse)
 }

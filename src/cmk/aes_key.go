@@ -9,8 +9,8 @@ import (
 
 type AesKey struct {
 	BaseKey
-	BackingKeys		[][32]byte
-	NextKeyRotation	time.Time
+	BackingKeys     [][32]byte
+	NextKeyRotation time.Time
 }
 
 func NewAesKey(metadata KeyMetadata, policy string) *AesKey {
@@ -53,7 +53,7 @@ func (k *AesKey) GetMetadata() *KeyMetadata {
 
 func (k *AesKey) RotateIfNeeded() bool {
 
-	if !k.NextKeyRotation.IsZero() && k.NextKeyRotation.Before(time.Now()){
+	if !k.NextKeyRotation.IsZero() && k.NextKeyRotation.Before(time.Now()) {
 
 		k.BackingKeys = append(k.BackingKeys, generateKey())
 
@@ -97,14 +97,14 @@ func (k *AesKey) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	// Cannot use embedded 'Key' struct
 	// https://github.com/go-yaml/yaml/issues/263
 	type YamlKey struct {
-		Metadata 		KeyMetadata		`yaml:"Metadata"`
-		BackingKeys		[]string		`yaml:"BackingKeys"`
-		NextKeyRotation	time.Time		`yaml:"NextKeyRotation"`
+		Metadata        KeyMetadata `yaml:"Metadata"`
+		BackingKeys     []string    `yaml:"BackingKeys"`
+		NextKeyRotation time.Time   `yaml:"NextKeyRotation"`
 	}
 
 	yk := YamlKey{}
 	if err := unmarshal(&yk); err != nil {
-		return &UnmarshalYAMLError{ err.Error() }
+		return &UnmarshalYAMLError{err.Error()}
 	}
 
 	k.Type = TypeAes
@@ -140,5 +140,3 @@ func (k *AesKey) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 	return nil
 }
-
-

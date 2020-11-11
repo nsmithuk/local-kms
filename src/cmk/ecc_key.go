@@ -100,7 +100,7 @@ func (k *EccKey) Sign(digest []byte, algorithm SigningAlgorithm) ([]byte, error)
 
 	validSigningAlgorithm := false
 
-	for _,a := range k.Metadata.SigningAlgorithms {
+	for _, a := range k.Metadata.SigningAlgorithms {
 		if a == algorithm {
 			validSigningAlgorithm = true
 			break
@@ -116,15 +116,15 @@ func (k *EccKey) Sign(digest []byte, algorithm SigningAlgorithm) ([]byte, error)
 
 	switch algorithm {
 	case SigningAlgorithmEcdsaSha256:
-		if len(digest) != (256/8) {
+		if len(digest) != (256 / 8) {
 			return []byte{}, &InvalidDigestLength{}
 		}
 	case SigningAlgorithmEcdsaSha384:
-		if len(digest) != (384/8) {
+		if len(digest) != (384 / 8) {
 			return []byte{}, &InvalidDigestLength{}
 		}
 	case SigningAlgorithmEcdsaSha512:
-		if len(digest) != (512/8) {
+		if len(digest) != (512 / 8) {
 			return []byte{}, &InvalidDigestLength{}
 		}
 	default:
@@ -186,7 +186,7 @@ func (k *EccKey) HashAndVerify(signature []byte, message []byte, algorithm Signi
 /*
 	ecdsa.PrivateKey.Curve is an interface type, so we need to
 	Unmarshal it ourselves to set the concrete type.
- */
+*/
 func (k *EcdsaPrivateKey) UnmarshalJSON(data []byte) error {
 	var pk ecdsa.PrivateKey
 	pk.Curve = &elliptic.CurveParams{}

@@ -86,7 +86,7 @@ func (k *RsaKey) Sign(digest []byte, algorithm SigningAlgorithm) ([]byte, error)
 
 	validSigningAlgorithm := false
 
-	for _,a := range k.Metadata.SigningAlgorithms {
+	for _, a := range k.Metadata.SigningAlgorithms {
 		if a == algorithm {
 			validSigningAlgorithm = true
 			break
@@ -103,17 +103,17 @@ func (k *RsaKey) Sign(digest []byte, algorithm SigningAlgorithm) ([]byte, error)
 
 	switch algorithm {
 	case SigningAlgorithmRsaPssSha256, SigningAlgorithmRsaPkcsSha256:
-		if len(digest) != (256/8) {
+		if len(digest) != (256 / 8) {
 			return []byte{}, &InvalidDigestLength{}
 		}
 		hash = crypto.SHA256
 	case SigningAlgorithmRsaPssSha384, SigningAlgorithmRsaPkcsSha384:
-		if len(digest) != (384/8) {
+		if len(digest) != (384 / 8) {
 			return []byte{}, &InvalidDigestLength{}
 		}
 		hash = crypto.SHA384
 	case SigningAlgorithmRsaPssSha512, SigningAlgorithmRsaPkcsSha512:
-		if len(digest) != (512/8) {
+		if len(digest) != (512 / 8) {
 			return []byte{}, &InvalidDigestLength{}
 		}
 		hash = crypto.SHA512

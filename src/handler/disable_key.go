@@ -67,6 +67,6 @@ func (r *RequestHandler) DisableKey() Response {
 
 	r.logger.Infof("Key disabled: %s\n", key.GetArn())
 
-	return NewResponse( 200, nil)
+	return NewResponse(200, nil)
 
 }

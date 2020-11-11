@@ -16,7 +16,8 @@ func (r *RequestHandler) Decrypt() Response {
 	if err != nil {
 
 		// Errors decoding the base64 have a specific error.
-		_, ok := err.(base64.CorruptInputError); if ok {
+		_, ok := err.(base64.CorruptInputError)
+		if ok {
 			r.logger.Warnf("Unable to decode base64 value")
 			return NewSerializationExceptionResponse("")
 		}
@@ -36,7 +37,7 @@ func (r *RequestHandler) Decrypt() Response {
 	}
 
 	if len(body.CiphertextBlob) > 6144 {
-		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'CiphertextBlob' failed to satisfy " +
+		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'CiphertextBlob' failed to satisfy "+
 			"constraint: Member must have length minimum length of 1 and maximum length of 6144.", string(body.CiphertextBlob))
 
 		r.logger.Warnf(msg)
@@ -93,13 +94,13 @@ func (r *RequestHandler) Decrypt() Response {
 
 	r.logger.Infof("Decryption called: %s\n", key.GetArn())
 
-	return NewResponse( 200, &struct {
-		KeyId				string
-		Plaintext			[]byte
-		EncryptionAlgorithm	cmk.EncryptionAlgorithm
+	return NewResponse(200, &struct {
+		KeyId               string
+		Plaintext           []byte
+		EncryptionAlgorithm cmk.EncryptionAlgorithm
 	}{
-		KeyId: key.GetArn(),
-		Plaintext: plaintext,
+		KeyId:               key.GetArn(),
+		Plaintext:           plaintext,
 		EncryptionAlgorithm: cmk.EncryptionAlgorithm(*body.EncryptionAlgorithm),
 	})
 }

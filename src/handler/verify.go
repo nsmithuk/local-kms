@@ -40,7 +40,7 @@ func (r *RequestHandler) Verify() Response {
 	}
 
 	if len(body.Message) > 4096 {
-		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'Message' failed to satisfy " +
+		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'Message' failed to satisfy "+
 			"constraint: Member must have minimum length of 1 and maximum length of 4096.", string(body.Message))
 
 		r.logger.Warnf(msg)
@@ -60,7 +60,7 @@ func (r *RequestHandler) Verify() Response {
 	}
 
 	if !(*body.MessageType == "RAW" || *body.MessageType == "DIGEST") {
-		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'messageType' failed to satisfy " +
+		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'messageType' failed to satisfy "+
 			"constraint: Member must satisfy enum value set: [DIGEST, RAW]", *body.MessageType)
 
 		r.logger.Warnf(msg)
@@ -127,13 +127,13 @@ func (r *RequestHandler) Verify() Response {
 		return NewKMSInvalidSignatureException("")
 	}
 
-	return NewResponse( 200, &struct {
-		KeyId				string
-		SignatureValid		bool
-		SigningAlgorithm	cmk.SigningAlgorithm
+	return NewResponse(200, &struct {
+		KeyId            string
+		SignatureValid   bool
+		SigningAlgorithm cmk.SigningAlgorithm
 	}{
-		KeyId: key.GetArn(),
-		SignatureValid: valid,
+		KeyId:            key.GetArn(),
+		SignatureValid:   valid,
 		SigningAlgorithm: cmk.SigningAlgorithm(*body.SigningAlgorithm),
 	})
 }

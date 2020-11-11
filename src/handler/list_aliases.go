@@ -20,14 +20,18 @@ func (r *RequestHandler) ListAliases() Response {
 	var marker string
 	var limit int64 = 50
 
-	if body.Marker != nil { marker = *body.Marker }
-	if body.Limit != nil { limit = *body.Limit }
+	if body.Marker != nil {
+		marker = *body.Marker
+	}
+	if body.Limit != nil {
+		limit = *body.Limit
+	}
 
 	//--------------------------------
 	// Validation
 
 	if limit < 1 || limit > 100 {
-		msg := fmt.Sprintf("1 validation error detected: Value '%d' at 'limit' failed to satisfy " +
+		msg := fmt.Sprintf("1 validation error detected: Value '%d' at 'limit' failed to satisfy "+
 			"constraint: Minimum value of 1. Maximum value of 100.", limit)
 
 		r.logger.Warnf(msg)
@@ -62,7 +66,7 @@ func (r *RequestHandler) ListAliases() Response {
 	//--------------------------------
 
 	// Return 1 extra result to determine if there are > limit
-	aliases, err := r.database.ListAlias(config.ArnPrefix() + "alias/", limit + 1, marker, keyFilter)
+	aliases, err := r.database.ListAlias(config.ArnPrefix()+"alias/", limit+1, marker, keyFilter)
 	if err != nil {
 
 		if _, ok := err.(*data.InvalidMarkerExceptionError); ok {
@@ -77,15 +81,15 @@ func (r *RequestHandler) ListAliases() Response {
 	//---
 
 	type AliasList struct {
-		AliasArn	string
-		AliasName	string
-		TargetKeyId	string
+		AliasArn    string
+		AliasName   string
+		TargetKeyId string
 	}
 
 	response := &struct {
-		NextMarker 	string `json:",omitempty"`
-		Truncated 	bool
-		Aliases 	[]*AliasList
+		NextMarker string `json:",omitempty"`
+		Truncated  bool
+		Aliases    []*AliasList
 	}{}
 
 	// If there are more than the limit, return the 'next' ID as the NextMarker
@@ -101,8 +105,8 @@ func (r *RequestHandler) ListAliases() Response {
 
 	for i, alias := range aliases {
 		response.Aliases[i] = &AliasList{
-			AliasArn: alias.AliasArn,
-			AliasName: alias.AliasName,
+			AliasArn:    alias.AliasArn,
+			AliasName:   alias.AliasName,
 			TargetKeyId: alias.TargetKeyId,
 		}
 	}
@@ -111,5 +115,5 @@ func (r *RequestHandler) ListAliases() Response {
 
 	r.logger.Infof("%d aliases listed\n", len(aliases))
 
-	return NewResponse( 200, response)
+	return NewResponse(200, response)
 }

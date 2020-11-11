@@ -7,7 +7,7 @@ var AWSAccountId string
 var DatabasePath string
 
 func ArnPrefix() string {
-	return "arn:aws:kms:"+AWSRegion+":"+AWSAccountId+":"
+	return "arn:aws:kms:" + AWSRegion + ":" + AWSAccountId + ":"
 }
 
 func EnsureArn(prefix, target string) string {

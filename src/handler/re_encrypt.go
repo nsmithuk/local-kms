@@ -34,7 +34,7 @@ func (r *RequestHandler) ReEncrypt() Response {
 	}
 
 	if len(body.CiphertextBlob) > 6144 {
-		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'CiphertextBlob' failed to satisfy " +
+		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'CiphertextBlob' failed to satisfy "+
 			"constraint: Member must have length minimum length of 1 and maximum length of 6144.", string(body.CiphertextBlob))
 
 		r.logger.Warnf(msg)
@@ -113,17 +113,17 @@ func (r *RequestHandler) ReEncrypt() Response {
 
 	r.logger.Infof("ReEncrypt called: %s -> %s\n", keySource.GetArn(), keyDestination.GetArn())
 
-	return NewResponse( 200, &struct {
-		KeyId			string
-		SourceKeyId		string
-		CiphertextBlob	[]byte
-		SourceEncryptionAlgorithm		cmk.EncryptionAlgorithm
-		DestinationEncryptionAlgorithm	cmk.EncryptionAlgorithm
+	return NewResponse(200, &struct {
+		KeyId                          string
+		SourceKeyId                    string
+		CiphertextBlob                 []byte
+		SourceEncryptionAlgorithm      cmk.EncryptionAlgorithm
+		DestinationEncryptionAlgorithm cmk.EncryptionAlgorithm
 	}{
-		KeyId: keyDestination.GetArn(),
-		SourceKeyId: keySource.GetArn(),
-		CiphertextBlob: cipherResponse,
-		SourceEncryptionAlgorithm: cmk.EncryptionAlgorithm(*body.SourceEncryptionAlgorithm),
+		KeyId:                          keyDestination.GetArn(),
+		SourceKeyId:                    keySource.GetArn(),
+		CiphertextBlob:                 cipherResponse,
+		SourceEncryptionAlgorithm:      cmk.EncryptionAlgorithm(*body.SourceEncryptionAlgorithm),
 		DestinationEncryptionAlgorithm: cmk.EncryptionAlgorithm(*body.DestinationEncryptionAlgorithm),
 	})
 }

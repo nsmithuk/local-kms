@@ -27,7 +27,7 @@ func Run(port, seedPath string) {
 	//-----------
 	// Start
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request){
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		handleRequest(w, r, database)
 	})
 
@@ -40,7 +40,6 @@ func Run(port, seedPath string) {
 	}
 
 }
-
 
 func handleRequest(w http.ResponseWriter, r *http.Request, database *data.Database) {
 	logger.Debugf("%s %s %s\n", r.RemoteAddr, r.Method, r.URL)
@@ -66,7 +65,7 @@ func handleRequest(w http.ResponseWriter, r *http.Request, database *data.Databa
 
 			The format is:	TrentService.<method>
 			For example: 	TrentService.ListKeys
-		 */
+		*/
 
 		target := strings.Split(r.Header.Get("X-Amz-Target"), ".")
 
@@ -102,27 +101,27 @@ func handleRequest(w http.ResponseWriter, r *http.Request, database *data.Databa
 
 }
 
-func respond( w http.ResponseWriter, r handler.Response ) {
+func respond(w http.ResponseWriter, r handler.Response) {
 	w.WriteHeader(r.Code)
 	fmt.Fprint(w, r.Body)
 }
 
-func error404(w http.ResponseWriter){
+func error404(w http.ResponseWriter) {
 	w.WriteHeader(404)
 	fmt.Fprint(w, "Page not found")
 }
 
-func error405(w http.ResponseWriter){
+func error405(w http.ResponseWriter) {
 	w.WriteHeader(405)
 	fmt.Fprint(w, "Method Not Allowed")
 }
 
-func error415(w http.ResponseWriter){
+func error415(w http.ResponseWriter) {
 	w.WriteHeader(415)
 	fmt.Fprint(w, "Only JSON based content types accepted")
 }
 
-func error501(w http.ResponseWriter){
+func error501(w http.ResponseWriter) {
 	w.WriteHeader(501)
 	fmt.Fprint(w, "Passed X-Amz-Target is not implemented")
 }

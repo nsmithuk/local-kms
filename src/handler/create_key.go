@@ -24,21 +24,21 @@ func (r *RequestHandler) CreateKey() Response {
 	keyId := uuid.NewV4().String()
 
 	metadata := cmk.KeyMetadata{
-		Arn:                   config.ArnPrefix() + "key/" + keyId,
-		KeyId:                 keyId,
-		AWSAccountId:          config.AWSAccountId,
-		CreationDate:          time.Now().Unix(),
-		Enabled:               true,
-		KeyManager:            "CUSTOMER",
-		KeyState:              "Enabled",
-		Origin:                "AWS_KMS",
+		Arn:          config.ArnPrefix() + "key/" + keyId,
+		KeyId:        keyId,
+		AWSAccountId: config.AWSAccountId,
+		CreationDate: time.Now().Unix(),
+		Enabled:      true,
+		KeyManager:   "CUSTOMER",
+		KeyState:     "Enabled",
+		Origin:       "AWS_KMS",
 	}
 
 	//--------------------------------
 	// Validation
 
 	if body.Description != nil && len(*body.Description) > 8192 {
-		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'description' failed to satisfy " +
+		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'description' failed to satisfy "+
 			"constraint: Member must have length less than or equal to 8192", *body.Description)
 
 		r.logger.Warnf(msg)
@@ -147,8 +147,8 @@ func (r *RequestHandler) CreateKey() Response {
 
 	default:
 
-		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'customerMasterKeySpec' " +
-			"failed to satisfy constraint: Member must satisfy enum value set: [RSA_2048, ECC_NIST_P384, " +
+		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'customerMasterKeySpec' "+
+			"failed to satisfy constraint: Member must satisfy enum value set: [RSA_2048, ECC_NIST_P384, "+
 			"ECC_NIST_P256, ECC_NIST_P521, RSA_3072, ECC_SECG_P256K1, RSA_4096, SYMMETRIC_DEFAULT]", *body.CustomerMasterKeySpec)
 
 		r.logger.Warnf(msg)
@@ -184,7 +184,7 @@ func (r *RequestHandler) CreateKey() Response {
 
 	//---
 
-	return NewResponse( 200, map[string]*cmk.KeyMetadata{
+	return NewResponse(200, map[string]*cmk.KeyMetadata{
 		"KeyMetadata": key.GetMetadata(),
 	})
 }
