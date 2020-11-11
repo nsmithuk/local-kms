@@ -11,12 +11,12 @@ func (d *Database) SaveAlias(a *Alias) error {
 		return err
 	}
 
-	return d.database.Put( []byte(a.AliasArn), encoded, nil )
+	return d.database.Put([]byte(a.AliasArn), encoded, nil)
 }
 
 func (d *Database) LoadAlias(arn string) (*Alias, error) {
 
-	encoded, err := d.database.Get( []byte(arn), nil )
+	encoded, err := d.database.Get([]byte(arn), nil)
 
 	if err != nil {
 		return nil, err
@@ -73,4 +73,3 @@ func (d *Database) ListAlias(prefix string, limit int64, marker, key string) (al
 
 	return
 }
-

@@ -5,7 +5,7 @@ import (
 )
 
 type Database struct {
-	database	*leveldb.DB
+	database *leveldb.DB
 }
 
 func NewDatabase(path string) *Database {
@@ -26,7 +26,7 @@ func (d *Database) Close() {
 
 //------------------------------------
 
-type InvalidMarkerExceptionError struct {}
+type InvalidMarkerExceptionError struct{}
 
 func (e *InvalidMarkerExceptionError) Error() string {
 	return "Invalid marker"
@@ -38,4 +38,3 @@ func (e *InvalidMarkerExceptionError) Error() string {
 func (d *Database) DeleteObject(arn string) error {
 	return d.database.Delete([]byte(arn), nil)
 }
-

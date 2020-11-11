@@ -32,7 +32,7 @@ func (r *RequestHandler) ScheduleKeyDeletion() Response {
 		PendingWindowInDays = *body.PendingWindowInDays
 
 		if PendingWindowInDays < 7 || PendingWindowInDays > 30 {
-			msg := fmt.Sprintf("1 validation error detected: Value '%d' at 'PendingWindowInDays' failed to satisfy " +
+			msg := fmt.Sprintf("1 validation error detected: Value '%d' at 'PendingWindowInDays' failed to satisfy "+
 				"constraint: Member must have minimum value of 7 and maximum value of 30.", *body.PendingWindowInDays)
 
 			r.logger.Warnf(msg)
@@ -85,8 +85,8 @@ func (r *RequestHandler) ScheduleKeyDeletion() Response {
 
 	r.logger.Infof("Schedule key deletion: %s\n", key.GetArn())
 
-	return NewResponse( 200, map[string]interface{}{
-		"KeyId": key.GetArn(),
+	return NewResponse(200, map[string]interface{}{
+		"KeyId":        key.GetArn(),
 		"DeletionDate": key.GetMetadata().DeletionDate,
 	})
 }

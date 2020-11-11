@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func seed(path string, database *data.Database){
+func seed(path string, database *data.Database) {
 
 	if path == "" {
 		logger.Infoln("No seed path passed; skipping.")
@@ -36,16 +36,16 @@ func seed(path string, database *data.Database){
 	//---
 
 	type InputSymmetric struct {
-		Aes	[]cmk.AesKey	`yaml:"Aes"`
+		Aes []cmk.AesKey `yaml:"Aes"`
 	}
 
 	type InputKeys struct {
-		Symmetric	InputSymmetric	`yaml:"Symmetric"`
+		Symmetric InputSymmetric `yaml:"Symmetric"`
 	}
 
 	type Input struct {
-		Keys	InputKeys		`yaml:"Keys"`
-		Aliases	[]data.Alias	`yaml:"Aliases"`
+		Keys    InputKeys    `yaml:"Keys"`
+		Aliases []data.Alias `yaml:"Aliases"`
 	}
 
 	seed := Input{}
@@ -62,8 +62,8 @@ func seed(path string, database *data.Database){
 		// TODO Support for the legacy format will be removed in future versions.
 
 		type InputOld struct {
-			Keys	[]cmk.AesKey	`yaml:"Keys"`
-			Aliases	[]data.Alias	`yaml:"Aliases"`
+			Keys    []cmk.AesKey `yaml:"Keys"`
+			Aliases []data.Alias `yaml:"Aliases"`
 		}
 
 		seed := InputOld{}
@@ -103,19 +103,19 @@ func seed(path string, database *data.Database){
 	// Apply defaults
 
 	for i, key := range aesKeys {
-		aesKeys[i].Metadata.Arn			= config.ArnPrefix() + "key/" + key.Metadata.KeyId
+		aesKeys[i].Metadata.Arn = config.ArnPrefix() + "key/" + key.Metadata.KeyId
 		aesKeys[i].Metadata.AWSAccountId = config.AWSAccountId
 		aesKeys[i].Metadata.CreationDate = time.Now().Unix()
-		aesKeys[i].Metadata.Enabled		= true
-		aesKeys[i].Metadata.KeyManager	= "CUSTOMER"
-		aesKeys[i].Metadata.KeyState		= "Enabled"
-		aesKeys[i].Metadata.KeyUsage		= cmk.UsageEncryptDecrypt
-		aesKeys[i].Metadata.Origin		= "AWS_KMS"
+		aesKeys[i].Metadata.Enabled = true
+		aesKeys[i].Metadata.KeyManager = "CUSTOMER"
+		aesKeys[i].Metadata.KeyState = "Enabled"
+		aesKeys[i].Metadata.KeyUsage = cmk.UsageEncryptDecrypt
+		aesKeys[i].Metadata.Origin = "AWS_KMS"
 
-		aesKeys[i].Metadata.CustomerMasterKeySpec		= cmk.SpecSymmetricDefault
-		aesKeys[i].Metadata.EncryptionAlgorithms		= []cmk.EncryptionAlgorithm{cmk.EncryptionAlgorithmAes}
+		aesKeys[i].Metadata.CustomerMasterKeySpec = cmk.SpecSymmetricDefault
+		aesKeys[i].Metadata.EncryptionAlgorithms = []cmk.EncryptionAlgorithm{cmk.EncryptionAlgorithmAes}
 
-		aesKeys[i].Type					= cmk.TypeAes
+		aesKeys[i].Type = cmk.TypeAes
 	}
 
 	for i, alias := range aliases {

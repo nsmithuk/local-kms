@@ -21,7 +21,7 @@ func (d *Database) SaveKey(k cmk.Key) error {
 
 func (d *Database) LoadKey(arn string) (cmk.Key, error) {
 
-	encoded, err := d.database.Get( []byte(arn), nil )
+	encoded, err := d.database.Get([]byte(arn), nil)
 
 	if err != nil {
 		return nil, err
@@ -125,7 +125,7 @@ func unmarshalKey(encoded []byte) (cmk.Key, error) {
 	//---------------------------------------------------------
 	// Unmarshal just the key's type
 
-	var kt struct{
+	var kt struct {
 		Type cmk.KeyType
 	}
 

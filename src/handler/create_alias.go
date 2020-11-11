@@ -44,11 +44,11 @@ func (r *RequestHandler) CreateAlias() Response {
 
 	if strings.HasPrefix(*body.AliasName, "alias/aws") {
 		r.logger.Warnf("Cannot create alias with prefix 'alias/aws/'")
-		return NewNotAuthorizedExceptionResponse( "")
+		return NewNotAuthorizedExceptionResponse("")
 	}
 
 	if len(*body.AliasName) > 256 {
-		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'AliasName' failed to satisfy " +
+		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'AliasName' failed to satisfy "+
 			"constraint: Member must have length less than or equal to 256", *body.AliasName)
 
 		r.logger.Warnf(msg)
@@ -93,8 +93,8 @@ func (r *RequestHandler) CreateAlias() Response {
 	}
 
 	alias := &data.Alias{
-		AliasName: *body.AliasName,
-		AliasArn: aliasArn,
+		AliasName:   *body.AliasName,
+		AliasArn:    aliasArn,
 		TargetKeyId: key.GetMetadata().KeyId,
 	}
 

@@ -8,9 +8,9 @@ import (
 )
 
 type GenerateDataKeyResponse struct {
-	KeyId			string
-	Plaintext		[]byte	`json:",omitempty"`
-	CiphertextBlob	[]byte
+	KeyId          string
+	Plaintext      []byte `json:",omitempty"`
+	CiphertextBlob []byte
 }
 
 //----------------------------------
@@ -27,7 +27,7 @@ func (r *RequestHandler) GenerateDataKey() Response {
 
 	r.logger.Infof("Data key generated with plaintext: %s\n", keyResponse.KeyId)
 
-	return NewResponse( 200, keyResponse)
+	return NewResponse(200, keyResponse)
 }
 
 //------------------------------------------------------------------------------------------
@@ -69,7 +69,7 @@ func (r *RequestHandler) generateDataKey() (Response, *GenerateDataKeyResponse) 
 	}
 
 	if body.NumberOfBytes != nil && (*body.NumberOfBytes < 1 || *body.NumberOfBytes > 1024) {
-		msg := fmt.Sprintf("1 validation error detected: Value '%d' at 'NumberOfBytes' failed to satisfy " +
+		msg := fmt.Sprintf("1 validation error detected: Value '%d' at 'NumberOfBytes' failed to satisfy "+
 			"constraint: Member must have minimum value of 1 and maximum value of 1024.", *body.NumberOfBytes)
 
 		r.logger.Warnf(msg)
@@ -85,7 +85,7 @@ func (r *RequestHandler) generateDataKey() (Response, *GenerateDataKeyResponse) 
 			bytesRequired = 256 / 8
 
 		default:
-			msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'KeySpec' failed to satisfy " +
+			msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'KeySpec' failed to satisfy "+
 				"constraint: Member must be AES_128 or AES_256", *body.KeySpec)
 
 			r.logger.Warnf(msg)
@@ -132,9 +132,9 @@ func (r *RequestHandler) generateDataKey() (Response, *GenerateDataKeyResponse) 
 		return NewInternalFailureExceptionResponse("key type not yet supported for encryption"), nil
 	}
 
-	return Response{}, &GenerateDataKeyResponse {
-		KeyId: key.GetArn(),
-		Plaintext: plaintext,
+	return Response{}, &GenerateDataKeyResponse{
+		KeyId:          key.GetArn(),
+		Plaintext:      plaintext,
 		CiphertextBlob: cipherResponse,
 	}
 }

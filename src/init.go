@@ -10,8 +10,8 @@ func init() {
 
 	//logger.SetLevel(log.DebugLevel)
 	logger.SetFormatter(&log.TextFormatter{
-		ForceColors: true,
-		FullTimestamp: true,
+		ForceColors:     true,
+		FullTimestamp:   true,
 		TimestampFormat: "2006-01-02 15:04:05.000",
 	})
 

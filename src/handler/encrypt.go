@@ -34,7 +34,7 @@ func (r *RequestHandler) Encrypt() Response {
 	}
 
 	if len(body.Plaintext) > 4096 {
-		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'Plaintext' failed to satisfy " +
+		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'Plaintext' failed to satisfy "+
 			"constraint: Member must have minimum length of 1 and maximum length of 4096.", string(body.Plaintext))
 
 		r.logger.Warnf(msg)
@@ -84,13 +84,13 @@ func (r *RequestHandler) Encrypt() Response {
 
 	r.logger.Infof("Encryption called: %s\n", key.GetArn())
 
-	return NewResponse( 200, &struct {
-		KeyId				string
-		CiphertextBlob		[]byte
-		EncryptionAlgorithm	cmk.EncryptionAlgorithm
+	return NewResponse(200, &struct {
+		KeyId               string
+		CiphertextBlob      []byte
+		EncryptionAlgorithm cmk.EncryptionAlgorithm
 	}{
-		KeyId: key.GetArn(),
-		CiphertextBlob: cipherResponse,
+		KeyId:               key.GetArn(),
+		CiphertextBlob:      cipherResponse,
 		EncryptionAlgorithm: cmk.EncryptionAlgorithm(*body.EncryptionAlgorithm),
 	})
 }

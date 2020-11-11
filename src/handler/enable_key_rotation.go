@@ -44,7 +44,7 @@ func (r *RequestHandler) EnableKeyRotation() Response {
 	//---
 
 	// Check the key supports rotation
-	if _,ok := key.(*cmk.AesKey); !ok {
+	if _, ok := key.(*cmk.AesKey); !ok {
 		r.logger.Warnf(fmt.Sprintf("Key '%s' does does not support rotation", keyArn))
 
 		return NewUnsupportedOperationException("")
@@ -93,5 +93,5 @@ func (r *RequestHandler) EnableKeyRotation() Response {
 
 	r.logger.Infof("Key rotation enabled: %s\n", key.GetArn())
 
-	return NewResponse( 200, nil)
+	return NewResponse(200, nil)
 }

@@ -64,19 +64,19 @@ func (r *RequestHandler) GetPublicKey() Response {
 
 	//---
 
-	return NewResponse( 200, &struct {
-		KeyId					string
-		CustomerMasterKeySpec	cmk.CustomerMasterKeySpec
+	return NewResponse(200, &struct {
+		KeyId                 string
+		CustomerMasterKeySpec cmk.CustomerMasterKeySpec
 		//EncryptionAlgorithms	[]cmk.EncryptionAlgorithm
-		SigningAlgorithms		[]cmk.SigningAlgorithm
-		KeyUsage				cmk.KeyUsage
-		PublicKey				[]byte
+		SigningAlgorithms []cmk.SigningAlgorithm
+		KeyUsage          cmk.KeyUsage
+		PublicKey         []byte
 	}{
-		KeyId: key.GetArn(),
+		KeyId:                 key.GetArn(),
 		CustomerMasterKeySpec: key.GetMetadata().CustomerMasterKeySpec,
 		//EncryptionAlgorithms: key.GetMetadata().EncryptionAlgorithms,
 		SigningAlgorithms: key.GetMetadata().SigningAlgorithms,
-		KeyUsage: key.GetMetadata().KeyUsage,
-		PublicKey: publicKey,
+		KeyUsage:          key.GetMetadata().KeyUsage,
+		PublicKey:         publicKey,
 	})
 }

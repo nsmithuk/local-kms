@@ -11,8 +11,8 @@ import (
 /*
 	Finds a key for a given key or alias name or ARN
 	And confirms that it's available to use for cryptographic operations.
- */
-func (r *RequestHandler) getUsableKey(keyId string) (cmk.Key, Response){
+*/
+func (r *RequestHandler) getUsableKey(keyId string) (cmk.Key, Response) {
 
 	// If it's an alias, map it to a key
 	if strings.Contains(keyId, "alias/") {
@@ -21,7 +21,7 @@ func (r *RequestHandler) getUsableKey(keyId string) (cmk.Key, Response){
 		alias, err := r.database.LoadAlias(aliasArn)
 
 		if err != nil {
-			msg := fmt.Sprintf("Alias %s is not found.", config.ArnPrefix() + keyId)
+			msg := fmt.Sprintf("Alias %s is not found.", config.ArnPrefix()+keyId)
 
 			r.logger.Warnf(msg)
 			return nil, NewNotFoundExceptionResponse(msg)
@@ -70,7 +70,7 @@ func (r *RequestHandler) validateTags(tags []*kms.Tag) Response {
 		for i, kv := range tags {
 
 			if len(*kv.TagKey) < 1 {
-				msg := fmt.Sprintf("1 validation error detected: Value '' at 'tags.%d.member.tagKey' failed to " +
+				msg := fmt.Sprintf("1 validation error detected: Value '' at 'tags.%d.member.tagKey' failed to "+
 					"satisfy constraint: Member must have length greater than or equal to 1", i+1)
 
 				r.logger.Warnf(msg)
@@ -78,7 +78,7 @@ func (r *RequestHandler) validateTags(tags []*kms.Tag) Response {
 			}
 
 			if len(*kv.TagKey) > 128 {
-				msg := fmt.Sprintf("1 validation error detected: Value '' at 'tags.%d.member.tagKey' failed to " +
+				msg := fmt.Sprintf("1 validation error detected: Value '' at 'tags.%d.member.tagKey' failed to "+
 					"satisfy constraint: Member must have length less than or equal to 128", i+1)
 
 				r.logger.Warnf(msg)
@@ -86,7 +86,7 @@ func (r *RequestHandler) validateTags(tags []*kms.Tag) Response {
 			}
 
 			if len(*kv.TagValue) > 256 {
-				msg := fmt.Sprintf("1 validation error detected: Value '' at 'tags.%d.member.tagValue' failed to " +
+				msg := fmt.Sprintf("1 validation error detected: Value '' at 'tags.%d.member.tagValue' failed to "+
 					"satisfy constraint: Member must have length less than or equal to 256", i+1)
 
 				r.logger.Warnf(msg)

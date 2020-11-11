@@ -1,6 +1,6 @@
 package data
 
 type Tag struct {
-	TagKey string
+	TagKey   string
 	TagValue string
 }

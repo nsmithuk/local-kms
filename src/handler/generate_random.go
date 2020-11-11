@@ -26,7 +26,7 @@ func (r *RequestHandler) GenerateRandom() Response {
 	}
 
 	if *body.NumberOfBytes < 1 {
-		msg := fmt.Sprintf("1 validation error detected: Value '%d' at 'numberOfBytes' failed to satisfy " +
+		msg := fmt.Sprintf("1 validation error detected: Value '%d' at 'numberOfBytes' failed to satisfy "+
 			"constraint: Member must have value greater than or equal to 1", *body.NumberOfBytes)
 
 		r.logger.Warnf(msg)
@@ -34,7 +34,7 @@ func (r *RequestHandler) GenerateRandom() Response {
 	}
 
 	if *body.NumberOfBytes > 1024 {
-		msg := fmt.Sprintf("1 validation error detected: Value '%d' at 'numberOfBytes' failed to satisfy " +
+		msg := fmt.Sprintf("1 validation error detected: Value '%d' at 'numberOfBytes' failed to satisfy "+
 			"constraint: Member must have value less than or equal to 1024", *body.NumberOfBytes)
 
 		r.logger.Warnf(msg)
@@ -49,8 +49,8 @@ func (r *RequestHandler) GenerateRandom() Response {
 
 	r.logger.Infof("Random data generated: %d bytes\n", len(data))
 
-	return NewResponse( 200, &struct {
-		Plaintext	[]byte
+	return NewResponse(200, &struct {
+		Plaintext []byte
 	}{
 		Plaintext: data,
 	})

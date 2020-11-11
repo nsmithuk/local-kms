@@ -13,8 +13,8 @@ func main() {
 	logger := log.New()
 
 	logger.SetFormatter(&log.TextFormatter{
-		ForceColors: true,
-		FullTimestamp: true,
+		ForceColors:     true,
+		FullTimestamp:   true,
 		TimestampFormat: "2006-01-02 15:04:05.000",
 	})
 
@@ -35,7 +35,6 @@ func main() {
 	}
 	config.AWSAccountId = accountId
 
-
 	region := os.Getenv("KMS_REGION")
 
 	if region == "" {
@@ -50,7 +49,6 @@ func main() {
 		region = "eu-west-2"
 	}
 	config.AWSRegion = region
-
 
 	dataPath := os.Getenv("KMS_DATA_PATH")
 	if dataPath == "" {

@@ -43,12 +43,12 @@ func (r *RequestHandler) GetKeyRotationStatus() Response {
 	//---
 
 	// Check the key supports rotation
-	if _,ok := key.(*cmk.AesKey); !ok {
+	if _, ok := key.(*cmk.AesKey); !ok {
 
 		r.logger.Warnf(fmt.Sprintf("Key '%s' does does not support rotation", keyArn))
 
 		// Hard code false for non-AES CMKs.
-		return NewResponse( 200, map[string]bool{
+		return NewResponse(200, map[string]bool{
 			"KeyRotationEnabled": false,
 		})
 	}
@@ -57,7 +57,7 @@ func (r *RequestHandler) GetKeyRotationStatus() Response {
 
 	r.logger.Infof("Key rotation status returned: %s\n", key.GetArn())
 
-	return NewResponse( 200, map[string]bool{
+	return NewResponse(200, map[string]bool{
 		"KeyRotationEnabled": !key.(*cmk.AesKey).NextKeyRotation.IsZero(),
 	})
 }

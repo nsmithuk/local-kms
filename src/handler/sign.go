@@ -33,7 +33,7 @@ func (r *RequestHandler) Sign() Response {
 	}
 
 	if len(body.Message) > 4096 {
-		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'Message' failed to satisfy " +
+		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'Message' failed to satisfy "+
 			"constraint: Member must have minimum length of 1 and maximum length of 4096.", string(body.Message))
 
 		r.logger.Warnf(msg)
@@ -53,7 +53,7 @@ func (r *RequestHandler) Sign() Response {
 	}
 
 	if !(*body.MessageType == "RAW" || *body.MessageType == "DIGEST") {
-		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'messageType' failed to satisfy " +
+		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'messageType' failed to satisfy "+
 			"constraint: Member must satisfy enum value set: [DIGEST, RAW]", *body.MessageType)
 
 		r.logger.Warnf(msg)
@@ -130,13 +130,13 @@ func (r *RequestHandler) Sign() Response {
 
 	r.logger.Infof("%s message signed with %s, using key %s\n", *body.MessageType, *body.SigningAlgorithm, key.GetArn())
 
-	return NewResponse( 200, &struct {
-		KeyId				string
-		Signature			[]byte
-		SigningAlgorithm	cmk.SigningAlgorithm
+	return NewResponse(200, &struct {
+		KeyId            string
+		Signature        []byte
+		SigningAlgorithm cmk.SigningAlgorithm
 	}{
-		KeyId: key.GetArn(),
-		Signature: result,
+		KeyId:            key.GetArn(),
+		Signature:        result,
 		SigningAlgorithm: cmk.SigningAlgorithm(*body.SigningAlgorithm),
 	})
 }

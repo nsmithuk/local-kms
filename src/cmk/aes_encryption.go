@@ -76,9 +76,9 @@ func (k *AesKey) EncryptAndPackage(plaintext []byte, context map[string]*string)
 	binary.LittleEndian.PutUint32(v, uint32(keyVersion))
 
 	result = []byte{byte(len(identBytes))}
-	result = append( result, identBytes... )
-	result = append( result, v... )
-	result = append( result, ciphertext... )
+	result = append(result, identBytes...)
+	result = append(result, v...)
+	result = append(result, ciphertext...)
 
 	return
 }

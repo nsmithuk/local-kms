@@ -50,7 +50,7 @@ func (r *RequestHandler) GetKeyPolicy() Response {
 
 	r.logger.Infof("Key policy returned: %s\n", key.GetArn())
 
-	return NewResponse( 200, map[string]string{
+	return NewResponse(200, map[string]string{
 		"Policy": key.GetPolicy(),
 	})
 }

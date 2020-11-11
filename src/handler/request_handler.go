@@ -11,22 +11,22 @@ import (
 // Incoming request
 
 type RequestHandler struct {
-	request		*http.Request
-	logger 		*log.Logger
-	database	*data.Database
+	request  *http.Request
+	logger   *log.Logger
+	database *data.Database
 }
 
 func NewRequestHandler(r *http.Request, l *log.Logger, d *data.Database) *RequestHandler {
 	return &RequestHandler{
-		request: r,
-		logger: l,
+		request:  r,
+		logger:   l,
 		database: d,
 	}
 }
 
 /*
 	Decodes the request's JSON body into the passed interface
- */
+*/
 func (r *RequestHandler) decodeBodyInto(v interface{}) error {
 	decoder := json.NewDecoder(r.request.Body)
 	return decoder.Decode(v)
@@ -36,8 +36,8 @@ func (r *RequestHandler) decodeBodyInto(v interface{}) error {
 // Outgoing response
 
 type Response struct {
-	Code		int
-	Body		string
+	Code int
+	Body string
 }
 
 func (r Response) Empty() bool {
@@ -46,20 +46,20 @@ func (r Response) Empty() bool {
 
 func NewResponse(code int, v interface{}) Response {
 	if v == nil {
-		return Response{ code, "" }
+		return Response{code, ""}
 	}
 
 	j, err := json.Marshal(v)
 
 	if err != nil {
-		return Response{ 500, "Error marshalling JSON"}
+		return Response{500, "Error marshalling JSON"}
 	}
 
-	return Response{ code, string(j) }
+	return Response{code, string(j)}
 }
 
 func New400ExceptionResponseFormatted(exception, message string, capitalM bool) Response {
-	response := map[string]string{"__type":exception}
+	response := map[string]string{"__type": exception}
 
 	if message != "" {
 		if capitalM {
@@ -136,7 +136,7 @@ func NewUnsupportedOperationException(message string) Response {
 
 func NewInternalFailureExceptionResponse(message string) Response {
 	return NewResponse(500, map[string]string{
-		"__type":"InternalFailureException",
+		"__type":  "InternalFailureException",
 		"message": message,
 	})
 }

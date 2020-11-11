@@ -44,11 +44,11 @@ func (r *RequestHandler) UpdateAlias() Response {
 
 	if strings.HasPrefix(*body.AliasName, "alias/aws") {
 		r.logger.Warnf("Cannot create alias with prefix 'alias/aws/'")
-		return NewNotAuthorizedExceptionResponse( "")
+		return NewNotAuthorizedExceptionResponse("")
 	}
 
 	if len(*body.AliasName) > 256 {
-		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'AliasName' failed to satisfy " +
+		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'AliasName' failed to satisfy "+
 			"constraint: Member must have length less than or equal to 256", *body.AliasName)
 
 		r.logger.Warnf(msg)
@@ -99,7 +99,7 @@ func (r *RequestHandler) UpdateAlias() Response {
 
 	// Key usage cannot change
 	if originalKey.GetMetadata().KeyUsage != targetKey.GetMetadata().KeyUsage {
-		msg := fmt.Sprintf("Alias %s cannot be changed from a CMK with key usage %s to a CMK with key " +
+		msg := fmt.Sprintf("Alias %s cannot be changed from a CMK with key usage %s to a CMK with key "+
 			"usage %s. The key usage of the current CMK and the new CMK must be the same.",
 			*body.AliasName, originalKey.GetMetadata().KeyUsage, targetKey.GetMetadata().KeyUsage)
 
@@ -111,7 +111,7 @@ func (r *RequestHandler) UpdateAlias() Response {
 	if reflect.TypeOf(originalKey) != reflect.TypeOf(targetKey) {
 
 		// TODO The wording of this validation message needs amending to match AWS.
-		msg := fmt.Sprintf("Alias %s cannot be changed from a CMK with key type %s to a CMK with key " +
+		msg := fmt.Sprintf("Alias %s cannot be changed from a CMK with key type %s to a CMK with key "+
 			"type %s. The key type of the current CMK and the new CMK must be the same.",
 			*body.AliasName, reflect.TypeOf(originalKey), reflect.TypeOf(targetKey))
 
