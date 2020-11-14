@@ -3,14 +3,16 @@ package cmk
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/nsmithuk/local-kms/src/service"
 	"time"
+
+	"github.com/nsmithuk/local-kms/src/service"
 )
 
 type AesKey struct {
 	BaseKey
-	BackingKeys     [][32]byte
-	NextKeyRotation time.Time
+	BackingKeys         [][32]byte
+	NextKeyRotation     time.Time
+	ParametersForImport ParametersForImport
 }
 
 func NewAesKey(metadata KeyMetadata, policy string, origin KeyOrigin) *AesKey {
@@ -54,6 +56,14 @@ func (k *AesKey) GetMetadata() *KeyMetadata {
 }
 
 //----------------------------------------------------
+
+func (k *AesKey) GetParametersForImport() *ParametersForImport {
+	return &k.ParametersForImport
+}
+
+func (k *AesKey) SetParametersForImport(p *ParametersForImport) {
+	k.ParametersForImport = *p
+}
 
 func (k *AesKey) RotateIfNeeded() bool {
 

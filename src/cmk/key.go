@@ -1,5 +1,7 @@
 package cmk
 
+import "crypto/rsa"
+
 //------------------------------------------
 
 type KeyType int
@@ -79,6 +81,16 @@ const (
 	KeyOriginAwsCloudHsm KeyOrigin = "AWS_CLOUDHSM"
 )
 
+//---
+
+type WrappingAlgorithm string
+
+const (
+	WrappingAlgorithmPkcs1V15  WrappingAlgorithm = "RSAES_PKCS1_V1_5"
+	WrappingAlgorithmOaepSha1  WrappingAlgorithm = "RSAES_OAEP_SHA_1"
+	WrappingAlgorithmOaepSh256 WrappingAlgorithm = "RSAES_OAEP_SHA_256"
+)
+
 //------------------------------------------
 
 type Key interface {
@@ -122,4 +134,11 @@ type KeyMetadata struct {
 	SigningAlgorithms     []SigningAlgorithm    `json:",omitempty"`
 	EncryptionAlgorithms  []EncryptionAlgorithm `json:",omitempty"`
 	CustomerMasterKeySpec CustomerMasterKeySpec `json:",omitempty"`
+}
+
+type ParametersForImport struct {
+	ParametersValidTo int64
+	ImportToken       []byte
+	PrivateKey        rsa.PrivateKey
+	WrappingAlgorithm WrappingAlgorithm
 }
