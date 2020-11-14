@@ -13,9 +13,13 @@ type AesKey struct {
 	NextKeyRotation time.Time
 }
 
-func NewAesKey(metadata KeyMetadata, policy string) *AesKey {
+func NewAesKey(metadata KeyMetadata, policy string, origin KeyOrigin) *AesKey {
 	k := &AesKey{
-		BackingKeys: [][32]byte{generateKey()},
+		BackingKeys: [][32]byte{},
+	}
+
+	if origin != KeyOriginExternal {
+		k.BackingKeys = append(k.BackingKeys, generateKey())
 	}
 
 	k.Type = TypeAes

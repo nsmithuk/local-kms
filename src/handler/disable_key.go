@@ -2,7 +2,9 @@ package handler
 
 import (
 	"fmt"
+
 	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/nsmithuk/local-kms/src/cmk"
 	"github.com/nsmithuk/local-kms/src/config"
 )
 
@@ -52,7 +54,7 @@ func (r *RequestHandler) DisableKey() Response {
 	//---
 
 	key.GetMetadata().Enabled = false
-	key.GetMetadata().KeyState = "Disabled"
+	key.GetMetadata().KeyState = cmk.KeyStateDisabled
 
 	//--------------------------------
 	// Save the key

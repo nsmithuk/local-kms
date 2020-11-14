@@ -50,11 +50,33 @@ const (
 
 //---
 
+type KeyState string
+
+const (
+	KeyStateEnabled         KeyState = "Enabled"
+	KeyStateDisabled        KeyState = "Disabled"
+	KeyStatePendingImport   KeyState = "PendingImport"
+	KeyStatePendingDeletion KeyState = "PendingDeletion"
+	KeyStateUnavailable     KeyState = "Unavailable"
+)
+
+//---
+
 type KeyUsage string
 
 const (
 	UsageEncryptDecrypt KeyUsage = "ENCRYPT_DECRYPT"
 	UsageSignVerify     KeyUsage = "SIGN_VERIFY"
+)
+
+//---
+
+type KeyOrigin string
+
+const (
+	KeyOriginAwsKms      KeyOrigin = "AWS_KMS"
+	KeyOriginExternal    KeyOrigin = "EXTERNAL"
+	KeyOriginAwsCloudHsm KeyOrigin = "AWS_CLOUDHSM"
 )
 
 //------------------------------------------
@@ -83,19 +105,19 @@ type BaseKey struct {
 }
 
 type KeyMetadata struct {
-	AWSAccountId    string   `json:",omitempty"`
-	Arn             string   `json:",omitempty"`
-	CreationDate    int64    `json:",omitempty"`
-	DeletionDate    int64    `json:",omitempty"`
-	Description     *string  `yaml:"Description"`
-	Enabled         bool     `yaml:"Enabled"`
-	ExpirationModel string   `json:",omitempty"`
-	KeyId           string   `json:",omitempty" yaml:"KeyId"`
-	KeyManager      string   `json:",omitempty"`
-	KeyState        string   `json:",omitempty"`
-	KeyUsage        KeyUsage `json:",omitempty"`
-	Origin          string   `json:",omitempty"`
-	ValidTo         int64    `json:",omitempty"`
+	AWSAccountId    string    `json:",omitempty"`
+	Arn             string    `json:",omitempty"`
+	CreationDate    int64     `json:",omitempty"`
+	DeletionDate    int64     `json:",omitempty"`
+	Description     *string   `yaml:"Description"`
+	Enabled         bool      `yaml:"Enabled"`
+	ExpirationModel string    `json:",omitempty"`
+	KeyId           string    `json:",omitempty" yaml:"KeyId"`
+	KeyManager      string    `json:",omitempty"`
+	KeyState        KeyState  `json:",omitempty"`
+	KeyUsage        KeyUsage  `json:",omitempty"`
+	Origin          KeyOrigin `json:",omitempty"`
+	ValidTo         int64     `json:",omitempty"`
 
 	SigningAlgorithms     []SigningAlgorithm    `json:",omitempty"`
 	EncryptionAlgorithms  []EncryptionAlgorithm `json:",omitempty"`

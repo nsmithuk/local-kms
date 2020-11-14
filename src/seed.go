@@ -2,15 +2,16 @@ package src
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"time"
+
 	"github.com/nsmithuk/local-kms/src/cmk"
 	"github.com/nsmithuk/local-kms/src/config"
 	"github.com/nsmithuk/local-kms/src/data"
 	"github.com/syndtr/goleveldb/leveldb"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"time"
 )
 
 func seed(path string, database *data.Database) {
@@ -108,7 +109,7 @@ func seed(path string, database *data.Database) {
 		aesKeys[i].Metadata.CreationDate = time.Now().Unix()
 		aesKeys[i].Metadata.Enabled = true
 		aesKeys[i].Metadata.KeyManager = "CUSTOMER"
-		aesKeys[i].Metadata.KeyState = "Enabled"
+		aesKeys[i].Metadata.KeyState = cmk.KeyStateEnabled
 		aesKeys[i].Metadata.KeyUsage = cmk.UsageEncryptDecrypt
 		aesKeys[i].Metadata.Origin = "AWS_KMS"
 
