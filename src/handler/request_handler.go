@@ -2,9 +2,10 @@ package handler
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/nsmithuk/local-kms/src/data"
 	log "github.com/sirupsen/logrus"
-	"net/http"
 )
 
 //--------------------------------------------------------------------
@@ -130,6 +131,18 @@ func NewAccessDeniedExceptionResponse(message string) Response {
 
 func NewUnsupportedOperationException(message string) Response {
 	return New400ExceptionResponseFormatted("UnsupportedOperationException", message, true)
+}
+
+func NewInvalidImportTokenExceptionResponse() Response {
+	return New400ExceptionResponse("InvalidImportTokenException", "")
+}
+
+func NewExpiredImportTokenExceptionResponse() Response {
+	return New400ExceptionResponse("ExpiredImportTokenException", "")
+}
+
+func NewIncorrectKeyMaterialExceptionResponse() Response {
+	return New400ExceptionResponse("IncorrectKeyMaterialException", "")
 }
 
 //---

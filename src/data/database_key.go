@@ -3,11 +3,12 @@ package data
 import (
 	"encoding/json"
 	"errors"
+	"strings"
+	"time"
+
 	"github.com/nsmithuk/local-kms/src/cmk"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/util"
-	"strings"
-	"time"
 )
 
 func (d *Database) SaveKey(k cmk.Key) error {
@@ -60,6 +61,15 @@ func (d *Database) LoadKey(arn string) (cmk.Key, error) {
 	if key.GetMetadata().DeletionDate != 0 && key.GetMetadata().DeletionDate < time.Now().Unix() {
 		d.DeleteObject(arn)
 		return nil, leveldb.ErrNotFound
+	}
+
+	// Reset key to pending import if key material has expired
+	if key.GetMetadata().ValidTo != 0 && key.GetMetadata().ValidTo < time.Now().Unix() {
+		key.GetMetadata().Enabled = false
+		key.GetMetadata().KeyState = cmk.KeyStatePendingImport
+		key.GetMetadata().ExpirationModel = ""
+		key.GetMetadata().ValidTo = 0
+		d.SaveKey(key)
 	}
 
 	//---

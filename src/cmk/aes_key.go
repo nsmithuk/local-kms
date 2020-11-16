@@ -2,6 +2,7 @@ package cmk
 
 import (
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"time"
 
@@ -63,6 +64,27 @@ func (k *AesKey) GetParametersForImport() *ParametersForImport {
 
 func (k *AesKey) SetParametersForImport(p *ParametersForImport) {
 	k.ParametersForImport = *p
+}
+
+func (k *AesKey) ImportKeyMaterial(m []byte) error {
+	if len(m) != 32 {
+		return errors.New("Invalid key length. Key must be 32 bytes in length.")
+	}
+
+	var key [32]byte
+	copy(key[:], m[:32])
+
+	// If this is the first time we're importing key material then we're all good
+	if len(k.BackingKeys) == 0 {
+		k.BackingKeys = append(k.BackingKeys, key)
+
+	} else if key != k.BackingKeys[0] {
+		// else if the key material doesn't match what was already imported then
+		// throw and error
+		return errors.New("Key material does not match existing key material.")
+	}
+
+	return nil
 }
 
 func (k *AesKey) RotateIfNeeded() bool {
