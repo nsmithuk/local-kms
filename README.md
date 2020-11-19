@@ -28,6 +28,7 @@ development and testing against KMS; not for use in a production environment._
 * Decryption
 * Generating a data key, with or without plain text
 * Generating random data
+* Importing your own key material
 * Signing and verifying messages
     * RAW and DIGEST
 * Tags
@@ -43,7 +44,6 @@ If a key in the seeding file already exists, it will not be overwritten or amend
 * RSA keys with a usage set to ENCRYPT_DECRYPT
 * ECC_SECG_P256K1 keys
 * Grants
-* Importing your own key material
 * Operations relating to a Custom Key Store
 
 ## Getting Started with Docker
@@ -221,6 +221,86 @@ awslocal kms decrypt \
 awslocal kms generate-data-key \
 --key-id 0579fe9c-129b-490a-adb0-42589ac4a017 \
 --key-spec AES_128
+```
+
+#### Importing custom key material
+```bash
+key_id=${1}
+wrappingAlg=${2:-RSAES_OAEP_SHA_1}
+expirationModel=${3:-KEY_MATERIAL_DOES_NOT_EXPIRE}
+validToInput=${4}
+
+if [ "$wrappingAlg" == "RSAES_PKCS1_V1_5" ]; then
+    echo "RSAES_PKCS1_V1_5 is nto supported by this script. Please use RSAES_OAEP_SHA_[1|256]."
+    exit 1
+fi
+
+if [ -z "$key_id" ]; then
+    echo ""
+    echo "Creating new External key"
+    key_id=$(awslocal kms create-key --origin EXTERNAL | jq -r '.KeyMetadata.KeyId')
+fi
+
+echo ""
+echo "Getting Parameters For Import"
+importParams=$(awslocal kms get-parameters-for-import --key-id $key_id --wrapping-algorithm $wrappingAlg --wrapping-key-spec RSA_2048)
+
+pubKeyBinFile=$(mktemp)
+echo $importParams | jq -r '.PublicKey' | base64 --decode > $pubKeyBinFile
+
+importTokenBinFile=$(mktemp)
+echo $importParams | jq -r '.ImportToken' | base64 --decode > $importTokenBinFile
+
+keyMaterial="KeyMaterial-${key_id}.txt"
+if [ -f "$keyMaterial" ]; then
+  echo ""
+  echo "Found existing key material"
+else
+  echo ""
+  echo "Generating key material"
+  keyMaterialTmp=$(mktemp)
+  openssl rand -out $keyMaterialTmp 32
+
+  # If you want to re-import key material then you'll need to save
+  # this file and use it for any subsequent calls to Local KMS
+  mv $keyMaterialTmp $keyMaterial
+fi
+
+echo ""
+echo "Encrypting key material using public key"
+encryptedKeyMaterial=$(mktemp)
+
+openssl pkeyutl \
+  -in $keyMaterial \
+  -out $encryptedKeyMaterial \
+  -inkey $pubKeyBinFile \
+  -keyform DER \
+  -pubin -encrypt \
+  -pkeyopt rsa_padding_mode:oaep \
+  -pkeyopt rsa_oaep_md:sha$(echo "$wrappingAlg" | sed -r 's/.*_([0-9]+)$/\1/')
+
+validTo=
+if [ -n "$validToInput" ]; then
+    validTo=" --valid-to $validToInput"
+fi
+
+echo ""
+echo "Import key material for key_id $key_id"
+awslocal kms import-key-material --key-id $key_id \
+    --expiration-model KEY_MATERIAL_DOES_NOT_EXPIRE \
+    --import-token fileb://$importTokenBinFile \
+    --encrypted-key-material fileb://$encryptedKeyMaterial \
+    $validTo
+
+echo ""
+echo "Cleaning up"
+rm -f $pubKeyBinFile
+rm -f $importTokenBinFile 
+rm -f $encryptedKeyMaterial
+
+echo ""
+echo "Describing new state"
+awslocal kms describe-key --key-id $key_id
 ```
 
 ### Using LKMS with HTTP(ie)
