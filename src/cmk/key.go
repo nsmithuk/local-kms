@@ -137,7 +137,7 @@ type KeyMetadata struct {
 	KeyManager      string          `json:",omitempty"`
 	KeyState        KeyState        `json:",omitempty"`
 	KeyUsage        KeyUsage        `json:",omitempty"`
-	Origin          KeyOrigin       `json:",omitempty"`
+	Origin          KeyOrigin       `json:",omitempty" yaml:"Origin"`
 	ValidTo         int64           `json:",omitempty"`
 
 	SigningAlgorithms     []SigningAlgorithm    `json:",omitempty"`
