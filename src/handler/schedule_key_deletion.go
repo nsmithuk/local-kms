@@ -2,9 +2,11 @@ package handler
 
 import (
 	"fmt"
-	"github.com/aws/aws-sdk-go/service/kms"
-	"github.com/nsmithuk/local-kms/src/config"
 	"time"
+
+	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/nsmithuk/local-kms/src/cmk"
+	"github.com/nsmithuk/local-kms/src/config"
 )
 
 func (r *RequestHandler) ScheduleKeyDeletion() Response {
@@ -69,7 +71,7 @@ func (r *RequestHandler) ScheduleKeyDeletion() Response {
 	//---
 
 	key.GetMetadata().Enabled = false
-	key.GetMetadata().KeyState = "PendingDeletion"
+	key.GetMetadata().KeyState = cmk.KeyStatePendingDeletion
 	key.GetMetadata().DeletionDate = time.Now().AddDate(0, 0, int(PendingWindowInDays)).Unix()
 
 	//--------------------------------

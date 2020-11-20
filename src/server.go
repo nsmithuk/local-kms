@@ -95,7 +95,7 @@ func handleRequest(w http.ResponseWriter, r *http.Request, database *data.Databa
 		}
 
 		// If we couldn't find a valid method matching the request
-		error501(w)
+		error501(w, r)
 		return
 	}
 
@@ -121,7 +121,7 @@ func error415(w http.ResponseWriter) {
 	fmt.Fprint(w, "Only JSON based content types accepted")
 }
 
-func error501(w http.ResponseWriter) {
+func error501(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(501)
-	fmt.Fprint(w, "Passed X-Amz-Target is not implemented")
+	fmt.Fprintf(w, "Passed X-Amz-Target (%s) is not implemented", r.Header.Get("X-Amz-Target"))
 }

@@ -2,12 +2,13 @@ package handler
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/aws/aws-sdk-go/service/kms"
 	"github.com/nsmithuk/local-kms/src/cmk"
 	"github.com/nsmithuk/local-kms/src/config"
 	"github.com/nsmithuk/local-kms/src/data"
-	"github.com/satori/go.uuid"
-	"time"
+	uuid "github.com/satori/go.uuid"
 )
 
 func (r *RequestHandler) CreateKey() Response {
@@ -30,8 +31,8 @@ func (r *RequestHandler) CreateKey() Response {
 		CreationDate: time.Now().Unix(),
 		Enabled:      true,
 		KeyManager:   "CUSTOMER",
-		KeyState:     "Enabled",
-		Origin:       "AWS_KMS",
+		KeyState:     cmk.KeyStateEnabled,
+		Origin:       cmk.KeyOriginAwsKms,
 	}
 
 	//--------------------------------
@@ -84,6 +85,39 @@ func (r *RequestHandler) CreateKey() Response {
 		body.CustomerMasterKeySpec = &sd
 	}
 
+	if body.Origin != nil {
+		switch *body.Origin {
+		case "AWS_KMS":
+			// nop
+		case "EXTERNAL":
+
+			if *body.CustomerMasterKeySpec != "SYMMETRIC_DEFAULT" {
+				msg := fmt.Sprintf("KeySpec %s is not supported for Origin %s", *body.CustomerMasterKeySpec, *body.Origin)
+
+				r.logger.Warnf(msg)
+				return NewValidationExceptionResponse(msg)
+			}
+
+			r.logger.Infof("Set key origin to %s and state to PendingImport", *body.Origin)
+			metadata.Origin = cmk.KeyOrigin(*body.Origin)
+			metadata.Enabled = false
+			metadata.KeyState = cmk.KeyStatePendingImport
+
+		case "AWS_CLOUDHSM":
+
+			msg := fmt.Sprintf("Local KMS does not yet support Origin AWS_CLOUDHSM.")
+			r.logger.Warnf(msg)
+			return NewUnsupportedOperationException(msg)
+
+		default:
+
+			msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'origin' failed to satisfy constraint: Member must satisfy enum value set: [EXTERNAL, AWS_CLOUDHSM, AWS_KMS]", *body.Origin)
+
+			r.logger.Warnf(msg)
+			return NewValidationExceptionResponse(msg)
+		}
+	}
+
 	//---
 
 	var key cmk.Key
@@ -97,7 +131,7 @@ func (r *RequestHandler) CreateKey() Response {
 			return NewValidationExceptionResponse(msg)
 		}
 
-		key = cmk.NewAesKey(metadata, *body.Policy)
+		key = cmk.NewAesKey(metadata, *body.Policy, metadata.Origin)
 
 	case "ECC_NIST_P256", "ECC_NIST_P384", "ECC_NIST_P521":
 

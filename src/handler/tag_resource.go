@@ -1,7 +1,10 @@
 package handler
 
 import (
+	"fmt"
+
 	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/nsmithuk/local-kms/src/cmk"
 	"github.com/nsmithuk/local-kms/src/data"
 )
 
@@ -38,9 +41,18 @@ func (r *RequestHandler) TagResource() Response {
 
 	//---
 
-	key, response := r.getUsableKey(*body.KeyId)
+	key, response := r.getKey(*body.KeyId)
 	if !response.Empty() {
 		return response
+	}
+
+	switch key.GetMetadata().KeyState {
+	case cmk.KeyStatePendingDeletion:
+		msg := fmt.Sprintf("%s is pending deletion.", *body.KeyId)
+
+		r.logger.Warnf(msg)
+		return NewKMSInvalidStateExceptionResponse(msg)
+
 	}
 
 	//--------------------------------

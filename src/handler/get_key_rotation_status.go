@@ -43,8 +43,14 @@ func (r *RequestHandler) GetKeyRotationStatus() Response {
 	//---
 
 	// Check the key supports rotation
-	if _, ok := key.(*cmk.AesKey); !ok {
+	if key.GetMetadata().Origin == cmk.KeyOriginExternal {
+		msg := fmt.Sprintf("%s origin is EXTERNAL which is not valid for this operation.", key.GetArn())
 
+		r.logger.Warnf(msg)
+		return NewUnsupportedOperationException(msg)
+	}
+
+	if _, ok := key.(*cmk.AesKey); !ok {
 		r.logger.Warnf(fmt.Sprintf("Key '%s' does does not support rotation", keyArn))
 
 		// Hard code false for non-AES CMKs.

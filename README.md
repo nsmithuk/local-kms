@@ -28,6 +28,7 @@ development and testing against KMS; not for use in a production environment._
 * Decryption
 * Generating a data key, with or without plain text
 * Generating random data
+* Importing your own key material
 * Signing and verifying messages
     * RAW and DIGEST
 * Tags
@@ -43,7 +44,6 @@ If a key in the seeding file already exists, it will not be overwritten or amend
 * RSA keys with a usage set to ENCRYPT_DECRYPT
 * ECC_SECG_P256K1 keys
 * Grants
-* Importing your own key material
 * Operations relating to a Custom Key Store
 
 ## Getting Started with Docker
@@ -91,9 +91,9 @@ Aliases:
 ```
 Which will create a single key with the ID `bc436485-5092-42b8-92a3-0aa8b93536dc`, and an alias to the key with the name `alias/testing`.
 
-`BackingKeys ` must be an array of **one or more** hex encoded 256bit keys. Adding more than one backing key simulates the effect of the CMK having been rotated.
+`BackingKeys ` must be an array of **one or more** hex encoded 256bit keys (can be generated using `openssl rand -hex 32`).
 
-Seeding files also support multiple keys, aliases and backing keys.
+Seeding files also support multiple keys, aliases and backing keys. Adding more than one backing key simulates the effect of the CMK having been rotated. 
 
 ```yaml
 Keys:
@@ -122,6 +122,7 @@ Aliases:
 
 Keys also support the following optional fields:
 - **Metadata -> Description**: A free text field into which you can enter a description of the key.
+- **Metadata -> Origin**: Can be set to `EXTERNAL` to seed keys with custom key material. If `Origin` is set to `EXTERNAL` then `BackingKeys` is optional array that can contain at most 1 hex encoded 256bit key.
 - **NextKeyRotation**: An ISO 8601 formatted date. Supplying this enables key rotation, and sets the next rotation to take place on the supplied date. If the date is in the past, rotation will happen the first time the key is accessed.
 
 ```yaml
@@ -134,7 +135,18 @@ Keys:
         NextKeyRotation: "2019-09-12T15:19:21+00:00"
         BackingKeys:
           - 34743777217A25432A46294A404E635266556A586E3272357538782F413F4428
+      - Metadata:
+          KeyId: 5ef77041-d1e6-4af1-9a41-e49a4b45efb6
+          Origin: EXTERNAL
+        BackingKeys:
+          - b200b324de29609558e13780160e38fc193f6bec9f9dba58a2be5b37d5098d74
+      - Metadata:
+          KeyId: 5d05267f-bb87-4d0b-8594-295a4371d414
+          Origin: EXTERNAL
 ```
+In the example above, 2 `EXTERNAL` origin keys will be created. 
+- a key with the ID `5ef77041-d1e6-4af1-9a41-e49a4b45efb6`, with pre-imported key material 
+- a key with the ID `5d05267f-bb87-4d0b-8594-295a4371d414` in a `PendingImport` state
 
 ## Configuration
 The following environment variables can be set to configure LKMS.
@@ -221,6 +233,86 @@ awslocal kms decrypt \
 awslocal kms generate-data-key \
 --key-id 0579fe9c-129b-490a-adb0-42589ac4a017 \
 --key-spec AES_128
+```
+
+#### Importing custom key material
+```bash
+key_id=${1}
+wrappingAlg=${2:-RSAES_OAEP_SHA_1}
+expirationModel=${3:-KEY_MATERIAL_DOES_NOT_EXPIRE}
+validToInput=${4}
+
+if [ "$wrappingAlg" == "RSAES_PKCS1_V1_5" ]; then
+    echo "RSAES_PKCS1_V1_5 is nto supported by this script. Please use RSAES_OAEP_SHA_[1|256]."
+    exit 1
+fi
+
+if [ -z "$key_id" ]; then
+    echo ""
+    echo "Creating new External key"
+    key_id=$(awslocal kms create-key --origin EXTERNAL | jq -r '.KeyMetadata.KeyId')
+fi
+
+echo ""
+echo "Getting Parameters For Import"
+importParams=$(awslocal kms get-parameters-for-import --key-id $key_id --wrapping-algorithm $wrappingAlg --wrapping-key-spec RSA_2048)
+
+pubKeyBinFile=$(mktemp)
+echo $importParams | jq -r '.PublicKey' | base64 --decode > $pubKeyBinFile
+
+importTokenBinFile=$(mktemp)
+echo $importParams | jq -r '.ImportToken' | base64 --decode > $importTokenBinFile
+
+keyMaterial="KeyMaterial-${key_id}.txt"
+if [ -f "$keyMaterial" ]; then
+  echo ""
+  echo "Found existing key material"
+else
+  echo ""
+  echo "Generating key material"
+  keyMaterialTmp=$(mktemp)
+  openssl rand -out $keyMaterialTmp 32
+
+  # If you want to re-import key material then you'll need to save
+  # this file and use it for any subsequent calls to Local KMS
+  mv $keyMaterialTmp $keyMaterial
+fi
+
+echo ""
+echo "Encrypting key material using public key"
+encryptedKeyMaterial=$(mktemp)
+
+openssl pkeyutl \
+  -in $keyMaterial \
+  -out $encryptedKeyMaterial \
+  -inkey $pubKeyBinFile \
+  -keyform DER \
+  -pubin -encrypt \
+  -pkeyopt rsa_padding_mode:oaep \
+  -pkeyopt rsa_oaep_md:sha$(echo "$wrappingAlg" | sed -r 's/.*_([0-9]+)$/\1/')
+
+validTo=
+if [ -n "$validToInput" ]; then
+    validTo=" --valid-to $validToInput"
+fi
+
+echo ""
+echo "Import key material for key_id $key_id"
+awslocal kms import-key-material --key-id $key_id \
+    --expiration-model KEY_MATERIAL_DOES_NOT_EXPIRE \
+    --import-token fileb://$importTokenBinFile \
+    --encrypted-key-material fileb://$encryptedKeyMaterial \
+    $validTo
+
+echo ""
+echo "Cleaning up"
+rm -f $pubKeyBinFile
+rm -f $importTokenBinFile 
+rm -f $encryptedKeyMaterial
+
+echo ""
+echo "Describing new state"
+awslocal kms describe-key --key-id $key_id
 ```
 
 ### Using LKMS with HTTP(ie)
