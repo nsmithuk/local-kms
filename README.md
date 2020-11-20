@@ -46,6 +46,13 @@ If a key in the seeding file already exists, it will not be overwritten or amend
 * Grants
 * Operations relating to a Custom Key Store
 
+## Download
+
+Pre-build binaries:
+* [local-kms_linux-amd64.bin](https://local-kms.s3.eu-west-2.amazonaws.com/3/local-kms_linux-amd64.bin)
+* [local-kms_linux-amd64-alpine.bin](https://local-kms.s3.eu-west-2.amazonaws.com/3/local-kms_linux-amd64-alpine.bin)
+* [local-kms_darwin-amd64.bin](https://local-kms.s3.eu-west-2.amazonaws.com/3/local-kms_darwin-amd64.bin)
+
 ## Getting Started with Docker
 
 The quickest way to get started is with Docker. To get LKMS up, running and accessible on port 8080, you can run:
