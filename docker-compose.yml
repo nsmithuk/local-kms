@@ -11,4 +11,5 @@ services:
       - ./init:/init
       - ./data:/data
     ports:
+      - 4566:8080
       - 4599:8080
