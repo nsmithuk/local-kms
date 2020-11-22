@@ -23,7 +23,6 @@ func (k *RsaKey) Encrypt(plaintext []byte, algorithm EncryptionAlgorithm) (resul
 	return rsa.EncryptOAEP(hashAlgorithm, rand.Reader, &k.PrivateKey.PublicKey, plaintext, []byte{})
 }
 
-
 func (k *RsaKey) Decrypt(ciphertext []byte, algorithm EncryptionAlgorithm) (plaintext []byte, err error) {
 	var hashAlgorithm hash.Hash
 	switch algorithm {

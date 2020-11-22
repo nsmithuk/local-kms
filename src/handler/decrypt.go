@@ -73,7 +73,7 @@ func (r *RequestHandler) Decrypt() Response {
 		We need to unpack the payload if either:
 		- We don't already have a valid key; or
 		- We do have a valid key, and it's of type AES.
-	 */
+	*/
 	if _, isAes := key.(*cmk.AesKey); key == nil || isAes {
 
 		var keyArn string

@@ -72,7 +72,7 @@ func (r *RequestHandler) GetPublicKey() Response {
 		KeyUsage          cmk.KeyUsage
 		PublicKey         []byte
 	}{
-		KeyId: key.GetArn(),
+		KeyId:                 key.GetArn(),
 		CustomerMasterKeySpec: key.GetMetadata().CustomerMasterKeySpec,
 		//EncryptionAlgorithms: key.GetMetadata().EncryptionAlgorithms,
 		SigningAlgorithms: key.GetMetadata().SigningAlgorithms,
