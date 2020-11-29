@@ -15,9 +15,7 @@ development and testing against KMS; not for use in a production environment._
 ### Supports
 
 * Symmetric (AES) keys
-* Asymmetric keys
-    * ECC_NIST keys
-    * RSA keys with a usage set to SIGN_VERIFY
+* Asymmetric keys (ECC_NIST and RSA)
 * Management of Customer Master Keys; including:
     * Enabling and disabling keys
     * Scheduling key deletion
@@ -27,6 +25,7 @@ development and testing against KMS; not for use in a production environment._
     * Encryption Contexts
 * Decryption
 * Generating a data key, with or without plain text
+* Generating a data key pair, with or without plain text
 * Generating random data
 * Importing your own key material
 * Signing and verifying messages
@@ -41,7 +40,6 @@ If a key in the seeding file already exists, it will not be overwritten or amend
 
 ### Does not (yet) support
 
-* RSA keys with a usage set to ENCRYPT_DECRYPT
 * ECC_SECG_P256K1 keys
 * Grants
 * Operations relating to a Custom Key Store
