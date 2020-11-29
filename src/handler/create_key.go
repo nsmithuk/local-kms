@@ -125,8 +125,8 @@ func (r *RequestHandler) CreateKey() Response {
 	switch *body.CustomerMasterKeySpec {
 	case "SYMMETRIC_DEFAULT":
 
-		if body.KeyUsage != nil && *body.KeyUsage == "SIGN_VERIFY" {
-			msg := fmt.Sprintf("KeyUsage SIGN_VERIFY is not compatible with KeySpec SYMMETRIC_DEFAULT")
+		if body.KeyUsage != nil && *body.KeyUsage != "ENCRYPT_DECRYPT" {
+			msg := fmt.Sprintf("KeyUsage %s is not compatible with KeySpec SYMMETRIC_DEFAULT", *body.KeyUsage)
 			r.logger.Warnf(msg)
 			return NewValidationExceptionResponse(msg)
 		}
@@ -167,10 +167,10 @@ func (r *RequestHandler) CreateKey() Response {
 			return NewValidationExceptionResponse(msg)
 		}
 
-		if *body.KeyUsage != "SIGN_VERIFY" {
-			msg := fmt.Sprintf("Local KMS currently only supports SIGN_VERIFY for RSA keys. ENCRYPT_DECRYPT is on the roadmap.")
+		if !(*body.KeyUsage == "SIGN_VERIFY" || *body.KeyUsage == "ENCRYPT_DECRYPT") {
+			msg := fmt.Sprintf("KeyUsage %s is not compatible with KeySpec %s", *body.KeyUsage, *body.CustomerMasterKeySpec)
 			r.logger.Warnf(msg)
-			return NewUnsupportedOperationException(msg)
+			return NewValidationExceptionResponse(msg)
 		}
 
 		key, err = cmk.NewRsaKey(cmk.CustomerMasterKeySpec(*body.CustomerMasterKeySpec), cmk.KeyUsage(*body.KeyUsage), metadata, *body.Policy)

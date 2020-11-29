@@ -51,18 +51,50 @@ func (r *RequestHandler) Decrypt() Response {
 
 	//--------------------------------
 
-	keyArn, keyVersion, ciphertext, ok := service.UnpackCiphertextBlob(body.CiphertextBlob)
+	// If a KeyId is provided, we always use that, even for symmetric keys.
+	var key cmk.Key
+	var response Response
+	var keyVersion uint32
 
-	// If we unable to deconstruct the message
-	if !ok {
-		r.logger.Warnf("Unable to deconstruct ciphertext")
-		return NewInvalidCiphertextExceptionResponse("")
+	// We default of the full CiphertextBlob
+	// Replaced later in the case of AES payloads
+	var ciphertext []byte = body.CiphertextBlob
+
+	if body.KeyId != nil {
+		key, response = r.getUsableKey(*body.KeyId)
+
+		// If the response is not empty, there was an error
+		if !response.Empty() {
+			return response
+		}
 	}
 
-	key, response := r.getUsableKey(keyArn)
+	/*
+		We need to unpack the payload if either:
+		- We don't already have a valid key; or
+		- We do have a valid key, and it's of type AES.
+	*/
+	if _, isAes := key.(*cmk.AesKey); key == nil || isAes {
+
+		var keyArn string
+		var ok bool
+
+		keyArn, keyVersion, ciphertext, ok = service.UnpackCiphertextBlob(body.CiphertextBlob)
+
+		// If we unable to deconstruct the message
+		if !ok {
+			r.logger.Warnf("Unable to deconstruct ciphertext")
+			return NewInvalidCiphertextExceptionResponse("")
+		}
+
+		// We only use the unpacked keyArn if a key wasn't supplied.
+		if key == nil {
+			key, response = r.getUsableKey(keyArn)
+		}
+	}
 
 	// If the response is not empty, there was an error
-	if !response.Empty() {
+	if key == nil || !response.Empty() {
 
 		// We override the returned error on decrypt. The message is more generic such that it doesn't leak any metadata.
 		msg := "The ciphertext refers to a customer master key that does not exist, does not exist in this region, " +
@@ -86,8 +118,18 @@ func (r *RequestHandler) Decrypt() Response {
 			return NewInvalidCiphertextExceptionResponse("")
 		}
 
+	case *cmk.RsaKey:
+
+		plaintext, err = k.Decrypt(ciphertext, cmk.EncryptionAlgorithm(*body.EncryptionAlgorithm))
+		if err != nil {
+			msg := fmt.Sprintf("Unable to decode Ciphertext: %s", err)
+			r.logger.Warnf(msg)
+
+			return NewInvalidCiphertextExceptionResponse("")
+		}
+
 	default:
-		return NewInternalFailureExceptionResponse("key type not yet supported for encryption")
+		return NewInternalFailureExceptionResponse("key type not yet supported for decryption")
 	}
 
 	//--------------------------------

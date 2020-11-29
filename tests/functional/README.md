@@ -1,7 +1,29 @@
-# Functional Tests
+# Local KMS Functional Tests
 
-The functional tests are being building using [Postman](https://www.getpostman.com/).
+There are two goals to these tests:
+* Regression testing for Local KMS.
+* Generating a set of tests that can be run against AWS KMS and Local KMS, to ensure the two match.
 
-You can import [local-kms.postman_collection.json](local-kms.postman_collection.json) into your own copy of Postman.
+#### Why are they in Python?
+There are a few reasons:
+* It allows different encryption libraries to be used from those that generate keys in Local KMS. The demonstration that
+generated keys are compatible with other libraries adds weight to the fact they're initially being generated correctly.
+* Python's Duck typing allows us to spend less time thinking about all the data structures being passed around, so we can focus
+on just the element we're currently testing.
+* It's quite quick and easy.
 
-All the tests are initially written against AWS' real KMS. The same tests must then pass against Local KMS.
+## Setup
+
+Bring up Local KMS with Docker Compose. From within the root of the repository:
+```shell script
+docker-compose up
+````
+
+From within local-kms/tests/functional:
+```shell script
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirments.txt
+
+pytest
+```

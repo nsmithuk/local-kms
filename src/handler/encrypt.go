@@ -68,11 +68,24 @@ func (r *RequestHandler) Encrypt() Response {
 			return NewInternalFailureExceptionResponse(err.Error())
 		}
 
+	case *cmk.RsaKey:
+
+		if k.GetMetadata().KeyUsage != cmk.UsageEncryptDecrypt {
+			msg := fmt.Sprintf("%s key usage is %s which is not valid for Encrypt.", k.GetArn(), k.GetMetadata().KeyUsage)
+			r.logger.Warnf(msg)
+			return NewInvalidKeyUsageException(msg)
+		}
+
+		cipherResponse, err = k.Encrypt(body.Plaintext, cmk.EncryptionAlgorithm(*body.EncryptionAlgorithm))
+		if err != nil {
+			r.logger.Error(err.Error())
+			return NewInternalFailureExceptionResponse(err.Error())
+		}
+
 	default:
 
 		if k.GetMetadata().KeyUsage == cmk.UsageSignVerify {
 			msg := fmt.Sprintf("%s key usage is SIGN_VERIFY which is not valid for Encrypt.", k.GetArn())
-
 			r.logger.Warnf(msg)
 			return NewInvalidKeyUsageException(msg)
 		}

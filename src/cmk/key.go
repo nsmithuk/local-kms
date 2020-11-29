@@ -31,7 +31,9 @@ const (
 type EncryptionAlgorithm string
 
 const (
-	EncryptionAlgorithmAes EncryptionAlgorithm = "SYMMETRIC_DEFAULT"
+	EncryptionAlgorithmAes           EncryptionAlgorithm = "SYMMETRIC_DEFAULT"
+	EncryptionAlgorithmRsaOaepSha1   EncryptionAlgorithm = "RSAES_OAEP_SHA_1"
+	EncryptionAlgorithmRsaOaepSha256 EncryptionAlgorithm = "RSAES_OAEP_SHA_256"
 )
 
 //---

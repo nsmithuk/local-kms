@@ -47,13 +47,27 @@ func NewRsaKey(spec CustomerMasterKeySpec, usage KeyUsage, metadata KeyMetadata,
 	k.Metadata.KeyUsage = usage
 	k.Metadata.CustomerMasterKeySpec = spec
 
-	k.Metadata.SigningAlgorithms = []SigningAlgorithm{
-		SigningAlgorithmRsaPssSha256,
-		SigningAlgorithmRsaPssSha384,
-		SigningAlgorithmRsaPssSha512,
-		SigningAlgorithmRsaPkcsSha256,
-		SigningAlgorithmRsaPkcsSha384,
-		SigningAlgorithmRsaPkcsSha512,
+	switch usage {
+	case UsageSignVerify:
+
+		k.Metadata.SigningAlgorithms = []SigningAlgorithm{
+			SigningAlgorithmRsaPssSha256,
+			SigningAlgorithmRsaPssSha384,
+			SigningAlgorithmRsaPssSha512,
+			SigningAlgorithmRsaPkcsSha256,
+			SigningAlgorithmRsaPkcsSha384,
+			SigningAlgorithmRsaPkcsSha512,
+		}
+
+	case UsageEncryptDecrypt:
+
+		k.Metadata.EncryptionAlgorithms = []EncryptionAlgorithm{
+			EncryptionAlgorithmRsaOaepSha1,
+			EncryptionAlgorithmRsaOaepSha256,
+		}
+
+	default:
+		return nil, errors.New("key usage error")
 	}
 
 	return k, nil
