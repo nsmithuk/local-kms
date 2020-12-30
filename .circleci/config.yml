@@ -11,22 +11,22 @@ workflows:
           filters:
             tags:
               only: /.*/
-            branches:
-              ignore: /.*/
+#             branches:
+#               ignore: /.*/
       - linux-amd64-apline:
           name: linux-amd64-apline
           filters:
             tags:
               only: /.*/
-            branches:
-              ignore: /.*/
+#             branches:
+#               ignore: /.*/
       - darwin-amd64:
           name: darwin-amd64
           filters:
             tags:
               only: /.*/
-            branches:
-              ignore: /.*/
+#             branches:
+#               ignore: /.*/
       - release-artifacts-s3:
           name: s3-artifacts
           requires:
