@@ -6,6 +6,13 @@ orbs:
 workflows:
   build:
     jobs:
+      - darwin-amd64:
+          name: darwin-amd64
+          filters:
+            tags:
+              only: /.*/
+#             branches:
+#               ignore: /.*/
       - linux-amd64:
           name: linux-amd64
           filters:
@@ -13,15 +20,15 @@ workflows:
               only: /.*/
 #             branches:
 #               ignore: /.*/
-      - linux-amd64-apline:
-          name: linux-amd64-apline
+      - linux-arm64:
+          name: linux-arm64
           filters:
             tags:
               only: /.*/
 #             branches:
 #               ignore: /.*/
-      - darwin-amd64:
-          name: darwin-amd64
+      - linux-amd64-apline:
+          name: linux-amd64-apline
           filters:
             tags:
               only: /.*/
@@ -40,14 +47,29 @@ workflows:
               ignore: /.*/
 
 jobs:
-  build_docker:
-    machine: true
+
+  darwin-amd64:
+    docker:
+      - image: cimg/go:1.15
     steps:
       - checkout
       - run:
-          name: Build Docker container
+          name: Prep for build
           command: |
-            docker build -t nsmithuk/local-kms:latest .
+            mkdir ~/artifacts
+      - run:
+          name: Build amd64 darwin
+          command: |
+            GOOS=darwin GOARCH=amd64 go build -o ~/artifacts/darwin-amd64.bin
+            chmod +x ~/artifacts/darwin-amd64.bin
+      - store_artifacts:
+          path: ~/artifacts/darwin-amd64.bin
+          destination: darwin-amd64.bin
+      - persist_to_workspace:
+          root: ~/artifacts
+          paths:
+            - '*.bin'
+  
 
   linux-amd64:
     docker:
@@ -66,6 +88,28 @@ jobs:
       - store_artifacts:
           path: ~/artifacts/linux-amd64.bin
           destination: linux-amd64.bin
+      - persist_to_workspace:
+          root: ~/artifacts
+          paths:
+            - '*.bin'
+            
+  linux-arm64:
+    docker:
+      - image: cimg/go:1.15
+    steps:
+      - checkout
+      - run:
+          name: Prep for build
+          command: |
+            mkdir ~/artifacts
+      - run:
+          name: Build arm64 linux
+          command: |
+            GOOS=linux GOARCH=arm64 go build -o ~/artifacts/linux-arm64.bin
+            chmod +x ~/artifacts/linux-arm64.bin
+      - store_artifacts:
+          path: ~/artifacts/linux-arm64.bin
+          destination: linux-arm64.bin
       - persist_to_workspace:
           root: ~/artifacts
           paths:
@@ -98,27 +142,6 @@ jobs:
           paths:
             - '*.bin'
 
-  darwin-amd64:
-    docker:
-      - image: cimg/go:1.15
-    steps:
-      - checkout
-      - run:
-          name: Prep for build
-          command: |
-            mkdir ~/artifacts
-      - run:
-          name: Build amd64 darwin
-          command: |
-            GOOS=darwin GOARCH=amd64 go build -o ~/artifacts/darwin-amd64.bin
-            chmod +x ~/artifacts/darwin-amd64.bin
-      - store_artifacts:
-          path: ~/artifacts/darwin-amd64.bin
-          destination: darwin-amd64.bin
-      - persist_to_workspace:
-          root: ~/artifacts
-          paths:
-            - '*.bin'
 
   release-artifacts-s3:
     executor: aws-cli/default
