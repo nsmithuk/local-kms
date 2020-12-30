@@ -46,10 +46,12 @@ If a key in the seeding file already exists, it will not be overwritten or amend
 
 ## Download
 
-Pre-build binaries:
-* [local-kms_linux-amd64.bin](https://local-kms.s3.eu-west-2.amazonaws.com/3/local-kms_linux-amd64.bin)
-* [local-kms_linux-amd64-alpine.bin](https://local-kms.s3.eu-west-2.amazonaws.com/3/local-kms_linux-amd64-alpine.bin)
+Pre-built binaries:
 * [local-kms_darwin-amd64.bin](https://local-kms.s3.eu-west-2.amazonaws.com/3/local-kms_darwin-amd64.bin)
+* [local-kms_linux-amd64.bin](https://local-kms.s3.eu-west-2.amazonaws.com/3/local-kms_linux-amd64.bin)
+* [local-kms_linux-arm64.bin](https://local-kms.s3.eu-west-2.amazonaws.com/3/local-kms_linux-arm64.bin)
+* [local-kms_linux-amd64-alpine.bin](https://local-kms.s3.eu-west-2.amazonaws.com/3/local-kms_linux-amd64-alpine.bin)
+
 
 ## Getting Started with Docker
 
