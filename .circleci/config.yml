@@ -11,35 +11,36 @@ workflows:
           filters:
             tags:
               only: /.*/
-#             branches:
-#               ignore: /.*/
+            branches:
+              ignore: /.*/
       - linux-amd64:
           name: linux-amd64
           filters:
             tags:
               only: /.*/
-#             branches:
-#               ignore: /.*/
+            branches:
+              ignore: /.*/
       - linux-arm64:
           name: linux-arm64
           filters:
             tags:
               only: /.*/
-#             branches:
-#               ignore: /.*/
+            branches:
+              ignore: /.*/
       - linux-amd64-apline:
           name: linux-amd64-apline
           filters:
             tags:
               only: /.*/
-#             branches:
-#               ignore: /.*/
+            branches:
+              ignore: /.*/
       - release-artifacts-s3:
           name: s3-artifacts
           requires:
-            - linux-amd64
-            - linux-amd64-apline
             - darwin-amd64
+            - linux-amd64
+            - linux-arm64
+            - linux-amd64-apline
           filters:
             tags:
               only: /^\d+\.\d+\.\d+$/
@@ -156,19 +157,23 @@ jobs:
             echo "Version Full << pipeline.git.tag >>"
             echo "Version Major $VERSION_MAJOR"
 
+            export ARCH=darwin-amd64
+            aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/${VERSION_MAJOR}/local-kms_${ARCH}.bin
+            aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/<< pipeline.git.tag >>/local-kms_${ARCH}.bin
+            aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/localstack/v${VERSION_MAJOR}/local-kms.osx.bin
+
             export ARCH=linux-amd64
             aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/${VERSION_MAJOR}/local-kms_${ARCH}.bin
             aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/<< pipeline.git.tag >>/local-kms_${ARCH}.bin
             aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/localstack/v${VERSION_MAJOR}/local-kms.linux.bin
+            
+            export ARCH=linux-arm64
+            aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/${VERSION_MAJOR}/local-kms_${ARCH}.bin
+            aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/<< pipeline.git.tag >>/local-kms_${ARCH}.bin
 
             export ARCH=linux-amd64-alpine
             aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/${VERSION_MAJOR}/local-kms_${ARCH}.bin
             aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/<< pipeline.git.tag >>/local-kms_${ARCH}.bin
             aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/localstack/v${VERSION_MAJOR}/local-kms.alpine.bin
-
-            export ARCH=darwin-amd64
-            aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/${VERSION_MAJOR}/local-kms_${ARCH}.bin
-            aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/<< pipeline.git.tag >>/local-kms_${ARCH}.bin
-            aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/localstack/v${VERSION_MAJOR}/local-kms.osx.bin
 
             # Access URL prefix: https://s3-eu-west-2.amazonaws.com/local-kms/
