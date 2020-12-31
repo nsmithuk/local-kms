@@ -96,7 +96,7 @@ jobs:
           command: |
             for i in `seq 1 10`;
             do
-              nc -z localhost 8080 && echo Success && exit 0
+              nc -z localhost 4599 && echo Success && exit 0
               echo -n .
               sleep 1
             done
