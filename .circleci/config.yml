@@ -161,7 +161,7 @@ jobs:
           name: Start local-kms for testing
           background: true
           command: |
-            PORT=4599 ~/artifacts/linux-amd64-alpine.bin
+            PORT=4599 /artifacts/linux-amd64-alpine.bin
       - run:
           name: Waiting for local-kms to be ready
           command: |
