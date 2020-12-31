@@ -126,7 +126,7 @@ func (r *RequestHandler) CreateKey() Response {
 	case "SYMMETRIC_DEFAULT":
 
 		if body.KeyUsage != nil && *body.KeyUsage != "ENCRYPT_DECRYPT" {
-			msg := fmt.Sprintf("KeyUsage %s is not compatible with KeySpec SYMMETRIC_DEFAULT", *body.KeyUsage)
+			msg := fmt.Sprintf("The operation failed because the KeyUsage value of the CMK is %s. To perform this operation, the KeyUsage value must be ENCRYPT_DECRYPT.", *body.KeyUsage)
 			r.logger.Warnf(msg)
 			return NewValidationExceptionResponse(msg)
 		}
