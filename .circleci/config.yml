@@ -12,28 +12,28 @@ workflows:
             tags:
               only: /.*/
             branches:
-              ignore: /.*/
+              only: master
       - linux-amd64:
           name: linux-amd64
           filters:
             tags:
               only: /.*/
             branches:
-              ignore: /.*/
+              only: master
       - linux-arm64:
           name: linux-arm64
           filters:
             tags:
               only: /.*/
             branches:
-              ignore: /.*/
+              only: master
       - linux-amd64-apline:
           name: linux-amd64-apline
           filters:
             tags:
               only: /.*/
             branches:
-              ignore: /.*/
+              only: master
       - release-artifacts-s3:
           name: s3-artifacts
           requires:
@@ -86,6 +86,28 @@ jobs:
           command: |
             GOOS=linux GOARCH=amd64 go build -o ~/artifacts/linux-amd64.bin
             chmod +x ~/artifacts/linux-amd64.bin
+      - run:
+          name: Start local-kms for testing
+          background: true
+          command: |
+            PORT=4599 ~/artifacts/linux-amd64.bin
+      - run:
+          name: Waiting for local-kms to be ready
+          command: |
+            for i in `seq 1 10`;
+            do
+              nc -z localhost 4599 && echo Success && exit 0
+              echo -n .
+              sleep 1
+            done
+            echo Failed waiting for local-kms && exit 1
+      - run:
+          name: Run tests
+          command: |
+            sudo apt update && sudo apt install python3-pip
+            cd tests/functional
+            pip3 install -r requirments.txt
+            pytest
       - store_artifacts:
           path: ~/artifacts/linux-amd64.bin
           destination: linux-amd64.bin
@@ -135,6 +157,28 @@ jobs:
           command: |
             GOOS=linux GOARCH=amd64 go build -o /artifacts/linux-amd64-alpine.bin
             chmod +x /artifacts/linux-amd64-alpine.bin
+      - run:
+          name: Start local-kms for testing
+          background: true
+          command: |
+            PORT=4599 /artifacts/linux-amd64-alpine.bin
+      - run:
+          name: Waiting for local-kms to be ready
+          command: |
+            for i in `seq 1 10`;
+            do
+              nc -z localhost 4599 && echo Success && exit 0
+              echo -n .
+              sleep 1
+            done
+            echo Failed waiting for local-kms && exit 1
+      - run:
+          name: Run tests
+          command: |
+            apk add --update --no-cache py3-pip gcc g++ make libffi-dev openssl-dev
+            cd tests/functional
+            pip3 install -r requirments.txt
+            pytest
       - store_artifacts:
           path: /artifacts/linux-amd64-alpine.bin
           destination: linux-amd64-alpine.bin
