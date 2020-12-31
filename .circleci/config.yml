@@ -18,8 +18,8 @@ workflows:
           filters:
             tags:
               only: /.*/
-            branches:
-              ignore: /.*/
+#            branches:
+#              ignore: /.*/
       - linux-arm64:
           name: linux-arm64
           filters:
