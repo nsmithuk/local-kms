@@ -12,28 +12,28 @@ workflows:
             tags:
               only: /.*/
             branches:
-              ignore: /.*/
+              only: master
       - linux-amd64:
           name: linux-amd64
           filters:
             tags:
               only: /.*/
-#            branches:
-#              ignore: /.*/
+            branches:
+              only: master
       - linux-arm64:
           name: linux-arm64
           filters:
             tags:
               only: /.*/
             branches:
-              ignore: /.*/
+              only: master
       - linux-amd64-apline:
           name: linux-amd64-apline
           filters:
             tags:
               only: /.*/
-#            branches:
-#              ignore: /.*/
+            branches:
+              only: master
       - release-artifacts-s3:
           name: s3-artifacts
           requires:
