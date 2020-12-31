@@ -175,7 +175,7 @@ jobs:
       - run:
           name: Run tests
           command: |
-            apk add --update --no-cache py3-pip
+            apk add --update --no-cache py3-pip gcc g++ make libffi-dev openssl-dev
             cd tests/functional
             pip3 install -r requirments.txt
             pytest
