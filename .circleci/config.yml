@@ -13,6 +13,13 @@ workflows:
               only: /.*/
             branches:
               only: master
+      - darwin-arm64:
+          name: darwin-arm64
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              only: master
       - linux-amd64:
           name: linux-amd64
           filters:
@@ -34,13 +41,22 @@ workflows:
               only: /.*/
             branches:
               only: master
+      - linux-arm64-apline:
+          name: linux-arm64-apline
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              only: master
       - release-artifacts-s3:
           name: s3-artifacts
           requires:
             - darwin-amd64
+            - darwin-arm64
             - linux-amd64
             - linux-arm64
             - linux-amd64-apline
+            - linux-arm64-apline
           filters:
             tags:
               only: /^\d+\.\d+\.\d+$/
@@ -70,7 +86,29 @@ jobs:
           root: ~/artifacts
           paths:
             - '*.bin'
-  
+
+  darwin-arm64:
+    working_directory: /go/src/github.com/nsmithuk/local-kms
+    docker:
+      - image: golang:1.16-rc-buster
+    steps:
+      - checkout
+      - run:
+          name: Prep for build
+          command: |
+            mkdir /artifacts
+      - run:
+          name: Build arm64 darwin
+          command: |
+            GOOS=darwin GOARCH=arm64 go build -o /artifacts/darwin-arm64.bin
+            chmod +x /artifacts/darwin-arm64.bin
+      - store_artifacts:
+          path: /artifacts/darwin-arm64.bin
+          destination: darwin-arm64.bin
+      - persist_to_workspace:
+          root: /artifacts
+          paths:
+            - '*.bin'
 
   linux-amd64:
     docker:
@@ -187,6 +225,32 @@ jobs:
           paths:
             - '*.bin'
 
+  linux-arm64-apline:
+    working_directory: /go/src/github.com/nsmithuk/local-kms
+    docker:
+      - image: golang:1.15-alpine
+    steps:
+      - checkout
+      - run:
+          name: Install git
+          command: |
+            apk add git
+      - run:
+          name: Prep for build
+          command: |
+            mkdir /artifacts
+      - run:
+          name: Build arm64 linux
+          command: |
+            GOOS=linux GOARCH=arm64 go build -o /artifacts/linux-arm64-alpine.bin
+            chmod +x /artifacts/linux-arm64-alpine.bin
+      - store_artifacts:
+          path: /artifacts/linux-arm64-alpine.bin
+          destination: linux-arm64-alpine.bin
+      - persist_to_workspace:
+          root: /artifacts
+          paths:
+            - '*.bin'
 
   release-artifacts-s3:
     executor: aws-cli/default
@@ -206,6 +270,10 @@ jobs:
             aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/<< pipeline.git.tag >>/local-kms_${ARCH}.bin
             aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/localstack/v${VERSION_MAJOR}/local-kms.osx.bin
 
+            export ARCH=darwin-arm64
+            aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/${VERSION_MAJOR}/local-kms_${ARCH}.bin
+            aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/<< pipeline.git.tag >>/local-kms_${ARCH}.bin
+
             export ARCH=linux-amd64
             aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/${VERSION_MAJOR}/local-kms_${ARCH}.bin
             aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/<< pipeline.git.tag >>/local-kms_${ARCH}.bin
@@ -219,5 +287,9 @@ jobs:
             aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/${VERSION_MAJOR}/local-kms_${ARCH}.bin
             aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/<< pipeline.git.tag >>/local-kms_${ARCH}.bin
             aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/localstack/v${VERSION_MAJOR}/local-kms.alpine.bin
+
+            export ARCH=linux-arm64-alpine
+            aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/${VERSION_MAJOR}/local-kms_${ARCH}.bin
+            aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/<< pipeline.git.tag >>/local-kms_${ARCH}.bin
 
             # Access URL prefix: https://s3-eu-west-2.amazonaws.com/local-kms/
