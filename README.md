@@ -51,6 +51,7 @@ Pre-built binaries:
 * [local-kms_linux-amd64.bin](https://local-kms.s3.eu-west-2.amazonaws.com/3/local-kms_linux-amd64.bin)
 * [local-kms_linux-arm64.bin](https://local-kms.s3.eu-west-2.amazonaws.com/3/local-kms_linux-arm64.bin)
 * [local-kms_linux-amd64-alpine.bin](https://local-kms.s3.eu-west-2.amazonaws.com/3/local-kms_linux-amd64-alpine.bin)
+* [local-kms_linux-arm64-alpine.bin](https://local-kms.s3.eu-west-2.amazonaws.com/3/local-kms_linux-arm64-alpine.bin)
 
 
 ## Getting Started with Docker
