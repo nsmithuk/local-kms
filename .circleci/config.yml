@@ -41,13 +41,6 @@ workflows:
               only: /.*/
             branches:
               only: master
-      - linux-arm64-apline:
-          name: linux-arm64-apline
-          filters:
-            tags:
-              only: /.*/
-            branches:
-              only: master
       - release-artifacts-s3:
           name: s3-artifacts
           requires:
@@ -56,7 +49,6 @@ workflows:
             - linux-amd64
             - linux-arm64
             - linux-amd64-apline
-            - linux-arm64-apline
           filters:
             tags:
               only: /^\d+\.\d+\.\d+$/
@@ -225,33 +217,6 @@ jobs:
           paths:
             - '*.bin'
 
-  linux-arm64-apline:
-    working_directory: /go/src/github.com/nsmithuk/local-kms
-    docker:
-      - image: golang:1.15-alpine
-    steps:
-      - checkout
-      - run:
-          name: Install git
-          command: |
-            apk add git
-      - run:
-          name: Prep for build
-          command: |
-            mkdir /artifacts
-      - run:
-          name: Build arm64 linux
-          command: |
-            GOOS=linux GOARCH=arm64 go build -o /artifacts/linux-arm64-alpine.bin
-            chmod +x /artifacts/linux-arm64-alpine.bin
-      - store_artifacts:
-          path: /artifacts/linux-arm64-alpine.bin
-          destination: linux-arm64-alpine.bin
-      - persist_to_workspace:
-          root: /artifacts
-          paths:
-            - '*.bin'
-
   release-artifacts-s3:
     executor: aws-cli/default
     steps:
@@ -282,14 +247,14 @@ jobs:
             export ARCH=linux-arm64
             aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/${VERSION_MAJOR}/local-kms_${ARCH}.bin
             aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/<< pipeline.git.tag >>/local-kms_${ARCH}.bin
-
+            
+            # ARM64 Apline don't not need its own special build, so we can use linux-arm64
+            aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/${VERSION_MAJOR}/local-kms_${ARCH}-alpine.bin
+            aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/<< pipeline.git.tag >>/local-kms_${ARCH}-alpine.bin
+            
             export ARCH=linux-amd64-alpine
             aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/${VERSION_MAJOR}/local-kms_${ARCH}.bin
             aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/<< pipeline.git.tag >>/local-kms_${ARCH}.bin
             aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/localstack/v${VERSION_MAJOR}/local-kms.alpine.bin
-
-            export ARCH=linux-arm64-alpine
-            aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/${VERSION_MAJOR}/local-kms_${ARCH}.bin
-            aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/<< pipeline.git.tag >>/local-kms_${ARCH}.bin
 
             # Access URL prefix: https://s3-eu-west-2.amazonaws.com/local-kms/
