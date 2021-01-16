@@ -39,9 +39,14 @@ func seed(path string, database *data.Database) {
 	type InputSymmetric struct {
 		Aes []cmk.AesKey `yaml:"Aes"`
 	}
+	type InputAsymmetric struct {
+		Rsa []cmk.RsaKey `yaml:"Rsa"`
+		Ecc []cmk.EccKey `yaml:"Ecc"`
+	}
 
 	type InputKeys struct {
-		Symmetric InputSymmetric `yaml:"Symmetric"`
+		Symmetric  InputSymmetric  `yaml:"Symmetric"`
+		Asymmetric InputAsymmetric `yaml:"Asymmetric"`
 	}
 
 	type Input struct {
@@ -51,6 +56,8 @@ func seed(path string, database *data.Database) {
 
 	seed := Input{}
 
+	var eccKeys []cmk.EccKey
+	var rsaKeys []cmk.RsaKey
 	var aesKeys []cmk.AesKey
 	var aliases []data.Alias
 
@@ -95,6 +102,12 @@ func seed(path string, database *data.Database) {
 		for _, key := range seed.Keys.Symmetric.Aes {
 			aesKeys = append(aesKeys, key)
 		}
+		for _, key := range seed.Keys.Asymmetric.Rsa {
+			rsaKeys = append(rsaKeys, key)
+		}
+		for _, key := range seed.Keys.Asymmetric.Ecc {
+			eccKeys = append(eccKeys, key)
+		}
 		for _, alias := range seed.Aliases {
 			aliases = append(aliases, alias)
 		}
@@ -125,6 +138,24 @@ func seed(path string, database *data.Database) {
 
 		aesKeys[i].Type = cmk.TypeAes
 	}
+	for i, key := range rsaKeys {
+		rsaKeys[i].Metadata.Arn = config.ArnPrefix() + "key/" + key.Metadata.KeyId
+		rsaKeys[i].Metadata.AWSAccountId = config.AWSAccountId
+		rsaKeys[i].Metadata.CreationDate = time.Now().Unix()
+		rsaKeys[i].Metadata.Enabled = true
+		rsaKeys[i].Metadata.KeyManager = "CUSTOMER"
+		rsaKeys[i].Metadata.KeyState = cmk.KeyStateEnabled
+		rsaKeys[i].Metadata.Origin = key.Metadata.Origin
+	}
+	for i, key := range eccKeys {
+		eccKeys[i].Metadata.Arn = config.ArnPrefix() + "key/" + key.Metadata.KeyId
+		eccKeys[i].Metadata.AWSAccountId = config.AWSAccountId
+		eccKeys[i].Metadata.CreationDate = time.Now().Unix()
+		eccKeys[i].Metadata.Enabled = true
+		eccKeys[i].Metadata.KeyManager = "CUSTOMER"
+		eccKeys[i].Metadata.KeyState = cmk.KeyStateEnabled
+		eccKeys[i].Metadata.Origin = key.Metadata.Origin
+	}
 
 	for i, alias := range aliases {
 		aliases[i].AliasArn = config.ArnPrefix() + alias.AliasName
@@ -135,6 +166,26 @@ func seed(path string, database *data.Database) {
 
 	keysAdded := 0
 	for _, key := range aesKeys {
+
+		if _, err := database.LoadKey(key.Metadata.Arn); err != leveldb.ErrNotFound {
+			logger.Warnf("Key %s already exists; skipping key", key.Metadata.KeyId)
+			continue
+		}
+
+		database.SaveKey(&key)
+		keysAdded++
+	}
+	for _, key := range rsaKeys {
+
+		if _, err := database.LoadKey(key.Metadata.Arn); err != leveldb.ErrNotFound {
+			logger.Warnf("Key %s already exists; skipping key", key.Metadata.KeyId)
+			continue
+		}
+
+		database.SaveKey(&key)
+		keysAdded++
+	}
+	for _, key := range eccKeys {
 
 		if _, err := database.LoadKey(key.Metadata.Arn); err != leveldb.ErrNotFound {
 			logger.Warnf("Key %s already exists; skipping key", key.Metadata.KeyId)

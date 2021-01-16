@@ -138,7 +138,7 @@ type KeyMetadata struct {
 	KeyId           string          `json:",omitempty" yaml:"KeyId"`
 	KeyManager      string          `json:",omitempty"`
 	KeyState        KeyState        `json:",omitempty"`
-	KeyUsage        KeyUsage        `json:",omitempty"`
+	KeyUsage        KeyUsage        `json:",omitempty" yaml:"KeyUsage"`
 	Origin          KeyOrigin       `json:",omitempty" yaml:"Origin"`
 	ValidTo         int64           `json:",omitempty"`
 
