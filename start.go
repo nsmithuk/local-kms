@@ -8,6 +8,11 @@ import (
 	"path/filepath"
 )
 
+var (
+	Version string
+	GitCommit string
+)
+
 func main() {
 
 	logger := log.New()
@@ -17,6 +22,18 @@ func main() {
 		FullTimestamp:   true,
 		TimestampFormat: "2006-01-02 15:04:05.000",
 	})
+
+	//---
+
+	if Version == "" {
+		Version = "Version Unknown"
+	}
+
+	if GitCommit == "" {
+		GitCommit = "Commit Hash Unknown"
+	}
+
+	logger.Infof("Local KMS %s (%s)", Version, GitCommit)
 
 	//---
 
