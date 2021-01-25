@@ -252,7 +252,7 @@ func (k *EccKey) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	case 384:
 		k.Metadata.CustomerMasterKeySpec = SpecEccNistP384
 		k.Metadata.SigningAlgorithms = []SigningAlgorithm{SigningAlgorithmEcdsaSha384}
-	case 512:
+	case 521:
 		k.Metadata.CustomerMasterKeySpec = SpecEccNistP521
 		k.Metadata.SigningAlgorithms = []SigningAlgorithm{SigningAlgorithmEcdsaSha512}
 	default:
