@@ -504,7 +504,7 @@ Date: Thu, 24 Oct 2019 11:20:17 GMT
 }
 ```
 ### Generating Asymmetric Keys in seed format
-The following shows 2 bash functions to generating keys to use as seeds. The keys are generated in PKCS8 format and 
+The following shows 2 bash functions for generating keys to use as seeds. The keys are generated in PKCS8 format and 
 formatted for use in seed.yaml.
 
 The linux packages `uuidgen` and `openssl` are required.
