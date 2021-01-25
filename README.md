@@ -171,6 +171,7 @@ In the example above, 2 `EXTERNAL` origin keys will be created.
 - a key with the ID `5ef77041-d1e6-4af1-9a41-e49a4b45efb6`, with pre-imported key material 
 - a key with the ID `5d05267f-bb87-4d0b-8594-295a4371d414` in a `PendingImport` state
 
+
 ```yaml
 Keys:
   Asymmetric:
@@ -220,9 +221,10 @@ Keys:
           M7m7XZ2xlDK3wcEAs1QEIoQjjwnhcptQ6A==
           -----END EC PRIVATE KEY-----
 ```
-In the example above, 2 asymmetric keys will be created. Both keys may be used for Signing and Verification. 
- - an RSA key with the ID `ff275b92-0def-4dfc-b0f6-87c96b26c6c7`. The key is 2048 bits (encoded in the PEM) 
- - an ECC Key with the ID `800d5768-3fd7-4edd-a4b8-4c81c3e4c147`. The key is 256 bits (encoded in the PEM)
+In the example above, 2 asymmetric keys will be created. Both keys may be used for Signing and Verification. Key size
+is determined from the PEM encoded key.
+ - an RSA key with the ID `ff275b92-0def-4dfc-b0f6-87c96b26c6c7` (2048 bits).
+ - an ECC Key with the ID `800d5768-3fd7-4edd-a4b8-4c81c3e4c147` (256 bits).
  
 The `PrivateKeyPem` field is a multiline string. In YAML the  pipe character `|` at the end of the line is one way to do this.
 PrivateKeyPem is in PKCS8 format and may be generated using Openssl or similar tools.
@@ -502,7 +504,10 @@ Date: Thu, 24 Oct 2019 11:20:17 GMT
 }
 ```
 ### Generating Asymmetric Keys in seed format
-Bash functions to help with generating keys to use as seeds. They are generated in PKCS8 format.
+The following shows 2 bash functions to generating keys to use as seeds. The keys are generated in PKCS8 format and 
+formatted for use in seed.yaml.
+
+The linux packages `uuidgen` and `openssl` are required.
 
 #### RSA Key Generation
 ```bash
