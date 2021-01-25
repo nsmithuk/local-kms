@@ -258,7 +258,7 @@ func (k *EccKey) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	default:
 		return &UnmarshalYAMLError{
 			fmt.Sprintf(
-				"EC Keysize must be one of (256,384,512) bits. %d bits found for key %s.\n",
+				"EC Keysize must be one of (256,384,521) bits. %d bits found for key %s.\n",
 				bitLen, k.Metadata.KeyId),
 		}
 	}
