@@ -236,6 +236,8 @@ func (k *RsaKey) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 	k.Type = TypeRsa
 	k.Metadata = yk.Metadata
+	defaultSeededKeyMetadata(&k.Metadata)
+
 	pemDecoded, _ := pem.Decode([]byte(yk.PrivateKeyPem))
 	if pemDecoded == nil {
 		return &UnmarshalYAMLError{fmt.Sprintf("Unable to decode pem of key %s check the YAML.\n", k.Metadata.KeyId)}
@@ -289,3 +291,4 @@ func (k *RsaKey) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	}
 	return nil
 }
+

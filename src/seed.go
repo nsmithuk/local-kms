@@ -2,16 +2,14 @@ package src
 
 import (
 	"fmt"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"time"
-
 	"github.com/nsmithuk/local-kms/src/cmk"
 	"github.com/nsmithuk/local-kms/src/config"
 	"github.com/nsmithuk/local-kms/src/data"
 	"github.com/syndtr/goleveldb/leveldb"
 	"gopkg.in/yaml.v2"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 )
 
 func seed(path string, database *data.Database) {
@@ -115,48 +113,6 @@ func seed(path string, database *data.Database) {
 
 	logger.Infof("Importing data from seed file %s\n", path)
 
-	//-----------------------------------------
-	// Apply defaults
-
-	for i, key := range aesKeys {
-		aesKeys[i].Metadata.Arn = config.ArnPrefix() + "key/" + key.Metadata.KeyId
-		aesKeys[i].Metadata.AWSAccountId = config.AWSAccountId
-		aesKeys[i].Metadata.CreationDate = time.Now().Unix()
-		aesKeys[i].Metadata.Enabled = true
-		aesKeys[i].Metadata.KeyManager = "CUSTOMER"
-		aesKeys[i].Metadata.KeyState = cmk.KeyStateEnabled
-		aesKeys[i].Metadata.KeyUsage = cmk.UsageEncryptDecrypt
-		aesKeys[i].Metadata.Origin = key.Metadata.Origin
-
-		if key.Metadata.Origin == cmk.KeyOriginExternal && len(key.BackingKeys) == 0 {
-			aesKeys[i].Metadata.KeyState = cmk.KeyStatePendingImport
-			aesKeys[i].Metadata.Enabled = false
-		}
-
-		aesKeys[i].Metadata.CustomerMasterKeySpec = cmk.SpecSymmetricDefault
-		aesKeys[i].Metadata.EncryptionAlgorithms = []cmk.EncryptionAlgorithm{cmk.EncryptionAlgorithmAes}
-
-		aesKeys[i].Type = cmk.TypeAes
-	}
-	for i, key := range rsaKeys {
-		rsaKeys[i].Metadata.Arn = config.ArnPrefix() + "key/" + key.Metadata.KeyId
-		rsaKeys[i].Metadata.AWSAccountId = config.AWSAccountId
-		rsaKeys[i].Metadata.CreationDate = time.Now().Unix()
-		rsaKeys[i].Metadata.Enabled = true
-		rsaKeys[i].Metadata.KeyManager = "CUSTOMER"
-		rsaKeys[i].Metadata.KeyState = cmk.KeyStateEnabled
-		rsaKeys[i].Metadata.Origin = key.Metadata.Origin
-	}
-	for i, key := range eccKeys {
-		eccKeys[i].Metadata.Arn = config.ArnPrefix() + "key/" + key.Metadata.KeyId
-		eccKeys[i].Metadata.AWSAccountId = config.AWSAccountId
-		eccKeys[i].Metadata.CreationDate = time.Now().Unix()
-		eccKeys[i].Metadata.Enabled = true
-		eccKeys[i].Metadata.KeyManager = "CUSTOMER"
-		eccKeys[i].Metadata.KeyState = cmk.KeyStateEnabled
-		eccKeys[i].Metadata.Origin = key.Metadata.Origin
-	}
-
 	for i, alias := range aliases {
 		aliases[i].AliasArn = config.ArnPrefix() + alias.AliasName
 	}
@@ -166,34 +122,22 @@ func seed(path string, database *data.Database) {
 
 	keysAdded := 0
 	for _, key := range aesKeys {
-
-		if _, err := database.LoadKey(key.Metadata.Arn); err != leveldb.ErrNotFound {
-			logger.Warnf("Key %s already exists; skipping key", key.Metadata.KeyId)
-			continue
+		if keyIsNew(database, &key.Metadata){
+			database.SaveKey(&key)
+			keysAdded++
 		}
-
-		database.SaveKey(&key)
-		keysAdded++
 	}
 	for _, key := range rsaKeys {
-
-		if _, err := database.LoadKey(key.Metadata.Arn); err != leveldb.ErrNotFound {
-			logger.Warnf("Key %s already exists; skipping key", key.Metadata.KeyId)
-			continue
+		if keyIsNew(database, &key.Metadata){
+			database.SaveKey(&key)
+			keysAdded++
 		}
-
-		database.SaveKey(&key)
-		keysAdded++
 	}
 	for _, key := range eccKeys {
-
-		if _, err := database.LoadKey(key.Metadata.Arn); err != leveldb.ErrNotFound {
-			logger.Warnf("Key %s already exists; skipping key", key.Metadata.KeyId)
-			continue
+		if keyIsNew(database, &key.Metadata){
+			database.SaveKey(&key)
+			keysAdded++
 		}
-
-		database.SaveKey(&key)
-		keysAdded++
 	}
 
 	aliasesAdded := 0
@@ -209,4 +153,12 @@ func seed(path string, database *data.Database) {
 	}
 
 	logger.Infof("%d new keys and %d new aliases added\n", keysAdded, aliasesAdded)
+}
+
+func keyIsNew( database *data.Database, metadata *cmk.KeyMetadata ) bool {
+	if _, err := database.LoadKey(metadata.Arn); err != leveldb.ErrNotFound {
+		logger.Warnf("Key %s already exists; skipping key", metadata.KeyId)
+		return false
+	}
+	return true
 }

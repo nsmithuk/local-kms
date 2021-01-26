@@ -232,6 +232,7 @@ func (k *EccKey) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 	k.Type = TypeEcc
 	k.Metadata = yk.Metadata
+	defaultSeededKeyMetadata(&k.Metadata)
 	pemDecoded, _ := pem.Decode([]byte(yk.PrivateKeyPem))
 	if pemDecoded == nil {
 		return &UnmarshalYAMLError{fmt.Sprintf("Unable to decode pem of key %s check the YAML.\n", k.Metadata.KeyId)}
