@@ -118,14 +118,6 @@ func generateKey() [32]byte {
 //----------------------------------------------------
 // Construct key from YAML (seeing)
 
-type UnmarshalYAMLError struct {
-	message string
-}
-
-func (e *UnmarshalYAMLError) Error() string {
-	return fmt.Sprintf("Error unmarshaling YAML: %s", e.message)
-}
-
 //---
 
 func (k *AesKey) UnmarshalYAML(unmarshal func(interface{}) error) error {
@@ -145,6 +137,7 @@ func (k *AesKey) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 	k.Type = TypeAes
 	k.Metadata = yk.Metadata
+	defaultSeededKeyMetadata(&k.Metadata)
 	k.NextKeyRotation = yk.NextKeyRotation
 
 	//-------------------------
@@ -182,6 +175,15 @@ func (k *AesKey) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 		copy(k.BackingKeys[i][:], keyBytes[:])
 	}
+	k.Metadata.KeyUsage = UsageEncryptDecrypt
+
+	if k.Metadata.Origin == KeyOriginExternal && len(k.BackingKeys) == 0 {
+		k.Metadata.KeyState = KeyStatePendingImport
+		k.Metadata.Enabled = false
+	}
+
+	k.Metadata.CustomerMasterKeySpec = SpecSymmetricDefault
+	k.Metadata.EncryptionAlgorithms = []EncryptionAlgorithm{EncryptionAlgorithmAes}
 
 	return nil
 }

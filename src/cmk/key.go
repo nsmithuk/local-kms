@@ -1,6 +1,11 @@
 package cmk
 
-import "crypto/rsa"
+import (
+	"crypto/rsa"
+	"fmt"
+	"github.com/nsmithuk/local-kms/src/config"
+	"time"
+)
 
 //------------------------------------------
 
@@ -138,7 +143,7 @@ type KeyMetadata struct {
 	KeyId           string          `json:",omitempty" yaml:"KeyId"`
 	KeyManager      string          `json:",omitempty"`
 	KeyState        KeyState        `json:",omitempty"`
-	KeyUsage        KeyUsage        `json:",omitempty"`
+	KeyUsage        KeyUsage        `json:",omitempty" yaml:"KeyUsage"`
 	Origin          KeyOrigin       `json:",omitempty" yaml:"Origin"`
 	ValidTo         int64           `json:",omitempty"`
 
@@ -152,4 +157,21 @@ type ParametersForImport struct {
 	ImportToken       []byte
 	PrivateKey        rsa.PrivateKey
 	WrappingAlgorithm WrappingAlgorithm
+}
+
+type UnmarshalYAMLError struct {
+	message string
+}
+
+func (e *UnmarshalYAMLError) Error() string {
+	return fmt.Sprintf("Error unmarshaling YAML: %s", e.message)
+}
+
+func defaultSeededKeyMetadata(metadata *KeyMetadata) {
+	metadata.Arn = config.ArnPrefix() + "key/" +metadata.KeyId
+	metadata.AWSAccountId = config.AWSAccountId
+	metadata.CreationDate = time.Now().Unix()
+	metadata.Enabled = true
+	metadata.KeyManager = "CUSTOMER"
+	metadata.KeyState = KeyStateEnabled
 }

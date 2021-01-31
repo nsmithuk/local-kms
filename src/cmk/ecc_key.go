@@ -4,8 +4,10 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
+	"crypto/x509"
 	"encoding/asn1"
 	"encoding/json"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"math/big"
@@ -208,5 +210,65 @@ func (k *EcdsaPrivateKey) UnmarshalJSON(data []byte) error {
 	}
 
 	*k = EcdsaPrivateKey(pk)
+	return nil
+}
+
+//----------------------------------------------------
+// Construct key from YAML (seeding)
+//---
+func (k *EccKey) UnmarshalYAML(unmarshal func(interface{}) error) error {
+
+	// Cannot use embedded 'Key' struct
+	// https://github.com/go-yaml/yaml/issues/263
+	type YamlKey struct {
+		Metadata      KeyMetadata `yaml:"Metadata"`
+		PrivateKeyPem string      `yaml:"PrivateKeyPem"`
+	}
+
+	yk := YamlKey{}
+	if err := unmarshal(&yk); err != nil {
+		return &UnmarshalYAMLError{err.Error()}
+	}
+
+	k.Type = TypeEcc
+	k.Metadata = yk.Metadata
+	defaultSeededKeyMetadata(&k.Metadata)
+	pemDecoded, _ := pem.Decode([]byte(yk.PrivateKeyPem))
+	if pemDecoded == nil {
+		return &UnmarshalYAMLError{fmt.Sprintf("Unable to decode pem of key %s check the YAML.\n", k.Metadata.KeyId)}
+	}
+
+	parseResult, pkcsParseError := x509.ParseECPrivateKey(pemDecoded.Bytes)
+	if pkcsParseError != nil {
+		return &UnmarshalYAMLError{fmt.Sprintf("Unable to decode pem of key %s, Ensure it is in PKCS8 format with no password: %s.\n", k.Metadata.KeyId, pkcsParseError)}
+	}
+
+	k.PrivateKey = EcdsaPrivateKey(*parseResult)
+	var bitLen = parseResult.Curve.Params().BitSize
+
+	switch bitLen {
+	case 256:
+		k.Metadata.CustomerMasterKeySpec = SpecEccNistP256
+		k.Metadata.SigningAlgorithms = []SigningAlgorithm{SigningAlgorithmEcdsaSha256}
+	case 384:
+		k.Metadata.CustomerMasterKeySpec = SpecEccNistP384
+		k.Metadata.SigningAlgorithms = []SigningAlgorithm{SigningAlgorithmEcdsaSha384}
+	case 521:
+		k.Metadata.CustomerMasterKeySpec = SpecEccNistP521
+		k.Metadata.SigningAlgorithms = []SigningAlgorithm{SigningAlgorithmEcdsaSha512}
+	default:
+		return &UnmarshalYAMLError{
+			fmt.Sprintf(
+				"EC Keysize must be one of (256,384,521) bits. %d bits found for key %s.\n",
+				bitLen, k.Metadata.KeyId),
+		}
+	}
+
+	if k.Metadata.KeyUsage != UsageSignVerify {
+		return &UnmarshalYAMLError{
+			fmt.Sprintf(
+				"Only KeyUsage of (%s) supported for EC keys.\n", UsageSignVerify),
+		}
+	}
 	return nil
 }
