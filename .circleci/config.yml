@@ -91,13 +91,13 @@ jobs:
       - run:
           name: Build arm64 darwin
           command: |
-            GOOS=darwin GOARCH=arm64 go build -ldflags "-X 'main.Version=<< pipeline.git.tag >>' -X 'main.GitCommit=<< pipeline.git.revision >>'" -o ~/artifacts/darwin-amd64.bin
-            chmod +x ~/artifacts/darwin-amd64.bin
+            GOOS=darwin GOARCH=arm64 go build -ldflags "-X 'main.Version=<< pipeline.git.tag >>' -X 'main.GitCommit=<< pipeline.git.revision >>'" -o ~/artifacts/darwin-arm64.bin
+            chmod +x ~/artifacts/darwin-arm64.bin
       - store_artifacts:
-          path: ~/artifacts/darwin-amd64.bin
-          destination: darwin-amd64.bin
+          path: ~/artifacts/darwin-arm64.bin
+          destination: darwin-arm64.bin
       - persist_to_workspace:
-          root: /artifacts
+          root: ~/artifacts
           paths:
             - '*.bin'
 
