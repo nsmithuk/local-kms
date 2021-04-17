@@ -59,7 +59,7 @@ jobs:
 
   darwin-amd64:
     docker:
-      - image: cimg/go:1.15
+      - image: cimg/go:1.16
     steps:
       - checkout
       - run:
@@ -80,23 +80,22 @@ jobs:
             - '*.bin'
 
   darwin-arm64:
-    working_directory: /go/src/github.com/nsmithuk/local-kms
     docker:
-      - image: golang:1.16-rc-buster
+      - image: cimg/go:1.16
     steps:
       - checkout
       - run:
           name: Prep for build
           command: |
-            mkdir /artifacts
+            mkdir ~/artifacts
       - run:
           name: Build arm64 darwin
           command: |
-            GOOS=darwin GOARCH=arm64 go build -ldflags "-X 'main.Version=<< pipeline.git.tag >>' -X 'main.GitCommit=<< pipeline.git.revision >>'" -o /artifacts/darwin-arm64.bin
-            chmod +x /artifacts/darwin-arm64.bin
+            GOOS=darwin GOARCH=arm64 go build -ldflags "-X 'main.Version=<< pipeline.git.tag >>' -X 'main.GitCommit=<< pipeline.git.revision >>'" -o ~/artifacts/darwin-amd64.bin
+            chmod +x ~/artifacts/darwin-amd64.bin
       - store_artifacts:
-          path: /artifacts/darwin-arm64.bin
-          destination: darwin-arm64.bin
+          path: ~/artifacts/darwin-amd64.bin
+          destination: darwin-amd64.bin
       - persist_to_workspace:
           root: /artifacts
           paths:
@@ -104,7 +103,7 @@ jobs:
 
   linux-amd64:
     docker:
-      - image: cimg/go:1.15
+      - image: cimg/go:1.16
     steps:
       - checkout
       - run:
@@ -148,7 +147,7 @@ jobs:
             
   linux-arm64:
     docker:
-      - image: cimg/go:1.15
+      - image: cimg/go:1.16
     steps:
       - checkout
       - run:
@@ -171,7 +170,7 @@ jobs:
   linux-amd64-apline:
     working_directory: /go/src/github.com/nsmithuk/local-kms
     docker:
-      - image: golang:1.15-alpine
+      - image: golang:1.16-alpine
     steps:
       - checkout
       - run:

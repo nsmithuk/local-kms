@@ -261,7 +261,7 @@ See: https://github.com/nsmithuk/local-kms/issues/4
 
 ### Prerequisites
 
-Tested with Go 1.12
+Tested with Go 1.16
 
 ### Install
 
