@@ -1,13 +1,13 @@
 FROM golang:1.16-alpine AS build
 
-RUN apk update && apk add git
+RUN apk update && apk add git make build-base gcc g++ linux-headers
 
 RUN mkdir -p /go/src/github.com/nsmithuk/local-kms
 COPY . /go/src/github.com/nsmithuk/local-kms
 
 WORKDIR /go/src/github.com/nsmithuk/local-kms
 
-RUN go install
+RUN CGO_ENABLED=1 go install
 
 
 # Build the final container with just the resulting binary
