@@ -38,8 +38,9 @@ func seed(path string, database *data.Database) {
 		Aes []cmk.AesKey `yaml:"Aes"`
 	}
 	type InputAsymmetric struct {
-		Rsa []cmk.RsaKey `yaml:"Rsa"`
-		Ecc []cmk.EccKey `yaml:"Ecc"`
+		Rsa     []cmk.RsaKey     `yaml:"Rsa"`
+		Ecc     []cmk.EccKey     `yaml:"Ecc"`
+		EccSecp []cmk.SecpEccKey `yaml:"EccSecp"`
 	}
 
 	type InputKeys struct {
@@ -55,6 +56,7 @@ func seed(path string, database *data.Database) {
 	seed := Input{}
 
 	var eccKeys []cmk.EccKey
+	var eccSecpKeys []cmk.SecpEccKey
 	var rsaKeys []cmk.RsaKey
 	var aesKeys []cmk.AesKey
 	var aliases []data.Alias
@@ -106,6 +108,9 @@ func seed(path string, database *data.Database) {
 		for _, key := range seed.Keys.Asymmetric.Ecc {
 			eccKeys = append(eccKeys, key)
 		}
+		for _, key := range seed.Keys.Asymmetric.EccSecp {
+			eccSecpKeys = append(eccSecpKeys, key)
+		}
 		for _, alias := range seed.Aliases {
 			aliases = append(aliases, alias)
 		}
@@ -122,19 +127,25 @@ func seed(path string, database *data.Database) {
 
 	keysAdded := 0
 	for _, key := range aesKeys {
-		if keyIsNew(database, &key.Metadata){
+		if keyIsNew(database, &key.Metadata) {
 			database.SaveKey(&key)
 			keysAdded++
 		}
 	}
 	for _, key := range rsaKeys {
-		if keyIsNew(database, &key.Metadata){
+		if keyIsNew(database, &key.Metadata) {
 			database.SaveKey(&key)
 			keysAdded++
 		}
 	}
 	for _, key := range eccKeys {
-		if keyIsNew(database, &key.Metadata){
+		if keyIsNew(database, &key.Metadata) {
+			database.SaveKey(&key)
+			keysAdded++
+		}
+	}
+	for _, key := range eccSecpKeys {
+		if keyIsNew(database, &key.Metadata) {
 			database.SaveKey(&key)
 			keysAdded++
 		}
@@ -155,7 +166,7 @@ func seed(path string, database *data.Database) {
 	logger.Infof("%d new keys and %d new aliases added\n", keysAdded, aliasesAdded)
 }
 
-func keyIsNew( database *data.Database, metadata *cmk.KeyMetadata ) bool {
+func keyIsNew(database *data.Database, metadata *cmk.KeyMetadata) bool {
 	if _, err := database.LoadKey(metadata.Arn); err != leveldb.ErrNotFound {
 		logger.Warnf("Key %s already exists; skipping key", metadata.KeyId)
 		return false

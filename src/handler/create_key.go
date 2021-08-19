@@ -154,10 +154,23 @@ func (r *RequestHandler) CreateKey() Response {
 		}
 
 	case "ECC_SECG_P256K1":
+		if body.KeyUsage == nil {
+			msg := fmt.Sprintf("You must specify a KeyUsage value for an asymmetric CMK.")
+			r.logger.Warnf(msg)
+			return NewValidationExceptionResponse(msg)
+		}
 
-		msg := fmt.Sprintf("Local KMS does not yet support ECC_SECG_P256K1 keys. Symmetric keys and ECC_NIST_* keys are supported.")
-		r.logger.Warnf(msg)
-		return NewUnsupportedOperationException(msg)
+		if *body.KeyUsage != "SIGN_VERIFY" {
+			msg := fmt.Sprintf("KeyUsage ENCRYPT_DECRYPT is not compatible with KeySpec %s", *body.CustomerMasterKeySpec)
+			r.logger.Warnf(msg)
+			return NewValidationExceptionResponse(msg)
+		}
+
+		key, err = cmk.NewSecpEccKey(cmk.CustomerMasterKeySpec(*body.CustomerMasterKeySpec), metadata, *body.Policy)
+		if err != nil {
+			r.logger.Error(err)
+			return NewInternalFailureExceptionResponse(err.Error())
+		}
 
 	case "RSA_2048", "RSA_3072", "RSA_4096":
 
