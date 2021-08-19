@@ -3,8 +3,11 @@ package handler
 import (
 	"crypto/ecdsa"
 	"crypto/x509"
+	"crypto/x509/pkix"
+	"encoding/asn1"
 	"fmt"
 	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/nsmithuk/local-kms/src/cmk"
 )
 
@@ -53,6 +56,37 @@ func (r *RequestHandler) GetPublicKey() Response {
 		privateKey := ecdsa.PrivateKey(k.PrivateKey)
 
 		publicKey, err = x509.MarshalPKIXPublicKey(&privateKey.PublicKey)
+		if err != nil {
+			return NewInternalFailureExceptionResponse(err.Error())
+		}
+
+	case *cmk.SecpEccKey:
+
+		algo := asn1.ObjectIdentifier{1, 2, 840, 10045, 2, 1}
+		type pkixPublicKey struct {
+			Algo      pkix.AlgorithmIdentifier
+			BitString asn1.BitString
+		}
+
+		pk := k.PrivateKey.PublicKey
+		publicKeyBytes := crypto.FromECDSAPub(&pk)
+		publicKey, err = asn1.Marshal(pkixPublicKey{
+			Algo: pkix.AlgorithmIdentifier{
+				Algorithm: algo,
+				Parameters: asn1.RawValue{
+					Class:      0,
+					Tag:        6,
+					IsCompound: false,
+					Bytes:      []byte{0x2b, 0x81, 0x04, 0x00, 0x0a},
+					FullBytes:  []byte{0x06, 0x05, 0x2b, 0x81, 0x04, 0x00, 0x0a},
+				},
+			},
+			BitString: asn1.BitString{
+				Bytes:     publicKeyBytes,
+				BitLength: 8 * len(publicKeyBytes),
+			},
+		})
+
 		if err != nil {
 			return NewInternalFailureExceptionResponse(err.Error())
 		}

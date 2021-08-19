@@ -98,6 +98,15 @@ func (r *RequestHandler) Verify() Response {
 		}
 
 		signingKey = k
+	case *cmk.SecpEccKey:
+		if k.GetMetadata().KeyUsage == cmk.UsageEncryptDecrypt {
+			msg := fmt.Sprintf("%s key usage is ENCRYPT_DECRYPT which is not valid for signing.", k.GetArn())
+
+			r.logger.Warnf(msg)
+			return NewInvalidKeyUsageException(msg)
+		}
+
+		signingKey = k
 	default:
 		msg := fmt.Sprintf("%s key usage is ENCRYPT_DECRYPT which is not valid for Verify.", k.GetArn())
 		r.logger.Warnf(msg)
