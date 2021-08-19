@@ -40,7 +40,6 @@ If a key in the seeding file already exists, it will not be overwritten or amend
 
 ### Does not (yet) support
 
-* ECC_SECG_P256K1 keys
 * Grants
 * Operations relating to a Custom Key Store
 
