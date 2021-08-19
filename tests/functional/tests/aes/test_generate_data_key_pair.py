@@ -19,8 +19,8 @@ class TestGenerateDataKeyPair:
 
     @pytest.mark.parametrize("key_pair_spec", [
         'RSA_2048', 'RSA_3072', 'RSA_4096',
-        'ECC_NIST_P256', 'ECC_NIST_P384', 'ECC_NIST_P521'
-        # ECC_SECG_P256K1 not supported by LKMS
+        'ECC_NIST_P256', 'ECC_NIST_P384', 'ECC_NIST_P521',
+        'ECC_SECG_P256K1'
     ])
     def test_generate_key_pair(self, kms_client, symmetric_key, key_pair_spec):
 
@@ -76,8 +76,8 @@ class TestGenerateDataKeyPair:
 
     @pytest.mark.parametrize("key_pair_spec", [
         'RSA_2048', 'RSA_3072', 'RSA_4096',
-        'ECC_NIST_P256', 'ECC_NIST_P384', 'ECC_NIST_P521'
-        # ECC_SECG_P256K1 not supported by LKMS
+        'ECC_NIST_P256', 'ECC_NIST_P384', 'ECC_NIST_P521',
+        'ECC_SECG_P256K1'
     ])
     def test_generate_key_pair_without_plaintext(self, kms_client, symmetric_key, key_pair_spec):
         code, key_pair = kms_client.post('GenerateDataKeyPairWithoutPlaintext', {
