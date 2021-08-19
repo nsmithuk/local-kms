@@ -15,6 +15,7 @@ const (
 	TypeAes KeyType = iota
 	TypeRsa
 	TypeEcc
+	TypeSecpEcc
 )
 
 //---
@@ -26,6 +27,7 @@ const (
 	SpecEccNistP256      CustomerMasterKeySpec = "ECC_NIST_P256"
 	SpecEccNistP384      CustomerMasterKeySpec = "ECC_NIST_P384"
 	SpecEccNistP521      CustomerMasterKeySpec = "ECC_NIST_P521"
+	SpecEccSecgP256K1    CustomerMasterKeySpec = "ECC_SECG_P256K1"
 	SpecRsa2048          CustomerMasterKeySpec = "RSA_2048"
 	SpecRsa3072          CustomerMasterKeySpec = "RSA_3072"
 	SpecRsa4096          CustomerMasterKeySpec = "RSA_4096"
@@ -168,7 +170,7 @@ func (e *UnmarshalYAMLError) Error() string {
 }
 
 func defaultSeededKeyMetadata(metadata *KeyMetadata) {
-	metadata.Arn = config.ArnPrefix() + "key/" +metadata.KeyId
+	metadata.Arn = config.ArnPrefix() + "key/" + metadata.KeyId
 	metadata.AWSAccountId = config.AWSAccountId
 	metadata.CreationDate = time.Now().Unix()
 	metadata.Enabled = true
