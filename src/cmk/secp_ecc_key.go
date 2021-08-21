@@ -28,8 +28,8 @@ type SecpSignature struct {
 }
 
 type asn1EcSig struct {
-	R asn1.RawValue
-	S asn1.RawValue
+	R *big.Int
+	S *big.Int
 }
 
 func NewSecpEccKey(spec CustomerMasterKeySpec, metadata KeyMetadata, policy string) (*SecpEccKey, error) {
@@ -105,24 +105,12 @@ func (k *SecpEccKey) Sign(digest []byte, algorithm SigningAlgorithm) ([]byte, er
 		return []byte{}, err
 	}
 
-	rBytes := signatureBytes[:32]
-	sBytes := signatureBytes[32:64]
+	r := new(big.Int).SetBytes(signatureBytes[:32])
+	s := new(big.Int).SetBytes(signatureBytes[32:64])
 
 	return asn1.Marshal(asn1EcSig{
-		R: asn1.RawValue{
-			Class:      0,
-			Tag:        0,
-			IsCompound: false,
-			Bytes:      rBytes,
-			FullBytes:  nil,
-		},
-		S: asn1.RawValue{
-			Class:      0,
-			Tag:        0,
-			IsCompound: false,
-			Bytes:      sBytes,
-			FullBytes:  nil,
-		},
+		R: r,
+		S: s,
 	})
 }
 
