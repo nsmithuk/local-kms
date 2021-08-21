@@ -10,7 +10,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/crypto/secp256k1"
 	"math/big"
 	"os"
 )
@@ -98,9 +97,7 @@ func (k *SecpEccKey) Sign(digest []byte, algorithm SigningAlgorithm) ([]byte, er
 
 	//---
 
-	key := crypto.FromECDSA((*ecdsa.PrivateKey)(&k.PrivateKey))
-
-	signatureBytes, err := secp256k1.Sign(digest, key)
+	signatureBytes, err := crypto.Sign(digest, (*ecdsa.PrivateKey)(&k.PrivateKey))
 	if err != nil {
 		return []byte{}, err
 	}
