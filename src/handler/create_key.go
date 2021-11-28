@@ -133,7 +133,7 @@ func (r *RequestHandler) CreateKey() Response {
 
 		key = cmk.NewAesKey(metadata, *body.Policy, metadata.Origin)
 
-	case "ECC_NIST_P256", "ECC_NIST_P384", "ECC_NIST_P521":
+	case "ECC_NIST_P256", "ECC_NIST_P384", "ECC_NIST_P521", "ECC_SECG_P256K1":
 
 		if body.KeyUsage == nil {
 			msg := fmt.Sprintf("You must specify a KeyUsage value for an asymmetric CMK.")
@@ -152,12 +152,6 @@ func (r *RequestHandler) CreateKey() Response {
 			r.logger.Error(err)
 			return NewInternalFailureExceptionResponse(err.Error())
 		}
-
-	case "ECC_SECG_P256K1":
-
-		msg := fmt.Sprintf("Local KMS does not yet support ECC_SECG_P256K1 keys. Symmetric keys and ECC_NIST_* keys are supported.")
-		r.logger.Warnf(msg)
-		return NewUnsupportedOperationException(msg)
 
 	case "RSA_2048", "RSA_3072", "RSA_4096":
 

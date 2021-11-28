@@ -15,7 +15,7 @@ development and testing against KMS; not for use in a production environment._
 ### Supports
 
 * Symmetric (AES) keys
-* Asymmetric keys (ECC_NIST and RSA)
+* Asymmetric keys (ECC and RSA)
 * Management of Customer Master Keys; including:
     * Enabling and disabling keys
     * Scheduling key deletion
@@ -40,7 +40,6 @@ If a key in the seeding file already exists, it will not be overwritten or amend
 
 ### Does not (yet) support
 
-* ECC_SECG_P256K1 keys
 * Grants
 * Operations relating to a Custom Key Store
 

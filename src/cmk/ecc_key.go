@@ -10,6 +10,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"github.com/btcsuite/btcd/btcec"
 	"math/big"
 	"os"
 )
@@ -37,6 +38,8 @@ func NewEccKey(spec CustomerMasterKeySpec, metadata KeyMetadata, policy string) 
 		curve = elliptic.P384()
 	case SpecEccNistP521:
 		curve = elliptic.P521()
+	case SpecEccSecp256k1:
+		curve = btcec.S256()
 	default:
 		return nil, errors.New("key spec error")
 	}
@@ -68,8 +71,10 @@ func NewEccKey(spec CustomerMasterKeySpec, metadata KeyMetadata, policy string) 
 		k.Metadata.SigningAlgorithms = []SigningAlgorithm{SigningAlgorithmEcdsaSha384}
 	case SpecEccNistP521:
 		k.Metadata.SigningAlgorithms = []SigningAlgorithm{SigningAlgorithmEcdsaSha512}
+	case SpecEccSecp256k1:
+		k.Metadata.SigningAlgorithms = []SigningAlgorithm{SigningAlgorithmEcdsaSha256}
 	default:
-		return nil, errors.New("signing algorithm error")
+		return nil, errors.New("unknown signing algorithm error")
 	}
 
 	return k, nil
@@ -207,6 +212,10 @@ func (k *EcdsaPrivateKey) UnmarshalJSON(data []byte) error {
 		pk.Curve = elliptic.P384()
 	case "P-521":
 		pk.Curve = elliptic.P521()
+	case "secp256k1":
+		pk.Curve = btcec.S256()
+	default:
+		return errors.New("trying to UnmarshalJSON unknown curve")
 	}
 
 	*k = EcdsaPrivateKey(pk)
