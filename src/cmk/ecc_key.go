@@ -74,7 +74,7 @@ func NewEccKey(spec CustomerMasterKeySpec, metadata KeyMetadata, policy string) 
 	case SpecEccSecp256k1:
 		k.Metadata.SigningAlgorithms = []SigningAlgorithm{SigningAlgorithmEcdsaSha256}
 	default:
-		return nil, errors.New("unknown signing algorithm error")
+		return nil, errors.New("unknown signing algorithm")
 	}
 
 	return k, nil
