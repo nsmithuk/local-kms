@@ -2,3 +2,5 @@ pytest
 requests
 aws-requests-auth
 pycryptodome
+coincurve
+oscrypto
