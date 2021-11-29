@@ -2,10 +2,10 @@ package handler
 
 import (
 	"crypto/ecdsa"
-	"crypto/x509"
 	"fmt"
 	"github.com/aws/aws-sdk-go/service/kms"
 	"github.com/nsmithuk/local-kms/src/cmk"
+	"github.com/nsmithuk/local-kms/src/x509"
 )
 
 func (r *RequestHandler) GetPublicKey() Response {

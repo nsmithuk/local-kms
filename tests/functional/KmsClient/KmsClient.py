@@ -10,10 +10,11 @@ class KmsClient:
     """
 
     def __init__(self,
+                 kms_url,
                  aws_access_key=None,
                  aws_secret_access_key=None,
+                 aws_session_token=None,
                  real_kms=False,
-                 kms_url='http://localhost:4599',  # Default url for Local KMS running in Docker
                  region='eu-west-2'):
 
         self.auth = None
@@ -25,6 +26,7 @@ class KmsClient:
             self.kms_url = 'https://%s/' % aws_kms_hostname
             self.auth = AWSRequestsAuth(aws_access_key=aws_access_key,
                                         aws_secret_access_key=aws_secret_access_key,
+                                        aws_token=aws_session_token,
                                         aws_host='kms.%s.amazonaws.com' % region,
                                         aws_region=region,
                                         aws_service='kms')
@@ -33,7 +35,7 @@ class KmsClient:
 
         # If we're using real KMS we need to Throttle requests.
         if self.real_kms:
-            time.sleep(1)
+            time.sleep(3)
 
         if payload is None:
             # AWS always expects a payload, even if it's empty

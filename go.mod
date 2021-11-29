@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/aws/aws-sdk-go v1.35.0
-	github.com/davecgh/go-spew v1.1.1
+	github.com/btcsuite/btcd v0.22.0-beta
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/satori/go.uuid v1.2.0

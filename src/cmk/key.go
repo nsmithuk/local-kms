@@ -26,6 +26,7 @@ const (
 	SpecEccNistP256      CustomerMasterKeySpec = "ECC_NIST_P256"
 	SpecEccNistP384      CustomerMasterKeySpec = "ECC_NIST_P384"
 	SpecEccNistP521      CustomerMasterKeySpec = "ECC_NIST_P521"
+	SpecEccSecp256k1     CustomerMasterKeySpec = "ECC_SECG_P256K1"
 	SpecRsa2048          CustomerMasterKeySpec = "RSA_2048"
 	SpecRsa3072          CustomerMasterKeySpec = "RSA_3072"
 	SpecRsa4096          CustomerMasterKeySpec = "RSA_4096"

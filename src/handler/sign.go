@@ -128,7 +128,7 @@ func (r *RequestHandler) Sign() Response {
 
 	//---
 
-	r.logger.Infof("%s message signed with %s, using key %s\n", *body.MessageType, *body.SigningAlgorithm, key.GetArn())
+	r.logger.Infof("%s message signed with %s, using key %s\n", *body.MessageType, signingKey.GetMetadata().CustomerMasterKeySpec, key.GetArn())
 
 	return NewResponse(200, &struct {
 		KeyId            string

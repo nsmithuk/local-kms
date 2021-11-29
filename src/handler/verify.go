@@ -121,7 +121,7 @@ func (r *RequestHandler) Verify() Response {
 
 	//---
 
-	r.logger.Infof("%s message verification %t with %s, using key %s\n", *body.MessageType, valid, *body.SigningAlgorithm, key.GetArn())
+	r.logger.Infof("%s message verification %t with %s, using key %s\n", *body.MessageType, valid, signingKey.GetMetadata().CustomerMasterKeySpec, key.GetArn())
 
 	if !valid {
 		return NewKMSInvalidSignatureException("")

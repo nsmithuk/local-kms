@@ -8,7 +8,9 @@ def kms_client():
     yield KmsClient(
         aws_access_key=os.getenv('AWS_ACCESS_KEY_ID'),
         aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
-        real_kms=False
+        aws_session_token=os.getenv('AWS_SESSION_TOKEN'),
+        real_kms=False,
+        kms_url=os.getenv('KMS_URL', 'http://localhost:4599'),
     )
 
 

@@ -1,3 +1,4 @@
+import pytest
 from pprint import pprint
 from tests import validate_error_response
 
@@ -16,16 +17,29 @@ class TestKeyManagement:
                                        'The operation failed because the KeyUsage value of the CMK is SIGN_VERIFY. To perform this operation, the KeyUsage value must be ENCRYPT_DECRYPT.'
                                        )
 
-    def test_create_key_success(self, kms_client):
+    @pytest.mark.parametrize("key_spec_and_usage", [
+        ('SYMMETRIC_DEFAULT', 'ENCRYPT_DECRYPT'),
+        ('RSA_2048', 'ENCRYPT_DECRYPT'),
+        ('RSA_3072', 'ENCRYPT_DECRYPT'),
+        ('RSA_4096', 'ENCRYPT_DECRYPT'),
+        ('RSA_2048', 'SIGN_VERIFY'),
+        ('RSA_3072', 'SIGN_VERIFY'),
+        ('RSA_4096', 'SIGN_VERIFY'),
+        ('ECC_NIST_P256', 'SIGN_VERIFY'),
+        ('ECC_NIST_P384', 'SIGN_VERIFY'),
+        ('ECC_NIST_P521', 'SIGN_VERIFY'),
+        ('ECC_SECG_P256K1', 'SIGN_VERIFY'),
+    ])
+    def test_create_key_success(self, kms_client, key_spec_and_usage):
         payload = {
-            "CustomerMasterKeySpec": "SYMMETRIC_DEFAULT",
-            "KeyUsage": "ENCRYPT_DECRYPT",
+            "CustomerMasterKeySpec": key_spec_and_usage[0],
+            "KeyUsage": key_spec_and_usage[1],
             "Origin": "AWS_KMS",
             "Description": "Test Description",
             "Tags": [
                 {
-                    "TagKey": "testing-key",
-                    "TagValue": "testing-value",
+                    "TagKey": "key_spec_and_usage",
+                    "TagValue": "%s with %s" % key_spec_and_usage,
                 },
             ]
         }
@@ -40,7 +54,7 @@ class TestKeyManagement:
         key_metadata = cmk['KeyMetadata']
 
         assert {'AWSAccountId', 'Arn', 'CreationDate', 'CustomerMasterKeySpec', 'Description', 'Enabled',
-                'EncryptionAlgorithms', 'KeyId', 'KeyManager', 'KeyState', 'KeyUsage', 'Origin'}.issubset(
+                'KeyId', 'KeyManager', 'KeyState', 'KeyUsage', 'Origin'}.issubset(
             set(key_metadata.keys()))
 
         assert payload['CustomerMasterKeySpec'] == key_metadata['CustomerMasterKeySpec']
