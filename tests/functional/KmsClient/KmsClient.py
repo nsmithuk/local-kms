@@ -10,11 +10,11 @@ class KmsClient:
     """
 
     def __init__(self,
+                 kms_url,
                  aws_access_key=None,
                  aws_secret_access_key=None,
                  aws_session_token=None,
                  real_kms=False,
-                 kms_url='http://localhost:4599',  # Default url for Local KMS running in Docker
                  region='eu-west-2'):
 
         self.auth = None

@@ -1,8 +1,7 @@
 import pytest
-import unittest
 from pprint import pprint
 import base64
-from Crypto.PublicKey import RSA, ECC
+from oscrypto.asymmetric import load_private_key, dump_public_key
 
 """
 Example Response for generate_key_pair
@@ -19,8 +18,8 @@ class TestGenerateDataKeyPair:
 
     @pytest.mark.parametrize("key_pair_spec", [
         'RSA_2048', 'RSA_3072', 'RSA_4096',
-        'ECC_NIST_P256', 'ECC_NIST_P384', 'ECC_NIST_P521'
-        # ECC_SECG_P256K1 not supported by LKMS
+        'ECC_NIST_P256', 'ECC_NIST_P384', 'ECC_NIST_P521',
+        'ECC_SECG_P256K1'
     ])
     def test_generate_key_pair(self, kms_client, symmetric_key, key_pair_spec):
 
@@ -59,16 +58,9 @@ class TestGenerateDataKeyPair:
 
         private_key_plaintext = base64.b64decode(key_pair['PrivateKeyPlaintext'])
 
-        if key_pair_spec.startswith('RSA'):
-            private_key = RSA.import_key(private_key_plaintext)
-            public_key = private_key.publickey().export_key(format='DER', pkcs=8)
-
-        elif key_pair_spec.startswith('ECC'):
-            private_key = ECC.import_key(private_key_plaintext)
-            public_key = private_key.public_key().export_key(format='DER')  # Defaults to PKCS#8
-
-        else:
-            raise ValueError('Unknown key type')
+        # We load the private key, extract out the public key, then sense check that it matches the expected public key.
+        private_key = load_private_key(private_key_plaintext)
+        public_key = dump_public_key(private_key.public_key, encoding='der')
 
         public_key_encoded = str(base64.b64encode(public_key), "utf-8")
         assert public_key_encoded == key_pair['PublicKey']
@@ -76,8 +68,8 @@ class TestGenerateDataKeyPair:
 
     @pytest.mark.parametrize("key_pair_spec", [
         'RSA_2048', 'RSA_3072', 'RSA_4096',
-        'ECC_NIST_P256', 'ECC_NIST_P384', 'ECC_NIST_P521'
-        # ECC_SECG_P256K1 not supported by LKMS
+        'ECC_NIST_P256', 'ECC_NIST_P384', 'ECC_NIST_P521',
+        'ECC_SECG_P256K1'
     ])
     def test_generate_key_pair_without_plaintext(self, kms_client, symmetric_key, key_pair_spec):
         code, key_pair = kms_client.post('GenerateDataKeyPairWithoutPlaintext', {
@@ -93,4 +85,4 @@ class TestGenerateDataKeyPair:
         assert key_pair['KeyId'] == symmetric_key['Arn']
         assert key_pair['KeyPairSpec'] == key_pair_spec
 
-        assert 'PrivateKeyPlaintext' not in key_pair.keys()  # This is the key thing we're confirming here
+        assert 'PrivateKeyPlaintext' not in key_pair.keys()  # This is the main thing we're confirming here

@@ -27,3 +27,13 @@ pip install -r requirments.txt
 
 pytest
 ```
+
+secg_p256k1 is not well supported on Mac OS X, so it's recommended you run the tests from within a Linux Docker container.
+From within local-kms/tests/functional:
+```shell
+docker run -it --rm -v "${PWD}:/app" -w "/app" python:3-slim bash
+
+pip install -r requirments.txt
+export KMS_URL="http://host.docker.internal:4599"
+pytest
+```

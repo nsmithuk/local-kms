@@ -5,10 +5,11 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/rsa"
-	"crypto/x509"
 	"fmt"
 	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/btcsuite/btcd/btcec"
 	"github.com/nsmithuk/local-kms/src/cmk"
+	"github.com/nsmithuk/local-kms/src/x509"
 )
 
 type GenerateDataKeyPairResponse struct {
@@ -82,6 +83,8 @@ func (r *RequestHandler) generateDataKeyPair() (Response, *GenerateDataKeyPairRe
 	case cmk.SpecEccNistP384:
 		fallthrough
 	case cmk.SpecEccNistP521:
+		fallthrough
+	case cmk.SpecEccSecp256k1:
 
 		var curve elliptic.Curve
 		switch keyPairSpec {
@@ -91,6 +94,8 @@ func (r *RequestHandler) generateDataKeyPair() (Response, *GenerateDataKeyPairRe
 			curve = elliptic.P384()
 		case cmk.SpecEccNistP521:
 			curve = elliptic.P521()
+		case cmk.SpecEccSecp256k1:
+			curve = btcec.S256()
 		}
 
 		k, err := ecdsa.GenerateKey(curve, rand.Reader)
