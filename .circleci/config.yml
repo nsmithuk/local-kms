@@ -273,7 +273,11 @@ jobs:
           name: Login to Docker Hub
           command: |
             echo $DOCKER_HUB_TOKEN | docker login -u nsmithuk --password-stdin
-
+      - run:
+          name: Push to Docker Hub
+          command: |
+            docker tag local-kms:latest nsmithuk/local-kms:latest
+            docker push nsmithuk/local-kms:latest
 
   release-artifacts-s3:
     executor: aws-cli/default
