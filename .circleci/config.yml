@@ -70,11 +70,14 @@ jobs:
           command: |
             docker build -t local-kms .
       - run:
+          name: Build testing image
+          command: |
+            docker build -t testing tests/functional
+      - run:
           name: Run Tests
           command: |
-            cd tests/functional
-            pip install -r requirments.txt
             docker run -d --name local-kms local-kms
+            docker run -e KMS_URL="http://localhost:8080" --network container:local-kms testing pytest
 
   darwin-amd64:
     docker:
