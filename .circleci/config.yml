@@ -49,6 +49,11 @@ workflows:
       - docker-image-build:
           name: docker-image-build
 
+      - build-docker-push-latest:
+          name: build-docker-push-latest
+          requires:
+            - docker-image-build
+
       - release-artifacts-s3:
           name: s3-artifacts
           requires:
@@ -256,7 +261,15 @@ jobs:
     docker:
       - image: cimg/base:2021.11
     steps:
+      - attach_workspace:
+          at: ~/image
       - setup_remote_docker
+      - run:
+          name: Load local-kms image
+          command: |
+            docker load -i /image/local-kms.tar
+            docker images
+
 
   release-artifacts-s3:
     executor: aws-cli/default
