@@ -6,8 +6,6 @@ orbs:
 workflows:
   build:
     jobs:
-      - build-docker-image:
-          name: build-docker-image
       - darwin-amd64:
           name: darwin-amd64
           filters:
@@ -15,6 +13,7 @@ workflows:
               only: /.*/
             branches:
               only: master
+
       - darwin-arm64:
           name: darwin-arm64
           filters:
@@ -22,6 +21,7 @@ workflows:
               only: /.*/
             branches:
               only: master
+
       - linux-amd64:
           name: linux-amd64
           filters:
@@ -29,6 +29,7 @@ workflows:
               only: /.*/
             branches:
               only: master
+
       - linux-arm64:
           name: linux-arm64
           filters:
@@ -36,6 +37,7 @@ workflows:
               only: /.*/
             branches:
               only: master
+
       - linux-amd64-apline:
           name: linux-amd64-apline
           filters:
@@ -43,6 +45,10 @@ workflows:
               only: /.*/
             branches:
               only: master
+
+      - build-docker-image:
+          name: build-docker-image
+
       - release-artifacts-s3:
           name: s3-artifacts
           requires:
@@ -237,6 +243,15 @@ jobs:
           command: |
             docker run -d --name local-kms local-kms
             docker run -e KMS_URL="http://localhost:8080" --network container:local-kms testing pytest
+      - run:
+          name: Save local-kms image
+          command: |
+            mkdir /image
+            docker save -o /image/local-kms.tar local-kms
+      - persist_to_workspace:
+          root: /image
+          paths:
+            - local-kms.tar
 
   release-artifacts-s3:
     executor: aws-cli/default
