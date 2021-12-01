@@ -59,26 +59,6 @@ workflows:
 
 jobs:
 
-  build-docker-image:
-    docker:
-      - image: cimg/python:3.10
-    steps:
-      - checkout
-      - setup_remote_docker
-      - run:
-          name: Build local-kms image
-          command: |
-            docker build -t local-kms .
-      - run:
-          name: Build testing image
-          command: |
-            docker build -t testing tests/functional
-      - run:
-          name: Run Tests
-          command: |
-            docker run -d --name local-kms local-kms
-            docker run -e KMS_URL="http://localhost:8080" --network container:local-kms testing pytest
-
   darwin-amd64:
     docker:
       - image: cimg/go:1.16
@@ -237,6 +217,26 @@ jobs:
           root: /artifacts
           paths:
             - '*.bin'
+
+  build-docker-image:
+    docker:
+      - image: cimg/base:2021.11
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build local-kms image
+          command: |
+            docker build -t local-kms .
+      - run:
+          name: Build testing image
+          command: |
+            docker build -t testing tests/functional
+      - run:
+          name: Run Tests
+          command: |
+            docker run -d --name local-kms local-kms
+            docker run -e KMS_URL="http://localhost:8080" --network container:local-kms testing pytest
 
   release-artifacts-s3:
     executor: aws-cli/default
