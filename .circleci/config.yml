@@ -46,8 +46,8 @@ workflows:
             branches:
               only: master
 
-      - build-docker-image:
-          name: build-docker-image
+      - docker-image-build:
+          name: docker-image-build
 
       - release-artifacts-s3:
           name: s3-artifacts
@@ -224,7 +224,7 @@ jobs:
           paths:
             - '*.bin'
 
-  build-docker-image:
+  docker-image-build:
     docker:
       - image: cimg/base:2021.11
     steps:
@@ -246,12 +246,17 @@ jobs:
       - run:
           name: Save local-kms image
           command: |
-            mkdir /image
-            docker save -o /image/local-kms.tar local-kms
+            docker save -o /tmp/local-kms.tar local-kms
       - persist_to_workspace:
-          root: /image
+          root: /tmp
           paths:
             - local-kms.tar
+
+  build-docker-push-latest:
+    docker:
+      - image: cimg/base:2021.11
+    steps:
+      - setup_remote_docker
 
   release-artifacts-s3:
     executor: aws-cli/default
