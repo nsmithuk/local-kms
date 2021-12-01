@@ -267,8 +267,12 @@ jobs:
       - run:
           name: Load local-kms image
           command: |
-            docker load -i /image/local-kms.tar
+            docker load -i ~/image/local-kms.tar
             docker images
+      - run:
+          name: Login to Docker Hub
+          command: |
+            echo $DOCKER_HUB_TOKEN | docker login -u nsmithuk --password-stdin
 
 
   release-artifacts-s3:
