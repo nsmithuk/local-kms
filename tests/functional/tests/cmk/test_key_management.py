@@ -94,3 +94,6 @@ class TestKeyManagement:
         assert isinstance(delete, dict)
         assert 'DeletionDate' in delete
         assert cmk['KeyMetadata']['Arn'] == delete['KeyId']
+
+        assert False
+        
