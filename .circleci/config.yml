@@ -13,6 +13,7 @@ workflows:
               only: /.*/
             branches:
               only: master
+
       - darwin-arm64:
           name: darwin-arm64
           filters:
@@ -20,6 +21,7 @@ workflows:
               only: /.*/
             branches:
               only: master
+
       - linux-amd64:
           name: linux-amd64
           filters:
@@ -27,6 +29,7 @@ workflows:
               only: /.*/
             branches:
               only: master
+
       - linux-arm64:
           name: linux-arm64
           filters:
@@ -34,6 +37,7 @@ workflows:
               only: /.*/
             branches:
               only: master
+
       - linux-amd64-apline:
           name: linux-amd64-apline
           filters:
@@ -41,6 +45,18 @@ workflows:
               only: /.*/
             branches:
               only: master
+
+      - docker-image-build:
+          name: docker-image-build
+
+      - build-docker-push-latest:
+          name: build-docker-push-latest
+          requires:
+            - docker-image-build
+          filters:
+            branches:
+              only: master
+
       - release-artifacts-s3:
           name: s3-artifacts
           requires:
@@ -215,6 +231,83 @@ jobs:
           root: /artifacts
           paths:
             - '*.bin'
+
+  docker-image-build:
+    docker:
+      - image: cimg/base:2021.11
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build local-kms image
+          command: |
+            docker build -t local-kms .
+      - run:
+          name: Build testing image
+          command: |
+            docker build -t testing tests/functional
+      - run:
+          name: Run Tests
+          command: |
+            docker run -d --name local-kms local-kms
+            docker run -e KMS_URL="http://localhost:8080" --network container:local-kms testing pytest
+      - run:
+          name: Save local-kms image
+          command: |
+            docker save -o /tmp/local-kms.tar local-kms
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - local-kms.tar
+
+  build-docker-push-latest:
+    docker:
+      - image: cimg/base:2021.11
+    steps:
+      - attach_workspace:
+          at: ~/image
+      - setup_remote_docker
+      - run:
+          name: Load local-kms image
+          command: |
+            docker load -i ~/image/local-kms.tar
+            docker images
+      - run:
+          name: Login to Docker Hub
+          command: |
+            echo $DOCKER_HUB_TOKEN | docker login -u nsmithuk --password-stdin
+      - run:
+          name: Push to Docker Hub
+          command: |
+            docker tag local-kms:latest nsmithuk/local-kms:latest
+            docker push nsmithuk/local-kms:latest
+
+  build-docker-push-tag:
+    docker:
+      - image: cimg/base:2021.11
+    steps:
+      - attach_workspace:
+          at: ~/image
+      - setup_remote_docker
+      - run:
+          name: Load local-kms image
+          command: |
+            docker load -i ~/image/local-kms.tar
+            docker images
+      - run:
+          name: Login to Docker Hub
+          command: |
+            echo $DOCKER_HUB_TOKEN | docker login -u nsmithuk --password-stdin
+      - run:
+          name: Push to Docker Hub
+          command: |
+            export VERSION_MAJOR=`echo << pipeline.git.tag >> | awk -F '.' '{print $1}'`
+            echo "Version Full << pipeline.git.tag >>"
+            echo "Version Major $VERSION_MAJOR"
+
+            docker tag local-kms:latest nsmithuk/local-kms:${VERSION_MAJOR}
+            docker tag local-kms:latest nsmithuk/local-kms:<< pipeline.git.tag >>
+            docker push --all-tags nsmithuk/local-kms
 
   release-artifacts-s3:
     executor: aws-cli/default
