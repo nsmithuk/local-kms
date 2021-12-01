@@ -53,6 +53,9 @@ workflows:
           name: build-docker-push-latest
           requires:
             - docker-image-build
+          filters:
+            branches:
+              only: master
 
       - release-artifacts-s3:
           name: s3-artifacts
@@ -278,6 +281,33 @@ jobs:
           command: |
             docker tag local-kms:latest nsmithuk/local-kms:latest
             docker push nsmithuk/local-kms:latest
+
+  build-docker-push-tag:
+    docker:
+      - image: cimg/base:2021.11
+    steps:
+      - attach_workspace:
+          at: ~/image
+      - setup_remote_docker
+      - run:
+          name: Load local-kms image
+          command: |
+            docker load -i ~/image/local-kms.tar
+            docker images
+      - run:
+          name: Login to Docker Hub
+          command: |
+            echo $DOCKER_HUB_TOKEN | docker login -u nsmithuk --password-stdin
+      - run:
+          name: Push to Docker Hub
+          command: |
+            export VERSION_MAJOR=`echo << pipeline.git.tag >> | awk -F '.' '{print $1}'`
+            echo "Version Full << pipeline.git.tag >>"
+            echo "Version Major $VERSION_MAJOR"
+
+            docker tag local-kms:latest nsmithuk/local-kms:${VERSION_MAJOR}
+            docker tag local-kms:latest nsmithuk/local-kms:<< pipeline.git.tag >>
+            docker push --all-tags nsmithuk/local-kms
 
   release-artifacts-s3:
     executor: aws-cli/default
