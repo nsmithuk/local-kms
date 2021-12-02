@@ -57,6 +57,16 @@ workflows:
             branches:
               only: master
 
+      - build-docker-push-tag:
+          name: build-docker-push-tag
+          requires:
+            - docker-image-build
+          filters:
+            tags:
+              only: /^\d+\.\d+\.\d+$/
+            branches:
+              ignore: /.*/
+
       - release-artifacts-s3:
           name: s3-artifacts
           requires:
