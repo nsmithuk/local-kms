@@ -48,6 +48,11 @@ workflows:
 
       - docker-image-build:
           name: docker-image-build
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              only: /.*/
 
       - build-docker-push-latest:
           name: build-docker-push-latest
