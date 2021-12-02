@@ -260,7 +260,7 @@ See: https://github.com/nsmithuk/local-kms/issues/4
 
 ### Prerequisites
 
-Tested with Go 1.16
+Tested with Go 1.17
 
 ### Install
 

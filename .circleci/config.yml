@@ -85,7 +85,7 @@ jobs:
 
   darwin-amd64:
     docker:
-      - image: cimg/go:1.16
+      - image: cimg/go:1.17
     steps:
       - checkout
       - run:
@@ -107,7 +107,7 @@ jobs:
 
   darwin-arm64:
     docker:
-      - image: cimg/go:1.16
+      - image: cimg/go:1.17
     steps:
       - checkout
       - run:
@@ -129,7 +129,7 @@ jobs:
 
   linux-amd64:
     docker:
-      - image: cimg/go:1.16
+      - image: cimg/go:1.17
     steps:
       - checkout
       - run:
@@ -173,7 +173,7 @@ jobs:
             
   linux-arm64:
     docker:
-      - image: cimg/go:1.16
+      - image: cimg/go:1.17
     steps:
       - checkout
       - run:
@@ -196,7 +196,7 @@ jobs:
   linux-amd64-apline:
     working_directory: /go/src/github.com/nsmithuk/local-kms
     docker:
-      - image: golang:1.16-alpine
+      - image: golang:1.17-alpine
     steps:
       - checkout
       - run:
