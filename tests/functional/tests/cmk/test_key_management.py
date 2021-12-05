@@ -22,6 +22,23 @@ class TestKeyManagement:
             'The operation failed because the KeyUsage value of the CMK is SIGN_VERIFY. To perform this operation, the KeyUsage value must be ENCRYPT_DECRYPT.',
         )
 
+    def test_create_key_failure_duplicate_spec(self, kms_client):
+        code, content = kms_client.post(
+            'CreateKey',
+            {
+                "KeySpec": 'RSA_2048',
+                "CustomerMasterKeySpec": 'RSA_2048',
+                "KeyUsage": 'ENCRYPT_DECRYPT',
+            },
+        )
+
+        assert code == 400
+        assert validate_error_response(
+            content,
+            'ValidationException',
+            'You cannot specify KeySpec and CustomerMasterKeySpec in the same request. CustomerMasterKeySpec is deprecated.',
+        )
+
     @pytest.mark.parametrize(
         "key_spec_and_usage",
         [
