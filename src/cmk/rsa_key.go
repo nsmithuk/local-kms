@@ -17,7 +17,7 @@ type RsaKey struct {
 	PrivateKey RsaPrivateKey
 }
 
-func NewRsaKey(spec CustomerMasterKeySpec, usage KeyUsage, metadata KeyMetadata, policy string) (*RsaKey, error) {
+func NewRsaKey(spec KeySpec, usage KeyUsage, metadata KeyMetadata, policy string) (*RsaKey, error) {
 
 	var bits int
 
@@ -48,6 +48,7 @@ func NewRsaKey(spec CustomerMasterKeySpec, usage KeyUsage, metadata KeyMetadata,
 	k.Policy = policy
 
 	k.Metadata.KeyUsage = usage
+	k.Metadata.KeySpec = spec
 	k.Metadata.CustomerMasterKeySpec = spec
 
 	switch usage {
@@ -253,11 +254,11 @@ func (k *RsaKey) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	bitLen := key.N.BitLen()
 	switch bitLen {
 	case 2048:
-		k.Metadata.CustomerMasterKeySpec = SpecRsa2048
+		k.Metadata.KeySpec = SpecRsa2048
 	case 3072:
-		k.Metadata.CustomerMasterKeySpec = SpecRsa3072
+		k.Metadata.KeySpec = SpecRsa3072
 	case 4096:
-		k.Metadata.CustomerMasterKeySpec = SpecRsa4096
+		k.Metadata.KeySpec = SpecRsa4096
 	default:
 		return &UnmarshalYAMLError{
 			fmt.Sprintf(
@@ -265,6 +266,8 @@ func (k *RsaKey) UnmarshalYAML(unmarshal func(interface{}) error) error {
 				bitLen, k.Metadata.KeyId),
 		}
 	}
+
+	k.Metadata.CustomerMasterKeySpec = k.Metadata.KeySpec
 
 	switch k.Metadata.KeyUsage {
 	case UsageSignVerify:
@@ -291,4 +294,3 @@ func (k *RsaKey) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	}
 	return nil
 }
-

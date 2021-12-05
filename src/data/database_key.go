@@ -57,6 +57,13 @@ func (d *Database) LoadKey(arn string) (cmk.Key, error) {
 
 	//---
 
+	// Migrate old keys to new naming
+	if key.GetMetadata().KeySpec == "" {
+		key.GetMetadata().KeySpec = key.GetMetadata().CustomerMasterKeySpec
+	}
+
+	//---
+
 	// Delete key if it has expired
 	if key.GetMetadata().DeletionDate != 0 && key.GetMetadata().DeletionDate < time.Now().Unix() {
 		d.DeleteObject(arn)

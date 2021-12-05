@@ -71,7 +71,7 @@ func (r *RequestHandler) generateDataKeyPair() (Response, *GenerateDataKeyPairRe
 
 	//----------------------------------
 
-	keyPairSpec := cmk.CustomerMasterKeySpec(*body.KeyPairSpec)
+	keyPairSpec := cmk.KeySpec(*body.KeyPairSpec)
 
 	var publicKey interface{}
 	var privateKey interface{}
@@ -167,7 +167,7 @@ func (r *RequestHandler) generateDataKeyPair() (Response, *GenerateDataKeyPairRe
 			return NewInvalidKeyUsageException(msg), nil
 		}
 
-		msg := fmt.Sprintf("%s key CustomerMasterKeySpec is %s which is not valid for GenerateDataKeyPair.", k.GetArn(), k.GetMetadata().CustomerMasterKeySpec)
+		msg := fmt.Sprintf("%s key KeySpec is %s which is not valid for GenerateDataKeyPair.", k.GetArn(), k.GetMetadata().CustomerMasterKeySpec)
 		r.logger.Warnf(msg)
 		return NewInvalidKeyUsageException(msg), nil
 	}
