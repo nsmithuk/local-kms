@@ -66,7 +66,7 @@ func (r *RequestHandler) GetPublicKey() Response {
 
 	return NewResponse(200, &struct {
 		KeyId                 string
-		CustomerMasterKeySpec cmk.CustomerMasterKeySpec
+		CustomerMasterKeySpec cmk.KeySpec
 		//EncryptionAlgorithms	[]cmk.EncryptionAlgorithm
 		SigningAlgorithms []cmk.SigningAlgorithm
 		KeyUsage          cmk.KeyUsage

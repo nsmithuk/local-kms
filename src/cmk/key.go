@@ -19,17 +19,17 @@ const (
 
 //---
 
-type CustomerMasterKeySpec string
+type KeySpec string
 
 const (
-	SpecSymmetricDefault CustomerMasterKeySpec = "SYMMETRIC_DEFAULT"
-	SpecEccNistP256      CustomerMasterKeySpec = "ECC_NIST_P256"
-	SpecEccNistP384      CustomerMasterKeySpec = "ECC_NIST_P384"
-	SpecEccNistP521      CustomerMasterKeySpec = "ECC_NIST_P521"
-	SpecEccSecp256k1     CustomerMasterKeySpec = "ECC_SECG_P256K1"
-	SpecRsa2048          CustomerMasterKeySpec = "RSA_2048"
-	SpecRsa3072          CustomerMasterKeySpec = "RSA_3072"
-	SpecRsa4096          CustomerMasterKeySpec = "RSA_4096"
+	SpecSymmetricDefault KeySpec = "SYMMETRIC_DEFAULT"
+	SpecEccNistP256      KeySpec = "ECC_NIST_P256"
+	SpecEccNistP384      KeySpec = "ECC_NIST_P384"
+	SpecEccNistP521      KeySpec = "ECC_NIST_P521"
+	SpecEccSecp256k1     KeySpec = "ECC_SECG_P256K1"
+	SpecRsa2048          KeySpec = "RSA_2048"
+	SpecRsa3072          KeySpec = "RSA_3072"
+	SpecRsa4096          KeySpec = "RSA_4096"
 )
 
 //---
@@ -150,7 +150,8 @@ type KeyMetadata struct {
 
 	SigningAlgorithms     []SigningAlgorithm    `json:",omitempty"`
 	EncryptionAlgorithms  []EncryptionAlgorithm `json:",omitempty"`
-	CustomerMasterKeySpec CustomerMasterKeySpec `json:",omitempty"`
+	KeySpec               KeySpec               `json:",omitempty"`
+	CustomerMasterKeySpec KeySpec               `json:",omitempty"`
 }
 
 type ParametersForImport struct {
@@ -169,7 +170,7 @@ func (e *UnmarshalYAMLError) Error() string {
 }
 
 func defaultSeededKeyMetadata(metadata *KeyMetadata) {
-	metadata.Arn = config.ArnPrefix() + "key/" +metadata.KeyId
+	metadata.Arn = config.ArnPrefix() + "key/" + metadata.KeyId
 	metadata.AWSAccountId = config.AWSAccountId
 	metadata.CreationDate = time.Now().Unix()
 	metadata.Enabled = true

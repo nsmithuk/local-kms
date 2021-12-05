@@ -27,7 +27,7 @@ type ecdsaSignature struct {
 	R, S *big.Int
 }
 
-func NewEccKey(spec CustomerMasterKeySpec, metadata KeyMetadata, policy string) (*EccKey, error) {
+func NewEccKey(spec KeySpec, metadata KeyMetadata, policy string) (*EccKey, error) {
 
 	var curve elliptic.Curve
 
@@ -62,6 +62,7 @@ func NewEccKey(spec CustomerMasterKeySpec, metadata KeyMetadata, policy string) 
 	//---
 
 	k.Metadata.KeyUsage = UsageSignVerify
+	k.Metadata.KeySpec = spec
 	k.Metadata.CustomerMasterKeySpec = spec
 
 	switch spec {
@@ -257,13 +258,13 @@ func (k *EccKey) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 	switch bitLen {
 	case 256:
-		k.Metadata.CustomerMasterKeySpec = SpecEccNistP256
+		k.Metadata.KeySpec = SpecEccNistP256
 		k.Metadata.SigningAlgorithms = []SigningAlgorithm{SigningAlgorithmEcdsaSha256}
 	case 384:
-		k.Metadata.CustomerMasterKeySpec = SpecEccNistP384
+		k.Metadata.KeySpec = SpecEccNistP384
 		k.Metadata.SigningAlgorithms = []SigningAlgorithm{SigningAlgorithmEcdsaSha384}
 	case 521:
-		k.Metadata.CustomerMasterKeySpec = SpecEccNistP521
+		k.Metadata.KeySpec = SpecEccNistP521
 		k.Metadata.SigningAlgorithms = []SigningAlgorithm{SigningAlgorithmEcdsaSha512}
 	default:
 		return &UnmarshalYAMLError{
@@ -272,6 +273,8 @@ func (k *EccKey) UnmarshalYAML(unmarshal func(interface{}) error) error {
 				bitLen, k.Metadata.KeyId),
 		}
 	}
+
+	k.Metadata.CustomerMasterKeySpec = k.Metadata.KeySpec
 
 	if k.Metadata.KeyUsage != UsageSignVerify {
 		return &UnmarshalYAMLError{

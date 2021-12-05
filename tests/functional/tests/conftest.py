@@ -1,5 +1,7 @@
 import os
+
 import pytest
+
 from KmsClient import KmsClient
 
 
@@ -27,9 +29,98 @@ def symmetric_key(kms_client):
 
     yield content['KeyMetadata']
 
-    code, unused = kms_client.post('ScheduleKeyDeletion', {
-        'KeyId': content['KeyMetadata']['KeyId'],
-        'PendingWindowInDays': 7
-    })
+    code, unused = kms_client.post(
+        'ScheduleKeyDeletion',
+        {'KeyId': content['KeyMetadata']['KeyId'], 'PendingWindowInDays': 7},
+    )
     if code != 200:
-        raise ValueError('Unable to delete test key %s' % content['KeyMetadata']['KeyId'])
+        raise ValueError(
+            'Unable to delete test key %s' % content['KeyMetadata']['KeyId']
+        )
+
+
+@pytest.fixture(scope="session")
+def rsa_signing_key(kms_client):
+    """
+    Create a temporary RSA Signing key for use in tests that require one.
+    The key is marked for deletion once the tests have finished.
+    We don't actually test the creation/deletion process here; it's assumed to work.
+    :param kms_client:
+    :return:
+    """
+    code, content = kms_client.post(
+        'CreateKey',
+        {
+            "KeySpec": 'RSA_2048',
+            "KeyUsage": 'SIGN_VERIFY',
+        },
+    )
+
+    yield content['KeyMetadata']
+
+    code, unused = kms_client.post(
+        'ScheduleKeyDeletion',
+        {'KeyId': content['KeyMetadata']['KeyId'], 'PendingWindowInDays': 7},
+    )
+    if code != 200:
+        raise ValueError(
+            'Unable to delete test key %s' % content['KeyMetadata']['KeyId']
+        )
+
+
+@pytest.fixture(scope="session")
+def rsa_encryption_key(kms_client):
+    """
+    Create a temporary RSA Encryption for use in tests that require one.
+    The key is marked for deletion once the tests have finished.
+    We don't actually test the creation/deletion process here; it's assumed to work.
+    :param kms_client:
+    :return:
+    """
+    code, content = kms_client.post(
+        'CreateKey',
+        {
+            "KeySpec": 'RSA_2048',
+            "KeyUsage": 'ENCRYPT_DECRYPT',
+        },
+    )
+
+    yield content['KeyMetadata']
+
+    code, unused = kms_client.post(
+        'ScheduleKeyDeletion',
+        {'KeyId': content['KeyMetadata']['KeyId'], 'PendingWindowInDays': 7},
+    )
+    if code != 200:
+        raise ValueError(
+            'Unable to delete test key %s' % content['KeyMetadata']['KeyId']
+        )
+
+
+@pytest.fixture(scope="session")
+def ecc_signing_key(kms_client):
+    """
+    Create a temporary ECC Signing for use in tests that require one.
+    The key is marked for deletion once the tests have finished.
+    We don't actually test the creation/deletion process here; it's assumed to work.
+    :param kms_client:
+    :return:
+    """
+    code, content = kms_client.post(
+        'CreateKey',
+        {
+            "KeySpec": 'ECC_NIST_P256',
+            "KeyUsage": 'SIGN_VERIFY',
+        },
+    )
+
+    yield content['KeyMetadata']
+
+    code, unused = kms_client.post(
+        'ScheduleKeyDeletion',
+        {'KeyId': content['KeyMetadata']['KeyId'], 'PendingWindowInDays': 7},
+    )
+    if code != 200:
+        raise ValueError(
+            'Unable to delete test key %s' % content['KeyMetadata']['KeyId']
+        )

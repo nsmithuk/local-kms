@@ -31,7 +31,11 @@ pytest
 secg_p256k1 is not well supported on Mac OS X, so it's recommended you run the tests from within a Linux Docker container.
 From within local-kms/tests/functional:
 ```shell
-docker run -it --rm -v "${PWD}:/app" -w "/app" python:3-slim bash
+docker run -it --rm -v "${PWD}:/app" -w "/app" \
+-e AWS_ACCESS_KEY_ID \
+-e AWS_SECRET_ACCESS_KEY \
+-e AWS_SESSION_TOKEN \
+python:3-slim bash
 
 pip install -r requirments.txt
 export KMS_URL="http://host.docker.internal:4599"

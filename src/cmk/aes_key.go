@@ -32,6 +32,7 @@ func NewAesKey(metadata KeyMetadata, policy string, origin KeyOrigin) *AesKey {
 	//---
 
 	k.Metadata.KeyUsage = UsageEncryptDecrypt
+	k.Metadata.KeySpec = SpecSymmetricDefault
 	k.Metadata.CustomerMasterKeySpec = SpecSymmetricDefault
 	k.Metadata.EncryptionAlgorithms = []EncryptionAlgorithm{EncryptionAlgorithmAes}
 
@@ -182,6 +183,7 @@ func (k *AesKey) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		k.Metadata.Enabled = false
 	}
 
+	k.Metadata.KeySpec = SpecSymmetricDefault
 	k.Metadata.CustomerMasterKeySpec = SpecSymmetricDefault
 	k.Metadata.EncryptionAlgorithms = []EncryptionAlgorithm{EncryptionAlgorithmAes}
 

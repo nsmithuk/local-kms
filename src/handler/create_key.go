@@ -80,9 +80,20 @@ func (r *RequestHandler) CreateKey() Response {
 		body.Policy = &policy
 	}
 
-	if body.CustomerMasterKeySpec == nil {
+	if body.KeySpec != nil && body.CustomerMasterKeySpec != nil {
+		// Both values cannot be set
+
+		msg := fmt.Sprintf("You cannot specify KeySpec and CustomerMasterKeySpec in the same request. CustomerMasterKeySpec is deprecated.")
+		r.logger.Warnf(msg)
+		return NewValidationExceptionResponse(msg)
+	} else if body.KeySpec == nil && body.CustomerMasterKeySpec != nil {
+		// If we only have CustomerMasterKeySpec, copy it over to KeySpec
+		body.KeySpec = body.CustomerMasterKeySpec
+
+	} else if body.KeySpec == nil && body.CustomerMasterKeySpec == nil {
+		// If neither are set, the default is SYMMETRIC_DEFAULT
 		sd := "SYMMETRIC_DEFAULT"
-		body.CustomerMasterKeySpec = &sd
+		body.KeySpec = &sd
 	}
 
 	if body.Origin != nil {
@@ -91,8 +102,8 @@ func (r *RequestHandler) CreateKey() Response {
 			// nop
 		case "EXTERNAL":
 
-			if *body.CustomerMasterKeySpec != "SYMMETRIC_DEFAULT" {
-				msg := fmt.Sprintf("KeySpec %s is not supported for Origin %s", *body.CustomerMasterKeySpec, *body.Origin)
+			if *body.KeySpec != "SYMMETRIC_DEFAULT" {
+				msg := fmt.Sprintf("KeySpec %s is not supported for Origin %s", *body.KeySpec, *body.Origin)
 
 				r.logger.Warnf(msg)
 				return NewValidationExceptionResponse(msg)
@@ -122,7 +133,7 @@ func (r *RequestHandler) CreateKey() Response {
 
 	var key cmk.Key
 
-	switch *body.CustomerMasterKeySpec {
+	switch *body.KeySpec {
 	case "SYMMETRIC_DEFAULT":
 
 		if body.KeyUsage != nil && *body.KeyUsage != "ENCRYPT_DECRYPT" {
@@ -142,12 +153,12 @@ func (r *RequestHandler) CreateKey() Response {
 		}
 
 		if *body.KeyUsage != "SIGN_VERIFY" {
-			msg := fmt.Sprintf("KeyUsage ENCRYPT_DECRYPT is not compatible with KeySpec %s", *body.CustomerMasterKeySpec)
+			msg := fmt.Sprintf("KeyUsage ENCRYPT_DECRYPT is not compatible with KeySpec %s", *body.KeySpec)
 			r.logger.Warnf(msg)
 			return NewValidationExceptionResponse(msg)
 		}
 
-		key, err = cmk.NewEccKey(cmk.CustomerMasterKeySpec(*body.CustomerMasterKeySpec), metadata, *body.Policy)
+		key, err = cmk.NewEccKey(cmk.KeySpec(*body.KeySpec), metadata, *body.Policy)
 		if err != nil {
 			r.logger.Error(err)
 			return NewInternalFailureExceptionResponse(err.Error())
@@ -162,12 +173,12 @@ func (r *RequestHandler) CreateKey() Response {
 		}
 
 		if !(*body.KeyUsage == "SIGN_VERIFY" || *body.KeyUsage == "ENCRYPT_DECRYPT") {
-			msg := fmt.Sprintf("KeyUsage %s is not compatible with KeySpec %s", *body.KeyUsage, *body.CustomerMasterKeySpec)
+			msg := fmt.Sprintf("KeyUsage %s is not compatible with KeySpec %s", *body.KeyUsage, *body.KeySpec)
 			r.logger.Warnf(msg)
 			return NewValidationExceptionResponse(msg)
 		}
 
-		key, err = cmk.NewRsaKey(cmk.CustomerMasterKeySpec(*body.CustomerMasterKeySpec), cmk.KeyUsage(*body.KeyUsage), metadata, *body.Policy)
+		key, err = cmk.NewRsaKey(cmk.KeySpec(*body.KeySpec), cmk.KeyUsage(*body.KeyUsage), metadata, *body.Policy)
 		if err != nil {
 			r.logger.Error(err)
 			return NewInternalFailureExceptionResponse(err.Error())
@@ -175,9 +186,9 @@ func (r *RequestHandler) CreateKey() Response {
 
 	default:
 
-		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'customerMasterKeySpec' "+
+		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'KeySpec' "+
 			"failed to satisfy constraint: Member must satisfy enum value set: [RSA_2048, ECC_NIST_P384, "+
-			"ECC_NIST_P256, ECC_NIST_P521, RSA_3072, ECC_SECG_P256K1, RSA_4096, SYMMETRIC_DEFAULT]", *body.CustomerMasterKeySpec)
+			"ECC_NIST_P256, ECC_NIST_P521, RSA_3072, ECC_SECG_P256K1, RSA_4096, SYMMETRIC_DEFAULT]", *body.KeySpec)
 
 		r.logger.Warnf(msg)
 
@@ -193,7 +204,7 @@ func (r *RequestHandler) CreateKey() Response {
 		return NewInternalFailureExceptionResponse(err.Error())
 	}
 
-	r.logger.Infof("New key created: %s\n", key.GetArn())
+	r.logger.Infof("New %s key created: %s\n", key.GetMetadata().KeySpec, key.GetArn())
 
 	//--------------------------------
 	// Create the tags
