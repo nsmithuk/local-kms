@@ -204,7 +204,7 @@ func (r *RequestHandler) CreateKey() Response {
 		return NewInternalFailureExceptionResponse(err.Error())
 	}
 
-	r.logger.Infof("New key created: %s\n", key.GetArn())
+	r.logger.Infof("New %s key created: %s\n", key.GetMetadata().KeySpec, key.GetArn())
 
 	//--------------------------------
 	// Create the tags
