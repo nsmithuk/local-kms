@@ -15,15 +15,8 @@ import (
 	"strings"
 
 	"github.com/ethereum/go-ethereum/crypto"
-	log "github.com/sirupsen/logrus"
 )
 
-//logger := log.New()
-// logger.SetFormatter(&log.TextFormatter{
-// 	ForceColors:     true,
-// 	FullTimestamp:   true,
-// 	TimestampFormat: "2006-01-02 15:04:05.000",
-// })
 // We create our own type to manage JSON Marshaling
 type EcdsaPrivateKey ecdsa.PrivateKey
 
@@ -176,7 +169,6 @@ func (k *EccKey) HashAndSign(message []byte, algorithm SigningAlgorithm) ([]byte
 }
 
 //----------------------------------------------------
-//valid, err = signingKey.Verify(body.Signature, body.Message, cmk.SigningAlgorithm(*body.SigningAlgorithm))
 func (k *EccKey) Verify(signature []byte, digest []byte, algorithm SigningAlgorithm) (bool, error) {
 	key := ecdsa.PrivateKey(k.PrivateKey)
 	if isS256(&key) {
@@ -185,13 +177,6 @@ func (k *EccKey) Verify(signature []byte, digest []byte, algorithm SigningAlgori
 		}
 		signature = signature[:len(signature)-1]
 		pubKey := crypto.FromECDSAPub(&key.PublicKey)
-		logger := log.New()
-		logger.SetFormatter(&log.TextFormatter{
-			ForceColors:     true,
-			FullTimestamp:   true,
-			TimestampFormat: "2006-01-02 15:04:05.000",
-		})
-		logger.Info("curve %s", key.PublicKey.Curve)
 
 		if len(digest) != 32 || len(signature) != 64 || len(pubKey) == 0 {
 			return false, errors.New(fmt.Sprintf("Digest, signature or pubkey of wrong size. Digest %d, want %d. Signature %d, want %d. Pubkey %d, want %s. \n", len(digest), 32, len(signature), 64, len(pubKey), "not 0"))
