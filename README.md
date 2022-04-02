@@ -94,6 +94,11 @@ Keys:
   Asymmetric:
     Ecc:
       - Metadata:
+          KeyId: 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+          KeyUsage: SIGN_VERIFY
+          Description: ECC key with curve secp256k1
+        PrivateKeyHex: ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+      - Metadata:
           KeyId: 800d5768-3fd7-4edd-a4b8-4c81c3e4c147
           KeyUsage: SIGN_VERIFY
           Description: ECC key with curve secp256r1

@@ -3,17 +3,20 @@ module github.com/nsmithuk/local-kms
 go 1.17
 
 require (
-	github.com/aws/aws-sdk-go v1.42.19
-	github.com/btcsuite/btcd v0.22.0-beta
+	github.com/aws/aws-sdk-go v1.43.29
+	github.com/ethereum/go-ethereum v1.10.17
+	
 	github.com/satori/go.uuid v1.2.0
-	github.com/sirupsen/logrus v1.4.2
-	github.com/syndtr/goleveldb v1.0.0
-	gopkg.in/yaml.v2 v2.2.8
+	github.com/sirupsen/logrus v1.8.1
+	github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
+	gopkg.in/yaml.v2 v2.4.0
 )
 
 require (
-	github.com/golang/snappy v0.0.1 // indirect
+	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.1 // indirect
+	github.com/golang/snappy v0.0.4 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
-	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
-	golang.org/x/sys v0.0.0-20210423082822-04245dca01da // indirect
+	github.com/konsorten/go-windows-terminal-sequences v1.0.3 // indirect
+	golang.org/x/crypto v0.0.0-20220321153916-2c7772ba3064 // indirect
+	golang.org/x/sys v0.0.0-20220330033206-e17cdc41300f // indirect
 )
