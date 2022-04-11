@@ -144,18 +144,12 @@ func (k *EccKey) Sign(digest []byte, algorithm SigningAlgorithm) ([]byte, error)
 	//---
 
 	key := ecdsa.PrivateKey(k.PrivateKey)
-	if isS256(&key) {
-		sig, err := crypto.Sign(digest, &key)
-		return sig, err
-	} else {
-		r, s, err := ecdsa.Sign(rand.Reader, &key, digest)
-		if err != nil {
-			return []byte{}, err
-		}
 
-		return asn1.Marshal(ecdsaSignature{r, s})
+	r, s, err := ecdsa.Sign(rand.Reader, &key, digest)
+	if err != nil {
+		return []byte{}, err
 	}
-
+	return asn1.Marshal(ecdsaSignature{r, s})
 }
 
 func (k *EccKey) HashAndSign(message []byte, algorithm SigningAlgorithm) ([]byte, error) {
@@ -282,7 +276,11 @@ func (k *EccKey) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 	switch bitLen {
 	case 256:
-		k.Metadata.KeySpec = SpecEccNistP256
+		if isS256(parseResult) {
+			k.Metadata.KeySpec = SpecEccSecp256k1
+		} else {
+			k.Metadata.KeySpec = SpecEccNistP256
+		}
 		k.Metadata.SigningAlgorithms = []SigningAlgorithm{SigningAlgorithmEcdsaSha256}
 	case 384:
 		k.Metadata.KeySpec = SpecEccNistP384
@@ -299,7 +297,6 @@ func (k *EccKey) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	}
 
 	k.Metadata.CustomerMasterKeySpec = k.Metadata.KeySpec
-
 	if k.Metadata.KeyUsage != UsageSignVerify {
 		return &UnmarshalYAMLError{
 			fmt.Sprintf(
