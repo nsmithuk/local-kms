@@ -6,6 +6,7 @@ import (
 	"crypto/rand"
 	"crypto/x509"
 	"encoding/asn1"
+	"encoding/hex"
 	"encoding/json"
 	"encoding/pem"
 	"errors"
@@ -14,7 +15,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/btcsuite/btcd/btcec"
 )
 
 // We create our own type to manage JSON Marshaling
@@ -41,7 +42,7 @@ func NewEccKey(spec KeySpec, metadata KeyMetadata, policy string) (*EccKey, erro
 	case SpecEccNistP521:
 		curve = elliptic.P521()
 	case SpecEccSecp256k1:
-		curve = crypto.S256()
+		curve = btcec.S256()
 	default:
 		return nil, errors.New("key spec error")
 	}
@@ -165,29 +166,14 @@ func (k *EccKey) HashAndSign(message []byte, algorithm SigningAlgorithm) ([]byte
 //----------------------------------------------------
 func (k *EccKey) Verify(signature []byte, digest []byte, algorithm SigningAlgorithm) (bool, error) {
 	key := ecdsa.PrivateKey(k.PrivateKey)
-	if isS256(&key) {
-		if len(signature) != crypto.SignatureLength {
-			return false, errors.New(fmt.Sprintf("wrong size for signature: got %d, want %d", len(signature), crypto.SignatureLength))
-		}
-		signature = signature[:len(signature)-1]
-		pubKey := crypto.FromECDSAPub(&key.PublicKey)
-
-		if len(digest) != 32 || len(signature) != 64 || len(pubKey) == 0 {
-			return false, errors.New(fmt.Sprintf("Digest, signature or pubkey of wrong size. Digest %d, want %d. Signature %d, want %d. Pubkey %d, want %s. \n", len(digest), 32, len(signature), 64, len(pubKey), "not 0"))
-		}
-		valid := crypto.VerifySignature(pubKey, digest, signature)
-		return valid, nil
-	} else {
-
-		ecdsaSignature := ecdsaSignature{}
-		_, err := asn1.Unmarshal(signature, &ecdsaSignature)
-		if err != nil {
-			return false, err
-		}
-		valid := ecdsa.Verify(&key.PublicKey, digest, ecdsaSignature.R, ecdsaSignature.S)
-
-		return valid, nil
+	ecdsaSignature := ecdsaSignature{}
+	_, err := asn1.Unmarshal(signature, &ecdsaSignature)
+	if err != nil {
+		return false, err
 	}
+	valid := ecdsa.Verify(&key.PublicKey, digest, ecdsaSignature.R, ecdsaSignature.S)
+
+	return valid, nil
 }
 
 func (k *EccKey) HashAndVerify(signature []byte, message []byte, algorithm SigningAlgorithm) (bool, error) {
@@ -222,7 +208,7 @@ func (k *EcdsaPrivateKey) UnmarshalJSON(data []byte) error {
 	} else if strings.Compare(pk.Curve.Params().Name, "P-521") == 0 {
 		pk.Curve = elliptic.P521()
 	} else if isS256(&pk) {
-		pk.Curve = crypto.S256()
+		pk.Curve = btcec.S256()
 	} else {
 		return errors.New("trying to UnmarshalJSON unknown curve")
 	}
@@ -265,7 +251,7 @@ func (k *EccKey) UnmarshalYAML(unmarshal func(interface{}) error) error {
 			return &UnmarshalYAMLError{fmt.Sprintf("Unable to decode pem of key %s, Ensure it is in PKCS8 format with no password: %s.\n", k.Metadata.KeyId, pkcsParseError)}
 		}
 	} else if yk.PrivateKeyHex != "" {
-		parseResult, pkcsParseError = crypto.HexToECDSA(yk.PrivateKeyHex)
+		parseResult, pkcsParseError = HexToECDSA(yk.PrivateKeyHex)
 		if pkcsParseError != nil {
 			return &UnmarshalYAMLError{fmt.Sprintf("Unable to decode hex of key %s, Ensure it is in HEX format: %s.\n", k.Metadata.KeyId, pkcsParseError)}
 		}
@@ -307,7 +293,48 @@ func (k *EccKey) UnmarshalYAML(unmarshal func(interface{}) error) error {
 }
 
 func isS256(key *ecdsa.PrivateKey) bool {
-	return key.Curve.Params().P.Cmp(crypto.S256().Params().P) == 0 && key.Curve.Params().N.Cmp(crypto.S256().Params().N) == 0 &&
-		key.Curve.Params().B.Cmp(crypto.S256().Params().B) == 0 && key.Curve.Params().Gx.Cmp(crypto.S256().Params().Gx) == 0 &&
-		key.Curve.Params().BitSize == crypto.S256().Params().BitSize
+	return key.Curve.Params().P.Cmp(btcec.S256().Params().P) == 0 && key.Curve.Params().N.Cmp(btcec.S256().Params().N) == 0 &&
+		key.Curve.Params().B.Cmp(btcec.S256().Params().B) == 0 && key.Curve.Params().Gx.Cmp(btcec.S256().Params().Gx) == 0 &&
+		key.Curve.Params().BitSize == btcec.S256().Params().BitSize
+}
+
+// HexToECDSA parses a secp256k1 private key.
+func HexToECDSA(hexkey string) (*ecdsa.PrivateKey, error) {
+	b, err := hex.DecodeString(hexkey)
+	if byteErr, ok := err.(hex.InvalidByteError); ok {
+		return nil, fmt.Errorf("invalid hex character %q in private key", byte(byteErr))
+	} else if err != nil {
+		return nil, errors.New("invalid hex data for private key")
+	}
+	return toECDSA(b)
+}
+
+// toECDSA creates a private key with the given D value. The strict parameter
+// controls whether the key's length should be enforced at the curve size or
+// it can also accept legacy encodings (0 prefixes).
+var secp256k1N, _ = new(big.Int).SetString("fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141", 16)
+
+func toECDSA(d []byte) (*ecdsa.PrivateKey, error) {
+	strict := true
+	priv := new(ecdsa.PrivateKey)
+	priv.PublicKey.Curve = btcec.S256()
+	if strict && 8*len(d) != priv.Params().BitSize {
+		return nil, fmt.Errorf("invalid length, need %d bits", priv.Params().BitSize)
+	}
+	priv.D = new(big.Int).SetBytes(d)
+
+	// The priv.D must < N
+	if priv.D.Cmp(secp256k1N) >= 0 {
+		return nil, fmt.Errorf("invalid private key, >=N")
+	}
+	// The priv.D must not be zero or negative.
+	if priv.D.Sign() <= 0 {
+		return nil, fmt.Errorf("invalid private key, zero or negative")
+	}
+
+	priv.PublicKey.X, priv.PublicKey.Y = priv.PublicKey.Curve.ScalarBaseMult(d)
+	if priv.PublicKey.X == nil {
+		return nil, errors.New("invalid private key")
+	}
+	return priv, nil
 }

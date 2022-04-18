@@ -8,8 +8,8 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/btcsuite/btcd/btcec"
 
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/nsmithuk/local-kms/src/cmk"
 	"github.com/nsmithuk/local-kms/src/x509"
 )
@@ -97,7 +97,7 @@ func (r *RequestHandler) generateDataKeyPair() (Response, *GenerateDataKeyPairRe
 		case cmk.SpecEccNistP521:
 			curve = elliptic.P521()
 		case cmk.SpecEccSecp256k1:
-			curve = crypto.S256()
+			curve = btcec.S256()
 		}
 
 		k, err := ecdsa.GenerateKey(curve, rand.Reader)

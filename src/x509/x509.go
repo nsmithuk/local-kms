@@ -14,7 +14,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/btcsuite/btcd/btcec"
 )
 
 // RFC 3279, 2.3 Public Key Algorithms
@@ -231,7 +231,7 @@ func oidFromNamedCurve(curve elliptic.Curve) (asn1.ObjectIdentifier, bool) {
 		return oidNamedCurveP384, true
 	case elliptic.P521():
 		return oidNamedCurveP521, true
-	case crypto.S256():
+	case btcec.S256():
 		return oidNamedCurve256k1, true
 	}
 

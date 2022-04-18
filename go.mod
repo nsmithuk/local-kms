@@ -3,8 +3,8 @@ module github.com/nsmithuk/local-kms
 go 1.17
 
 require (
+	github.com/btcsuite/btcd v0.22.0-beta
 	github.com/aws/aws-sdk-go v1.43.29
-	github.com/ethereum/go-ethereum v1.10.17
 	github.com/satori/go.uuid v1.2.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
