@@ -86,7 +86,8 @@ workflows:
       - build-docker-push-tag:
           name: build-docker-push-tag
           requires:
-            - build-docker-push-latest
+            - docker-image-test-amd64
+            - docker-image-test-arm64
           filters:
             tags:
               only: /^\d+\.\d+\.\d+$/
@@ -382,8 +383,8 @@ jobs:
             echo "Version Full << pipeline.git.tag >>"
             echo "Version Major $VERSION_MAJOR"
             
-            ./regctl image copy nsmithuk/local-kms:latest nsmithuk/local-kms:${VERSION_MAJOR}            
-            ./regctl image copy nsmithuk/local-kms:latest nsmithuk/local-kms:<< pipeline.git.tag >>            
+            ./regctl image copy nsmithuk/local-kms:circleci nsmithuk/local-kms:${VERSION_MAJOR}            
+            ./regctl image copy nsmithuk/local-kms:circleci nsmithuk/local-kms:<< pipeline.git.tag >>            
 
   release-artifacts-s3:
     executor: aws-cli/default
