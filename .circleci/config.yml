@@ -307,9 +307,13 @@ jobs:
           command: |
             docker build -t testing tests/functional
       - run:
-          name: Run Tests
+          name: Get and inspect Image
           command: |
             docker pull nsmithuk/local-kms:circleci
+            docker inspect nsmithuk/local-kms:circleci
+      - run:
+          name: Run Tests
+          command: |
             docker run -d --name local-kms nsmithuk/local-kms:circleci
             docker run -e KMS_URL="http://localhost:8080" --network container:local-kms testing pytest
 
@@ -328,9 +332,13 @@ jobs:
           command: |
             docker build -t testing tests/functional
       - run:
-          name: Run Tests
+          name: Get and inspect Image
           command: |
             docker pull nsmithuk/local-kms:circleci
+            docker inspect nsmithuk/local-kms:circleci
+      - run:
+          name: Run Tests
+          command: |
             docker run -d --name local-kms nsmithuk/local-kms:circleci
             docker run -e KMS_URL="http://localhost:8080" --network container:local-kms testing pytest
 
