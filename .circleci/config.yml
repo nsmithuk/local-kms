@@ -54,10 +54,31 @@ workflows:
             branches:
               only: /.*/
 
+      - docker-image-test-amd64:
+          name: docker-image-test-amd64
+          requires:
+            - docker-image-build
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              only: /.*/
+
+      - docker-image-test-arm64:
+          name: docker-image-test-arm64
+          requires:
+            - docker-image-build
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              only: /.*/
+
       - build-docker-push-latest:
           name: build-docker-push-latest
           requires:
-            - docker-image-build
+            - docker-image-test-amd64
+            - docker-image-test-arm64
           filters:
             branches:
               only: master
@@ -65,7 +86,7 @@ workflows:
       - build-docker-push-tag:
           name: build-docker-push-tag
           requires:
-            - docker-image-build
+            - build-docker-push-latest
           filters:
             tags:
               only: /^\d+\.\d+\.\d+$/
@@ -248,15 +269,39 @@ jobs:
             - '*.bin'
 
   docker-image-build:
-    docker:
-      - image: cimg/base:2021.11
+    machine:
+      image: ubuntu-2004:202201-02
     steps:
       - checkout
-      - setup_remote_docker
+      - run:
+          name: Login to Docker Hub
+          command: |
+            echo $DOCKER_HUB_TOKEN | docker login -u nsmithuk --password-stdin
+      - run:
+          name: Prepare docker buildx
+          command: |
+            docker version
+            docker buildx version
+            docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+            docker context create xbuilder
+            docker buildx create xbuilder --name xbuilder --use
+            docker buildx inspect --bootstrap
       - run:
           name: Build local-kms image
           command: |
-            docker build -t local-kms .
+            docker buildx build --push --progress plain \
+              --platform linux/arm64,linux/amd64 \
+              -t nsmithuk/local-kms:circleci .
+
+  docker-image-test-amd64:
+    machine:
+      image: ubuntu-2004:202201-02
+    steps:
+      - checkout
+      - run:
+          name: Login to Docker Hub
+          command: |
+            echo $DOCKER_HUB_TOKEN | docker login -u nsmithuk --password-stdin
       - run:
           name: Build testing image
           command: |
@@ -264,65 +309,73 @@ jobs:
       - run:
           name: Run Tests
           command: |
-            docker run -d --name local-kms local-kms
+            docker pull nsmithuk/local-kms:circleci
+            docker run -d --name local-kms nsmithuk/local-kms:circleci
             docker run -e KMS_URL="http://localhost:8080" --network container:local-kms testing pytest
+
+  docker-image-test-arm64:
+    machine:
+      image: ubuntu-2004:202201-02
+    resource_class: arm.medium
+    steps:
+      - checkout
       - run:
-          name: Save local-kms image
+          name: Login to Docker Hub
           command: |
-            docker save -o /tmp/local-kms.tar local-kms
-      - persist_to_workspace:
-          root: /tmp
-          paths:
-            - local-kms.tar
+            echo $DOCKER_HUB_TOKEN | docker login -u nsmithuk --password-stdin
+      - run:
+          name: Build testing image
+          command: |
+            docker build -t testing tests/functional
+      - run:
+          name: Run Tests
+          command: |
+            docker pull nsmithuk/local-kms:circleci
+            docker run -d --name local-kms nsmithuk/local-kms:circleci
+            docker run -e KMS_URL="http://localhost:8080" --network container:local-kms testing pytest
 
   build-docker-push-latest:
     docker:
-      - image: cimg/base:2021.11
+      - image: cimg/base:stable
     steps:
-      - attach_workspace:
-          at: ~/image
       - setup_remote_docker
-      - run:
-          name: Load local-kms image
-          command: |
-            docker load -i ~/image/local-kms.tar
-            docker images
       - run:
           name: Login to Docker Hub
           command: |
             echo $DOCKER_HUB_TOKEN | docker login -u nsmithuk --password-stdin
       - run:
-          name: Push to Docker Hub
+          name: Install regctl
           command: |
-            docker tag local-kms:latest nsmithuk/local-kms:latest
-            docker push nsmithuk/local-kms:latest
+            curl -L https://github.com/regclient/regclient/releases/latest/download/regctl-linux-amd64 > regctl
+            chmod 755 regctl
+      - run:
+          name: Copy image to new tag
+          command: |
+            ./regctl image copy nsmithuk/local-kms:circleci nsmithuk/local-kms:latest
 
   build-docker-push-tag:
     docker:
-      - image: cimg/base:2021.11
+      - image: cimg/base:stable
     steps:
-      - attach_workspace:
-          at: ~/image
       - setup_remote_docker
-      - run:
-          name: Load local-kms image
-          command: |
-            docker load -i ~/image/local-kms.tar
-            docker images
       - run:
           name: Login to Docker Hub
           command: |
             echo $DOCKER_HUB_TOKEN | docker login -u nsmithuk --password-stdin
       - run:
-          name: Push to Docker Hub
+          name: Install regctl
+          command: |
+            curl -L https://github.com/regclient/regclient/releases/latest/download/regctl-linux-amd64 > regctl
+            chmod 755 regctl
+      - run:
+          name: Copy image to new tag
           command: |
             export VERSION_MAJOR=`echo << pipeline.git.tag >> | awk -F '.' '{print $1}'`
             echo "Version Full << pipeline.git.tag >>"
             echo "Version Major $VERSION_MAJOR"
-
-            docker tag local-kms:latest nsmithuk/local-kms:${VERSION_MAJOR}
-            docker tag local-kms:latest nsmithuk/local-kms:<< pipeline.git.tag >>
-            docker push --all-tags nsmithuk/local-kms
+            
+            ./regctl image copy nsmithuk/local-kms:latest nsmithuk/local-kms:${VERSION_MAJOR}            
+            ./regctl image copy nsmithuk/local-kms:latest nsmithuk/local-kms:<< pipeline.git.tag >>            
 
   release-artifacts-s3:
     executor: aws-cli/default
