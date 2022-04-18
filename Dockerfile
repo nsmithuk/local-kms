@@ -1,6 +1,6 @@
 FROM golang:1.17-alpine AS build
 
-RUN apk update && apk add --no-cache --update make gcc musl-dev linux-headers git
+RUN apk update && apk add git
 
 RUN mkdir -p /nsmithuk/local-kms
 COPY . /nsmithuk/local-kms

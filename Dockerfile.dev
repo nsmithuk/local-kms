@@ -5,7 +5,7 @@ COPY . /go/src/github.com/nsmithuk/local-kms
 
 WORKDIR /go/src/github.com/nsmithuk/local-kms
 
-RUN apk add --no-cache --update make gcc musl-dev linux-headers git \
+RUN apk add --no-cache --update git \
     && go get -u github.com/canthefason/go-watcher  \
     && go install github.com/canthefason/go-watcher/cmd/watcher
 
