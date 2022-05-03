@@ -5,10 +5,10 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/gofrs/uuid"
 	"github.com/nsmithuk/local-kms/src/cmk"
 	"github.com/nsmithuk/local-kms/src/config"
 	"github.com/nsmithuk/local-kms/src/data"
-	uuid "github.com/satori/go.uuid"
 )
 
 func (r *RequestHandler) CreateKey() Response {
@@ -22,7 +22,7 @@ func (r *RequestHandler) CreateKey() Response {
 
 	//---
 
-	keyId := uuid.NewV4().String()
+	keyId := uuid.Must(uuid.NewV4()).String()
 
 	metadata := cmk.KeyMetadata{
 		Arn:          config.ArnPrefix() + "key/" + keyId,
