@@ -112,7 +112,7 @@ jobs:
 
   darwin-amd64:
     docker:
-      - image: cimg/go:1.17
+      - image: cimg/go:1.19
     steps:
       - checkout
       - run:
@@ -134,7 +134,7 @@ jobs:
 
   darwin-arm64:
     docker:
-      - image: cimg/go:1.17
+      - image: cimg/go:1.19
     steps:
       - checkout
       - run:
@@ -156,7 +156,7 @@ jobs:
 
   linux-amd64:
     docker:
-      - image: cimg/go:1.17
+      - image: cimg/go:1.19
     steps:
       - checkout
       - run:
@@ -200,7 +200,7 @@ jobs:
             
   linux-arm64:
     docker:
-      - image: cimg/go:1.17
+      - image: cimg/go:1.19
     steps:
       - checkout
       - run:
