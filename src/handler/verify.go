@@ -39,14 +39,6 @@ func (r *RequestHandler) Verify() Response {
 		return NewValidationExceptionResponse(msg)
 	}
 
-	if len(body.Message) > 4096 {
-		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'Message' failed to satisfy "+
-			"constraint: Member must have minimum length of 1 and maximum length of 4096.", string(body.Message))
-
-		r.logger.Warnf(msg)
-		return NewValidationExceptionResponse(msg)
-	}
-
 	if body.SigningAlgorithm == nil {
 		msg := "1 validation error detected: Value null at 'SigningAlgorithm' failed to satisfy constraint: Member must not be null"
 
