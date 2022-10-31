@@ -1,8 +1,8 @@
 version: "3"
 
 services:
-  kms:
-    container_name: local-kms-dev
+  local-kms:
+    container_name: local-kms
     build:
       context: .
       dockerfile: Dockerfile.dev
@@ -10,6 +10,10 @@ services:
       - .:/go/src/github.com/nsmithuk/local-kms
       - ./init:/init
       - ./data:/data
+      #to mount the example seed uncomment this
+      # - type: bind
+      #   source: ./seed.yaml
+      #   target: /init/seed.yaml
     ports:
       - 4566:8080
       - 4599:8080

@@ -13,6 +13,7 @@ import (
 	"encoding/asn1"
 	"errors"
 	"fmt"
+
 	"github.com/btcsuite/btcd/btcec"
 )
 
@@ -120,7 +121,6 @@ var (
 	oidISOSignatureSHA1WithRSA = asn1.ObjectIdentifier{1, 3, 14, 3, 2, 29}
 )
 
-
 // pkixPublicKey reflects a PKIX public key structure. See SubjectPublicKeyInfo
 // in RFC 3280.
 type pkixPublicKey struct {
@@ -214,10 +214,10 @@ func marshalPublicKey(pub interface{}) (publicKeyBytes []byte, publicKeyAlgorith
 //
 // NB: secp256r1 is equivalent to prime256v1
 var (
-	oidNamedCurveP224 = asn1.ObjectIdentifier{1, 3, 132, 0, 33}
-	oidNamedCurveP256 = asn1.ObjectIdentifier{1, 2, 840, 10045, 3, 1, 7}
-	oidNamedCurveP384 = asn1.ObjectIdentifier{1, 3, 132, 0, 34}
-	oidNamedCurveP521 = asn1.ObjectIdentifier{1, 3, 132, 0, 35}
+	oidNamedCurveP224  = asn1.ObjectIdentifier{1, 3, 132, 0, 33}
+	oidNamedCurveP256  = asn1.ObjectIdentifier{1, 2, 840, 10045, 3, 1, 7}
+	oidNamedCurveP384  = asn1.ObjectIdentifier{1, 3, 132, 0, 34}
+	oidNamedCurveP521  = asn1.ObjectIdentifier{1, 3, 132, 0, 35}
 	oidNamedCurve256k1 = asn1.ObjectIdentifier{1, 3, 132, 0, 10}
 )
 

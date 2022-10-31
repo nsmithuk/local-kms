@@ -6,8 +6,10 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"fmt"
+
 	"github.com/aws/aws-sdk-go/service/kms"
 	"github.com/btcsuite/btcd/btcec"
+
 	"github.com/nsmithuk/local-kms/src/cmk"
 	"github.com/nsmithuk/local-kms/src/x509"
 )

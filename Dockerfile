@@ -2,10 +2,10 @@ FROM golang:1.17-alpine AS build
 
 RUN apk update && apk add git
 
-RUN mkdir -p /go/src/github.com/nsmithuk/local-kms
-COPY . /go/src/github.com/nsmithuk/local-kms
+RUN mkdir -p /nsmithuk/local-kms
+COPY . /nsmithuk/local-kms
 
-WORKDIR /go/src/github.com/nsmithuk/local-kms
+WORKDIR /nsmithuk/local-kms
 
 RUN go install
 
