@@ -13,23 +13,26 @@ import (
 	"encoding/asn1"
 	"errors"
 	"fmt"
-	"github.com/btcsuite/btcd/btcec"
+
+	"github.com/btcsuite/btcd/btcec/v2"
 )
 
 // RFC 3279, 2.3 Public Key Algorithms
 //
 // pkcs-1 OBJECT IDENTIFIER ::== { iso(1) member-body(2) us(840)
-//    rsadsi(113549) pkcs(1) 1 }
+//
+//	rsadsi(113549) pkcs(1) 1 }
 //
 // rsaEncryption OBJECT IDENTIFIER ::== { pkcs1-1 1 }
 //
 // id-dsa OBJECT IDENTIFIER ::== { iso(1) member-body(2) us(840)
-//    x9-57(10040) x9cm(4) 1 }
 //
-// RFC 5480, 2.1.1 Unrestricted Algorithm Identifier and Parameters
+//	x9-57(10040) x9cm(4) 1 }
 //
-// id-ecPublicKey OBJECT IDENTIFIER ::= {
-//       iso(1) member-body(2) us(840) ansi-X9-62(10045) keyType(2) 1 }
+// # RFC 5480, 2.1.1 Unrestricted Algorithm Identifier and Parameters
+//
+//	id-ecPublicKey OBJECT IDENTIFIER ::= {
+//	      iso(1) member-body(2) us(840) ansi-X9-62(10045) keyType(2) 1 }
 var (
 	oidPublicKeyRSA     = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 1}
 	oidPublicKeyDSA     = asn1.ObjectIdentifier{1, 2, 840, 10040, 4, 1}
@@ -119,7 +122,6 @@ var (
 	// to produce certificates with this OID.
 	oidISOSignatureSHA1WithRSA = asn1.ObjectIdentifier{1, 3, 14, 3, 2, 29}
 )
-
 
 // pkixPublicKey reflects a PKIX public key structure. See SubjectPublicKeyInfo
 // in RFC 3280.
@@ -211,13 +213,12 @@ func marshalPublicKey(pub interface{}) (publicKeyBytes []byte, publicKeyAlgorith
 
 // secp256k1 ident 1.3.132.0.10
 
-//
 // NB: secp256r1 is equivalent to prime256v1
 var (
-	oidNamedCurveP224 = asn1.ObjectIdentifier{1, 3, 132, 0, 33}
-	oidNamedCurveP256 = asn1.ObjectIdentifier{1, 2, 840, 10045, 3, 1, 7}
-	oidNamedCurveP384 = asn1.ObjectIdentifier{1, 3, 132, 0, 34}
-	oidNamedCurveP521 = asn1.ObjectIdentifier{1, 3, 132, 0, 35}
+	oidNamedCurveP224  = asn1.ObjectIdentifier{1, 3, 132, 0, 33}
+	oidNamedCurveP256  = asn1.ObjectIdentifier{1, 2, 840, 10045, 3, 1, 7}
+	oidNamedCurveP384  = asn1.ObjectIdentifier{1, 3, 132, 0, 34}
+	oidNamedCurveP521  = asn1.ObjectIdentifier{1, 3, 132, 0, 35}
 	oidNamedCurve256k1 = asn1.ObjectIdentifier{1, 3, 132, 0, 10}
 )
 

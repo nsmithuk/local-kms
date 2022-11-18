@@ -10,9 +10,10 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"github.com/btcsuite/btcd/btcec"
 	"math/big"
 	"os"
+
+	"github.com/btcsuite/btcd/btcec/v2"
 )
 
 // We create our own type to manage JSON Marshaling
@@ -192,8 +193,8 @@ func (k *EccKey) HashAndVerify(signature []byte, message []byte, algorithm Signi
 //----------------------------------------------------
 
 /*
-	ecdsa.PrivateKey.Curve is an interface type, so we need to
-	Unmarshal it ourselves to set the concrete type.
+ecdsa.PrivateKey.Curve is an interface type, so we need to
+Unmarshal it ourselves to set the concrete type.
 */
 func (k *EcdsaPrivateKey) UnmarshalJSON(data []byte) error {
 	var pk ecdsa.PrivateKey
@@ -223,9 +224,9 @@ func (k *EcdsaPrivateKey) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-//----------------------------------------------------
+// ----------------------------------------------------
 // Construct key from YAML (seeding)
-//---
+// ---
 func (k *EccKey) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 	// Cannot use embedded 'Key' struct
