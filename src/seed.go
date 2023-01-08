@@ -121,19 +121,19 @@ func seed(path string, database *data.Database) {
 
 	keysAdded := 0
 	for _, key := range aesKeys {
-		if keyIsNew(database, &key.Metadata){
+		if keyIsNew(database, &key.Metadata) {
 			database.SaveKey(&key)
 			keysAdded++
 		}
 	}
 	for _, key := range rsaKeys {
-		if keyIsNew(database, &key.Metadata){
+		if keyIsNew(database, &key.Metadata) {
 			database.SaveKey(&key)
 			keysAdded++
 		}
 	}
 	for _, key := range eccKeys {
-		if keyIsNew(database, &key.Metadata){
+		if keyIsNew(database, &key.Metadata) {
 			database.SaveKey(&key)
 			keysAdded++
 		}
@@ -154,7 +154,7 @@ func seed(path string, database *data.Database) {
 	logger.Infof("%d new keys and %d new aliases added\n", keysAdded, aliasesAdded)
 }
 
-func keyIsNew( database *data.Database, metadata *cmk.KeyMetadata ) bool {
+func keyIsNew(database *data.Database, metadata *cmk.KeyMetadata) bool {
 	if _, err := database.LoadKey(metadata.Arn); err != leveldb.ErrNotFound {
 		logger.Warnf("Key %s already exists; skipping key", metadata.KeyId)
 		return false

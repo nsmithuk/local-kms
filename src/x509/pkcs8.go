@@ -79,4 +79,3 @@ func MarshalPKCS8PrivateKey(key interface{}) ([]byte, error) {
 
 	return asn1.Marshal(privKey)
 }
-
