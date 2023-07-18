@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/nsmithuk/local-kms/src"
 	"github.com/nsmithuk/local-kms/src/config"
 	log "github.com/sirupsen/logrus"
@@ -51,6 +52,14 @@ func main() {
 		accountId = "111122223333"
 	}
 	config.AWSAccountId = accountId
+
+	if identitiesPath := os.Getenv("KMS_IDENTITIES_PATH"); identitiesPath != "" {
+		if err := config.IAM.LoadConfigurationFromFile(identitiesPath); err != nil {
+			if err != nil {
+				logger.Errorln(fmt.Sprintf("Error parsing YAML at path %s: %s; skipping.", identitiesPath, err))
+			}
+		}
+	}
 
 	region := os.Getenv("KMS_REGION")
 
