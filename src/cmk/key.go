@@ -134,7 +134,7 @@ type BaseKey struct {
 }
 
 type KeyMetadata struct {
-	AWSAccountId    string          `json:",omitempty"`
+	AWSAccountId    string          `json:",omitempty" yaml:"AWSAccountId"`
 	Arn             string          `json:",omitempty"`
 	CreationDate    int64           `json:",omitempty"`
 	DeletionDate    int64           `json:",omitempty"`
