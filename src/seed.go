@@ -113,7 +113,7 @@ func seed(path string, database *data.Database) {
 	logger.Infof("Importing data from seed file %s\n", path)
 
 	for i, alias := range aliases {
-		aliases[i].AliasArn = config.ArnPrefix() + alias.AliasName
+		aliases[i].AliasArn = config.ArnPrefix(config.AWSAccountId) + alias.AliasName
 	}
 
 	//-----------------------------------------

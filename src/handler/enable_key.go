@@ -29,7 +29,7 @@ func (r *RequestHandler) EnableKey() Response {
 
 	//---
 
-	keyArn := config.EnsureArn("key/", *body.KeyId)
+	keyArn := config.EnsureArn("key/", *r.accountId, *body.KeyId)
 
 	// Lookup the key
 	key, _ := r.database.LoadKey(keyArn)

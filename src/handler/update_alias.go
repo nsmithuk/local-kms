@@ -57,7 +57,7 @@ func (r *RequestHandler) UpdateAlias() Response {
 
 	//---
 
-	aliasArn := config.ArnPrefix() + *body.AliasName
+	aliasArn := config.ArnPrefix(*r.accountId) + *body.AliasName
 
 	alias, err := r.database.LoadAlias(aliasArn)
 
@@ -70,7 +70,7 @@ func (r *RequestHandler) UpdateAlias() Response {
 
 	//---
 
-	originalKeyArn := config.EnsureArn("key/", alias.TargetKeyId)
+	originalKeyArn := config.EnsureArn("key/", *r.accountId, alias.TargetKeyId)
 
 	// Lookup the key
 	originalKey, _ := r.database.LoadKey(originalKeyArn)
@@ -83,7 +83,7 @@ func (r *RequestHandler) UpdateAlias() Response {
 
 	//---
 
-	targetKeyArn := config.EnsureArn("key/", *body.TargetKeyId)
+	targetKeyArn := config.EnsureArn("key/", *r.accountId, *body.TargetKeyId)
 
 	// Lookup the key
 	targetKey, _ := r.database.LoadKey(targetKeyArn)

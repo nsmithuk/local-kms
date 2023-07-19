@@ -10,18 +10,18 @@ import (
 )
 
 /*
-	Finds a key for a given key or alias name or ARN
+Finds a key for a given key or alias name or ARN
 */
 func (r *RequestHandler) getKey(keyId string) (cmk.Key, Response) {
 
 	// If it's an alias, map it to a key
 	if strings.Contains(keyId, "alias/") {
-		aliasArn := config.EnsureArn("", keyId)
+		aliasArn := config.EnsureArn("", *r.accountId, keyId)
 
 		alias, err := r.database.LoadAlias(aliasArn)
 
 		if err != nil {
-			msg := fmt.Sprintf("Alias %s is not found.", config.ArnPrefix()+keyId)
+			msg := fmt.Sprintf("Alias %s is not found.", config.ArnPrefix(*r.accountId)+keyId)
 
 			r.logger.Warnf(msg)
 			return nil, NewNotFoundExceptionResponse(msg)
@@ -33,7 +33,7 @@ func (r *RequestHandler) getKey(keyId string) (cmk.Key, Response) {
 	//---
 
 	// Lookup the key
-	keyId = config.EnsureArn("key/", keyId)
+	keyId = config.EnsureArn("key/", *r.accountId, keyId)
 
 	key, _ := r.database.LoadKey(keyId)
 
@@ -48,8 +48,8 @@ func (r *RequestHandler) getKey(keyId string) (cmk.Key, Response) {
 }
 
 /*
-	Finds a key for a given key or alias name or ARN
-	And confirms that it's available to use for cryptographic operations.
+Finds a key for a given key or alias name or ARN
+And confirms that it's available to use for cryptographic operations.
 */
 func (r *RequestHandler) getUsableKey(keyId string) (cmk.Key, Response) {
 

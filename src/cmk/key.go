@@ -170,8 +170,10 @@ func (e *UnmarshalYAMLError) Error() string {
 }
 
 func defaultSeededKeyMetadata(metadata *KeyMetadata) {
-	metadata.Arn = config.ArnPrefix() + "key/" + metadata.KeyId
-	metadata.AWSAccountId = config.AWSAccountId
+	if metadata.AWSAccountId == "" {
+		metadata.AWSAccountId = config.AWSAccountId
+	}
+	metadata.Arn = config.ArnPrefix(metadata.AWSAccountId) + "key/" + metadata.KeyId
 	metadata.CreationDate = time.Now().Unix()
 	metadata.Enabled = true
 	metadata.KeyManager = "CUSTOMER"

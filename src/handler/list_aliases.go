@@ -46,7 +46,7 @@ func (r *RequestHandler) ListAliases() Response {
 
 	if body.KeyId != nil {
 
-		target := config.EnsureArn("key/", *body.KeyId)
+		target := config.EnsureArn("key/", *r.accountId, *body.KeyId)
 
 		// Lookup the key
 		key, _ := r.database.LoadKey(target)
@@ -66,7 +66,7 @@ func (r *RequestHandler) ListAliases() Response {
 	//--------------------------------
 
 	// Return 1 extra result to determine if there are > limit
-	aliases, err := r.database.ListAlias(config.ArnPrefix()+"alias/", limit+1, marker, keyFilter)
+	aliases, err := r.database.ListAlias(config.ArnPrefix(*r.accountId)+"alias/", limit+1, marker, keyFilter)
 	if err != nil {
 
 		if _, ok := err.(*data.InvalidMarkerExceptionError); ok {

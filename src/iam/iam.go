@@ -7,6 +7,7 @@ import (
 	"crypto/subtle"
 	"encoding/hex"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 	"io"
 	"net/http"
@@ -62,7 +63,7 @@ type Identity struct {
 	Name        string
 	AccountId   string
 	Credentials []*Credential
-	Targets     []string
+	Actions     []string
 }
 
 func (i *Identity) isAnonymous() bool {
@@ -70,7 +71,7 @@ func (i *Identity) isAnonymous() bool {
 }
 
 func (identity *Identity) isAdmin() bool {
-	for _, a := range identity.Targets {
+	for _, a := range identity.Actions {
 		if a == accountAdminName {
 			return true
 		}
@@ -93,12 +94,14 @@ func (iam *IdentityAccessManagement) AuthRequest(r *http.Request, target string,
 	var found bool
 	switch getRequestAuthType(r) {
 	case authTypeUnknown:
+		log.Errorf("AccessDeniedException: authTypeUnknown")
 		return identity, fmt.Errorf("AccessDeniedException")
 	case authTypeSigned:
 		identity, err = iam.reqSignatureV4Verify(r)
 	case authTypeAnonymous:
 		identity, found = iam.lookupAnonymous()
 		if !found {
+			log.Errorf("AccessDeniedException: authTypeAnonymous not found")
 			return identity, fmt.Errorf("AccessDeniedException")
 		}
 	default:
@@ -110,6 +113,7 @@ func (iam *IdentityAccessManagement) AuthRequest(r *http.Request, target string,
 	}
 
 	if !identity.canDo(target, keyId) {
+		log.Errorf("AccessDeniedException: can not do %s", target)
 		return identity, fmt.Errorf("AccessDeniedException")
 	}
 
@@ -127,9 +131,9 @@ func (iam *IdentityAccessManagement) lookupAnonymous() (identity *Identity, foun
 
 func (iam *IdentityAccessManagement) lookupByAccessKey(accessKey string) (identity *Identity, cred *Credential, found bool) {
 	for _, ident := range iam.identities {
-		for _, cred := range ident.Credentials {
-			if cred.AccessKey == accessKey {
-				return ident, cred, true
+		for _, credential := range ident.Credentials {
+			if credential.AccessKey == accessKey {
+				return ident, credential, true
 			}
 		}
 	}
@@ -141,7 +145,13 @@ func (iam *IdentityAccessManagement) LoadConfigurationFromFile(fileName string) 
 	if readErr != nil {
 		return fmt.Errorf("fail to read %s : %v", fileName, readErr)
 	}
-	return yaml.Unmarshal(content, &iam.identities)
+	if err := yaml.Unmarshal(content, &iam.identities); err != nil {
+		return err
+	}
+	if len(iam.identities) > 0 {
+		iam.isAuthEnabled = true
+	}
+	return nil
 }
 
 func (identity *Identity) canDo(target string, keyId string) bool {
@@ -149,11 +159,11 @@ func (identity *Identity) canDo(target string, keyId string) bool {
 		return true
 	}
 	limitedBykeyId := target + ":" + keyId
-	for _, t := range identity.Targets {
-		if t == target {
+	for _, a := range identity.Actions {
+		if a == target {
 			return true
 		}
-		if t == limitedBykeyId {
+		if a == limitedBykeyId {
 			return true
 		}
 	}
@@ -211,6 +221,7 @@ func (iam *IdentityAccessManagement) doesSignatureMatch(hashedPayload string, r 
 	// Verify if the access key id matches.
 	identity, cred, found := iam.lookupByAccessKey(signV4Values.Credential.accessKey)
 	if !found {
+		log.Errorf("lookupByAccessKey")
 		return nil, fmt.Errorf("IncompleteSignature")
 	}
 
@@ -224,6 +235,7 @@ func (iam *IdentityAccessManagement) doesSignatureMatch(hashedPayload string, r 
 	// Parse date header.
 	t, e := time.Parse(iso8601Format, date)
 	if e != nil {
+		log.Errorf("Parse date header")
 		return nil, fmt.Errorf("IncompleteSignature")
 	}
 
@@ -258,6 +270,7 @@ func (iam *IdentityAccessManagement) doesSignatureMatch(hashedPayload string, r 
 
 	// Verify if signature match.
 	if !compareSignatureV4(newSignature, signV4Values.Signature) {
+		log.Errorf("compareSignatureV4")
 		return nil, fmt.Errorf("IncompleteSignature")
 	}
 
@@ -309,6 +322,7 @@ func extractSignedHeaders(signedHeaders []string, r *http.Request) (http.Header,
 	// find whether "host" is part of list of signed headers.
 	// if not return ErrUnsignedHeaders. "host" is mandatory.
 	if !contains(signedHeaders, "host") {
+		log.Errorf("contains signedHeaders")
 		return nil, fmt.Errorf("IncompleteSignature")
 	}
 	extractedSignedHeaders := make(http.Header)
@@ -351,6 +365,7 @@ func extractSignedHeaders(signedHeaders []string, r *http.Request) (http.Header,
 		case "content-length":
 			extractedSignedHeaders.Set(header, strconv.FormatInt(r.ContentLength, 10))
 		default:
+			log.Errorf("switch header")
 			return nil, fmt.Errorf("IncompleteSignature")
 		}
 	}
@@ -365,11 +380,13 @@ func parseSignV4(v4Auth string) (sv signValues, aec error) {
 	// to make parsing easier.
 	v4Auth = strings.Replace(v4Auth, " ", "", -1)
 	if v4Auth == "" {
+		log.Errorf("v4Auth is empty")
 		return sv, fmt.Errorf("IncompleteSignature")
 	}
 
 	// Verify if the header algorithm is supported or not.
 	if !strings.HasPrefix(v4Auth, signV4Algorithm) {
+		log.Errorf("header algorithm is not supported")
 		return sv, fmt.Errorf("IncompleteSignature")
 	}
 
@@ -377,6 +394,7 @@ func parseSignV4(v4Auth string) (sv signValues, aec error) {
 	v4Auth = strings.TrimPrefix(v4Auth, signV4Algorithm)
 	authFields := strings.Split(strings.TrimSpace(v4Auth), ",")
 	if len(authFields) != 3 {
+		log.Errorf("Strip off the Algorithm prefix")
 		return sv, fmt.Errorf("IncompleteSignature")
 	}
 
@@ -410,13 +428,16 @@ func parseSignV4(v4Auth string) (sv signValues, aec error) {
 func parseCredentialHeader(credElement string) (ch credentialHeader, err error) {
 	creds := strings.Split(strings.TrimSpace(credElement), "=")
 	if len(creds) != 2 {
+		log.Errorf("parse credentialHeader string with =")
 		return ch, fmt.Errorf("IncompleteSignature")
 	}
 	if creds[0] != "Credential" {
+		log.Errorf("parse credentialHeader string with credential")
 		return ch, fmt.Errorf("IncompleteSignature")
 	}
 	credElements := strings.Split(strings.TrimSpace(creds[1]), "/")
 	if len(credElements) != 5 {
+		log.Errorf("parse credentialHeader string with /")
 		return ch, fmt.Errorf("IncompleteSignature")
 	}
 	// Save access key id.
@@ -426,6 +447,7 @@ func parseCredentialHeader(credElement string) (ch credentialHeader, err error) 
 	var e error
 	cred.scope.date, e = time.Parse(yyyymmdd, credElements[1])
 	if e != nil {
+		log.Errorf("parse credentialHeader string with time")
 		return ch, fmt.Errorf("IncompleteSignature")
 	}
 
@@ -439,12 +461,15 @@ func parseCredentialHeader(credElement string) (ch credentialHeader, err error) 
 func parseSignature(signElement string) (string, error) {
 	signFields := strings.Split(strings.TrimSpace(signElement), "=")
 	if len(signFields) != 2 {
+		log.Errorf("Parse signature from signature tag with =")
 		return "", fmt.Errorf("IncompleteSignature")
 	}
 	if signFields[0] != "Signature" {
+		log.Errorf("Parse signature from signature tag with Signature")
 		return "", fmt.Errorf("IncompleteSignature")
 	}
 	if signFields[1] == "" {
+		log.Errorf("Parse signature from signature tag without empty")
 		return "", fmt.Errorf("IncompleteSignature")
 	}
 	signature := signFields[1]
@@ -455,12 +480,15 @@ func parseSignature(signElement string) (string, error) {
 func parseSignedHeader(signedHdrElement string) ([]string, error) {
 	signedHdrFields := strings.Split(strings.TrimSpace(signedHdrElement), "=")
 	if len(signedHdrFields) != 2 {
+		log.Errorf("Parse slice of signed headers with =")
 		return nil, fmt.Errorf("IncompleteSignature")
 	}
 	if signedHdrFields[0] != "SignedHeaders" {
+		log.Errorf("Parse slice of signed headers without empty key")
 		return nil, fmt.Errorf("IncompleteSignature")
 	}
 	if signedHdrFields[1] == "" {
+		log.Errorf("Parse slice of signed headers without empty value")
 		return nil, fmt.Errorf("IncompleteSignature")
 	}
 	signedHeaders := strings.Split(signedHdrFields[1], ";")
