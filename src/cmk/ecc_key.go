@@ -190,14 +190,14 @@ func (k *EccKey) HashAndVerify(signature []byte, message []byte, algorithm Signi
 
 //----------------------------------------------------
 
-type EcdsaPrivateKeyMarshalJSON struct {
+type eccKeyMarshaledJSON struct {
 	D, X, Y   *big.Int
 	CurveType string
 }
 
 func (k *EcdsaPrivateKey) MarshalJSON() ([]byte, error) {
 
-	return json.Marshal(&EcdsaPrivateKeyMarshalJSON{
+	return json.Marshal(&eccKeyMarshaledJSON{
 		D:         k.D,
 		X:         k.X,
 		Y:         k.Y,
@@ -211,7 +211,7 @@ Unmarshal it ourselves to set the concrete type.
 */
 func (k *EcdsaPrivateKey) UnmarshalJSON(data []byte) error {
 
-	var marshaledKey EcdsaPrivateKeyMarshalJSON
+	var marshaledKey eccKeyMarshaledJSON
 
 	err := json.Unmarshal(data, &marshaledKey)
 	if err != nil {
