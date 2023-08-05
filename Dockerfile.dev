@@ -6,8 +6,7 @@ COPY . /go/src/github.com/nsmithuk/local-kms
 WORKDIR /go/src/github.com/nsmithuk/local-kms
 
 RUN apk add --no-cache --update git \
-    && go get -u github.com/canthefason/go-watcher  \
-    && go install github.com/canthefason/go-watcher/cmd/watcher
+    && go install github.com/bokwoon95/wgo@latest
 
 RUN mkdir /init
 RUN mkdir /data
@@ -18,4 +17,4 @@ ENV KMS_DATA_PATH /data
 
 ENV PORT 8080
 
-ENTRYPOINT ["watcher"]
+ENTRYPOINT ["wgo", "run", "start.go"]
