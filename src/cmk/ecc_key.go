@@ -214,7 +214,6 @@ func (k *EcdsaPrivateKey) UnmarshalJSON(data []byte) error {
 	var marshaledKey EcdsaPrivateKeyMarshalJSON
 
 	err := json.Unmarshal(data, &marshaledKey)
-	fmt.Println("here")
 	if err != nil {
 		return err
 	}
