@@ -10,10 +10,8 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"math/big"
-	"os"
-
 	"github.com/btcsuite/btcd/btcec/v2"
+	"math/big"
 )
 
 // We create our own type to manage JSON Marshaling
@@ -192,32 +190,78 @@ func (k *EccKey) HashAndVerify(signature []byte, message []byte, algorithm Signi
 
 //----------------------------------------------------
 
+type eccKeyMarshaledJSON struct {
+	D, X, Y   *big.Int
+	CurveType string
+}
+
+func (k *EcdsaPrivateKey) MarshalJSON() ([]byte, error) {
+
+	return json.Marshal(&eccKeyMarshaledJSON{
+		D:         k.D,
+		X:         k.X,
+		Y:         k.Y,
+		CurveType: k.Curve.Params().Name,
+	})
+}
+
 /*
 ecdsa.PrivateKey.Curve is an interface type, so we need to
 Unmarshal it ourselves to set the concrete type.
 */
 func (k *EcdsaPrivateKey) UnmarshalJSON(data []byte) error {
-	var pk ecdsa.PrivateKey
-	pk.Curve = &elliptic.CurveParams{}
 
-	err := json.Unmarshal(data, &pk)
+	var marshaledKey eccKeyMarshaledJSON
+
+	err := json.Unmarshal(data, &marshaledKey)
 	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
 		return err
 	}
 
-	switch pk.Curve.Params().Name {
-	case "P-256":
-		pk.Curve = elliptic.P256()
-	case "P-384":
-		pk.Curve = elliptic.P384()
-	case "P-521":
-		pk.Curve = elliptic.P521()
-	case "secp256k1":
-		pk.Curve = btcec.S256()
-	default:
-		return errors.New("trying to UnmarshalJSON unknown curve")
+	var pk ecdsa.PrivateKey
+	if marshaledKey.CurveType != "" {
+		// Keys generated with Go 1.20 and after
+
+		pk.D = marshaledKey.D
+		pk.X = marshaledKey.X
+		pk.Y = marshaledKey.Y
+
+		switch marshaledKey.CurveType {
+		case "P-256":
+			pk.Curve = elliptic.P256()
+		case "P-384":
+			pk.Curve = elliptic.P384()
+		case "P-521":
+			pk.Curve = elliptic.P521()
+		case "secp256k1":
+			pk.Curve = btcec.S256()
+		default:
+			return errors.New("trying to UnmarshalJSON unknown curve")
+		}
+
+	} else {
+		// Keys generated with Go 1.17 and before
+
+		pk.Curve = &elliptic.CurveParams{}
+
+		err = json.Unmarshal(data, &pk)
+		if err != nil {
+			return err
+		}
+
+		switch pk.Curve.Params().Name {
+		case "P-256":
+			pk.Curve = elliptic.P256()
+		case "P-384":
+			pk.Curve = elliptic.P384()
+		case "P-521":
+			pk.Curve = elliptic.P521()
+		case "secp256k1":
+			pk.Curve = btcec.S256()
+		default:
+			return errors.New("trying to UnmarshalJSON unknown curve")
+		}
+
 	}
 
 	*k = EcdsaPrivateKey(pk)

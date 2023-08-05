@@ -1,14 +1,14 @@
 module github.com/nsmithuk/local-kms
 
-go 1.17
+go 1.20
 
 require (
-	github.com/aws/aws-sdk-go v1.42.19
+	github.com/aws/aws-sdk-go v1.44.295
 	github.com/btcsuite/btcd/btcec/v2 v2.3.2
 	github.com/gofrs/uuid v4.2.0+incompatible
 	github.com/sirupsen/logrus v1.4.2
 	github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
-	gopkg.in/yaml.v2 v2.3.0
+	gopkg.in/yaml.v2 v2.4.0
 )
 
 require (
