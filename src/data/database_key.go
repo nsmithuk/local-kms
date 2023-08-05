@@ -85,9 +85,10 @@ func (d *Database) LoadKey(arn string) (cmk.Key, error) {
 }
 
 /*
-	Returns all keys.
-		If limit is set, only that given number of keys are returned.
-		If marker is set, only key with match, and come after, the marker key are returned. i.e. an 'offset'.
+Returns all keys.
+
+	If limit is set, only that given number of keys are returned.
+	If marker is set, only key with match, and come after, the marker key are returned. i.e. an 'offset'.
 */
 func (d *Database) ListKeys(prefix string, limit int64, marker string) (keys []cmk.Key, err error) {
 
