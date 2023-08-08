@@ -402,7 +402,7 @@ jobs:
             export ARCH=darwin-amd64
             aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/${VERSION_MAJOR}/local-kms_${ARCH}.bin
             aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/<< pipeline.git.tag >>/local-kms_${ARCH}.bin
-            aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/localstack/v${VERSION_MAJOR}/local-kms.osx.bin
+            # aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/localstack/v${VERSION_MAJOR}/local-kms.osx.bin
 
             export ARCH=darwin-arm64
             aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/${VERSION_MAJOR}/local-kms_${ARCH}.bin
@@ -411,7 +411,7 @@ jobs:
             export ARCH=linux-amd64
             aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/${VERSION_MAJOR}/local-kms_${ARCH}.bin
             aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/<< pipeline.git.tag >>/local-kms_${ARCH}.bin
-            aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/localstack/v${VERSION_MAJOR}/local-kms.linux.bin
+            # aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/localstack/v${VERSION_MAJOR}/local-kms.linux.bin
             
             export ARCH=linux-arm64
             aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/${VERSION_MAJOR}/local-kms_${ARCH}.bin
@@ -424,6 +424,6 @@ jobs:
             export ARCH=linux-amd64-alpine
             aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/${VERSION_MAJOR}/local-kms_${ARCH}.bin
             aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/<< pipeline.git.tag >>/local-kms_${ARCH}.bin
-            aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/localstack/v${VERSION_MAJOR}/local-kms.alpine.bin
+            # aws s3 cp ~/artifacts/$ARCH.bin s3://local-kms/localstack/v${VERSION_MAJOR}/local-kms.alpine.bin
 
             # Access URL prefix: https://s3-eu-west-2.amazonaws.com/local-kms/
