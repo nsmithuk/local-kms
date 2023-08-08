@@ -122,7 +122,7 @@ jobs:
       - run:
           name: Build amd64 darwin
           command: |
-            GOOS=darwin GOARCH=amd64 go build -ldflags "-X 'main.Version=<< pipeline.git.tag >>' -X 'main.GitCommit=<< pipeline.git.revision >>'" -o ~/artifacts/darwin-amd64.bin
+            CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -ldflags "-X 'main.Version=<< pipeline.git.tag >>' -X 'main.GitCommit=<< pipeline.git.revision >>'" -o ~/artifacts/darwin-amd64.bin
             chmod +x ~/artifacts/darwin-amd64.bin
       - store_artifacts:
           path: ~/artifacts/darwin-amd64.bin
@@ -144,7 +144,7 @@ jobs:
       - run:
           name: Build arm64 darwin
           command: |
-            GOOS=darwin GOARCH=arm64 go build -ldflags "-X 'main.Version=<< pipeline.git.tag >>' -X 'main.GitCommit=<< pipeline.git.revision >>'" -o ~/artifacts/darwin-arm64.bin
+            CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -ldflags "-X 'main.Version=<< pipeline.git.tag >>' -X 'main.GitCommit=<< pipeline.git.revision >>'" -o ~/artifacts/darwin-arm64.bin
             chmod +x ~/artifacts/darwin-arm64.bin
       - store_artifacts:
           path: ~/artifacts/darwin-arm64.bin
@@ -166,7 +166,7 @@ jobs:
       - run:
           name: Build amd64 linux
           command: |
-            GOOS=linux GOARCH=amd64 go build -ldflags "-X 'main.Version=<< pipeline.git.tag >>' -X 'main.GitCommit=<< pipeline.git.revision >>'" -o ~/artifacts/linux-amd64.bin
+            CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags "-X 'main.Version=<< pipeline.git.tag >>' -X 'main.GitCommit=<< pipeline.git.revision >>'" -o ~/artifacts/linux-amd64.bin
             chmod +x ~/artifacts/linux-amd64.bin
       - run:
           name: Start local-kms for testing
@@ -210,7 +210,7 @@ jobs:
       - run:
           name: Build arm64 linux
           command: |
-            GOOS=linux GOARCH=arm64 go build -ldflags "-X 'main.Version=<< pipeline.git.tag >>' -X 'main.GitCommit=<< pipeline.git.revision >>'" -o ~/artifacts/linux-arm64.bin
+            CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags "-X 'main.Version=<< pipeline.git.tag >>' -X 'main.GitCommit=<< pipeline.git.revision >>'" -o ~/artifacts/linux-arm64.bin
             chmod +x ~/artifacts/linux-arm64.bin
       - store_artifacts:
           path: ~/artifacts/linux-arm64.bin
@@ -237,7 +237,7 @@ jobs:
       - run:
           name: Build amd64 linux
           command: |
-            GOOS=linux GOARCH=amd64 go build -ldflags "-X 'main.Version=<< pipeline.git.tag >>' -X 'main.GitCommit=<< pipeline.git.revision >>'" -o /artifacts/linux-amd64-alpine.bin
+            CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags "-X 'main.Version=<< pipeline.git.tag >>' -X 'main.GitCommit=<< pipeline.git.revision >>'" -o /artifacts/linux-amd64-alpine.bin
             chmod +x /artifacts/linux-amd64-alpine.bin
       - run:
           name: Start local-kms for testing
