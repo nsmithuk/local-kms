@@ -176,7 +176,7 @@ jobs:
       - run:
           name: Waiting for local-kms to be ready
           command: |
-            apt update && apt install netcat
+            apt update && apt install -y netcat
             for i in `seq 1 10`;
             do
               nc -z localhost 4599 && echo Success && exit 0
@@ -187,7 +187,7 @@ jobs:
       - run:
           name: Run tests
           command: |
-            sudo apt update && sudo apt install python3-pip
+            apt update && apt install -y python3-pip
             cd tests/functional
             pip3 install -r requirments.txt
             pytest
