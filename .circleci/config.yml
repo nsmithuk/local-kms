@@ -12,7 +12,7 @@ workflows:
             tags:
               only: /.*/
             branches:
-              only: master
+              only: /.*/
 
       - darwin-arm64:
           name: darwin-arm64
@@ -20,7 +20,7 @@ workflows:
             tags:
               only: /.*/
             branches:
-              only: master
+              only: /.*/
 
       - linux-amd64:
           name: linux-amd64
@@ -28,7 +28,7 @@ workflows:
             tags:
               only: /.*/
             branches:
-              only: master
+              only: /.*/
 
       - linux-arm64:
           name: linux-arm64
@@ -36,7 +36,7 @@ workflows:
             tags:
               only: /.*/
             branches:
-              only: master
+              only: /.*/
 
       - linux-amd64-apline:
           name: linux-amd64-apline
@@ -44,7 +44,7 @@ workflows:
             tags:
               only: /.*/
             branches:
-              only: master
+              only: /.*/
 
       - docker-image-build:
           name: docker-image-build
@@ -112,7 +112,7 @@ jobs:
 
   darwin-amd64:
     docker:
-      - image: cimg/go:1.20
+      - image: golang:1.20-bullseye
     steps:
       - checkout
       - run:
@@ -134,7 +134,7 @@ jobs:
 
   darwin-arm64:
     docker:
-      - image: cimg/go:1.20
+      - image: golang:1.20-bullseye
     steps:
       - checkout
       - run:
@@ -156,7 +156,7 @@ jobs:
 
   linux-amd64:
     docker:
-      - image: cimg/go:1.20
+      - image: golang:1.20-bullseye
     steps:
       - checkout
       - run:
@@ -176,6 +176,7 @@ jobs:
       - run:
           name: Waiting for local-kms to be ready
           command: |
+            apt update && apt install -y netcat
             for i in `seq 1 10`;
             do
               nc -z localhost 4599 && echo Success && exit 0
@@ -186,7 +187,7 @@ jobs:
       - run:
           name: Run tests
           command: |
-            sudo apt update && sudo apt install python3-pip
+            apt update && apt install -y python3-pip
             cd tests/functional
             pip3 install -r requirments.txt
             pytest
@@ -200,7 +201,7 @@ jobs:
             
   linux-arm64:
     docker:
-      - image: cimg/go:1.20
+      - image: golang:1.20-bullseye
     steps:
       - checkout
       - run:
