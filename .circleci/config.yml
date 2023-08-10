@@ -176,7 +176,7 @@ jobs:
       - run:
           name: Waiting for local-kms to be ready
           command: |
-            sudo apt update && sudo apt install netcat
+            apt update && apt install netcat
             for i in `seq 1 10`;
             do
               nc -z localhost 4599 && echo Success && exit 0
