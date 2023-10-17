@@ -296,6 +296,7 @@ jobs:
           command: |
             docker buildx build --push --progress plain \
               --platform linux/arm64,linux/amd64 \
+              -t public.ecr.aws/e2w7d9z3/local-kms:circleci \
               -t nsmithuk/local-kms:circleci .
 
   docker-image-test-amd64:
