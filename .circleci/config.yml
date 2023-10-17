@@ -279,9 +279,10 @@ jobs:
       - aws-cli/setup:
          role_arn: "${AWS_ROLE_ARN}"
          region: "us-east-1"
-      - aws-ecr/ecr_login:
-          public_registry: "public.ecr.aws/e2w7d9z3"
-          region: "us-east-1"
+      - run:
+          name: Login to AWS ECR
+          command: |
+            aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/e2w7d9z3
       - run:
           name: Login to Docker Hub
           command: |
