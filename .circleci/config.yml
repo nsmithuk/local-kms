@@ -276,13 +276,6 @@ jobs:
       image: ubuntu-2004:202201-02
     steps:
       - checkout
-      - aws-cli/setup:
-         role_arn: "${AWS_ROLE_ARN}"
-         region: "us-east-1"
-      - run:
-          name: Login to AWS ECR
-          command: |
-            aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/e2w7d9z3
       - run:
           name: Login to Docker Hub
           command: |
@@ -301,7 +294,6 @@ jobs:
           command: |
             docker buildx build --push --progress plain \
               --platform linux/arm64,linux/amd64 \
-              -t public.ecr.aws/e2w7d9z3/local-kms:circleci \
               -t nsmithuk/local-kms:circleci .
 
   docker-image-test-amd64:
@@ -358,6 +350,13 @@ jobs:
       - image: cimg/base:stable
     steps:
       - setup_remote_docker
+      - aws-cli/setup:
+         role_arn: "${AWS_ROLE_ARN}"
+         region: "us-east-1"
+      - run:
+          name: Login to AWS ECR
+          command: |
+            aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/e2w7d9z3      
       - run:
           name: Login to Docker Hub
           command: |
@@ -371,12 +370,20 @@ jobs:
           name: Copy image to new tag
           command: |
             ./regctl image copy nsmithuk/local-kms:circleci nsmithuk/local-kms:latest
+            ./regctl image copy nsmithuk/local-kms:circleci public.ecr.aws/e2w7d9z3/local-kms:latest
 
   build-docker-push-tag:
     docker:
       - image: cimg/base:stable
     steps:
       - setup_remote_docker
+      - aws-cli/setup:
+         role_arn: "${AWS_ROLE_ARN}"
+         region: "us-east-1"
+      - run:
+          name: Login to AWS ECR
+          command: |
+            aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/e2w7d9z3      
       - run:
           name: Login to Docker Hub
           command: |
@@ -393,8 +400,11 @@ jobs:
             echo "Version Full << pipeline.git.tag >>"
             echo "Version Major $VERSION_MAJOR"
             
-            ./regctl image copy nsmithuk/local-kms:circleci nsmithuk/local-kms:${VERSION_MAJOR}            
-            ./regctl image copy nsmithuk/local-kms:circleci nsmithuk/local-kms:<< pipeline.git.tag >>            
+            ./regctl image copy nsmithuk/local-kms:circleci nsmithuk/local-kms:${VERSION_MAJOR}
+            ./regctl image copy nsmithuk/local-kms:circleci nsmithuk/local-kms:<< pipeline.git.tag >>
+
+            ./regctl image copy nsmithuk/local-kms:circleci public.ecr.aws/e2w7d9z3/local-kms:${VERSION_MAJOR}
+            ./regctl image copy nsmithuk/local-kms:circleci public.ecr.aws/e2w7d9z3/local-kms:<< pipeline.git.tag >>
 
   release-artifacts-s3:
     executor: aws-cli/default
