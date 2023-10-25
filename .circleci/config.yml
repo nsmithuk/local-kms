@@ -411,7 +411,9 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/artifacts
-      - aws-cli/setup
+      - aws-cli/setup:
+          role_arn: "${AWS_ROLE_ARN}"
+          region: "us-east-1"
       - run:
           name: Upload to S3
           command: |
