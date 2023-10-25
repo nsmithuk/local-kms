@@ -55,6 +55,8 @@ Pre-built binaries:
 
 ## Getting Started with Docker
 
+Images are available on both [Docker Hub](https://hub.docker.com/r/nsmithuk/local-kms) and [AWS Public ECR](https://gallery.ecr.aws/nsmithuk/local-kms).
+
 The quickest way to get started is with Docker. To get LKMS up, running and accessible on port 8080, you can run:
 ```
 docker run -p 8080:8080 nsmithuk/local-kms
