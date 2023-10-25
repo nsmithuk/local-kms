@@ -356,7 +356,7 @@ jobs:
       - run:
           name: Login to AWS ECR
           command: |
-            aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/e2w7d9z3      
+            aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/nsmithuk
       - run:
           name: Login to Docker Hub
           command: |
@@ -370,7 +370,7 @@ jobs:
           name: Copy image to new tag
           command: |
             ./regctl image copy nsmithuk/local-kms:circleci nsmithuk/local-kms:latest
-            ./regctl image copy nsmithuk/local-kms:circleci public.ecr.aws/e2w7d9z3/local-kms:latest
+            ./regctl image copy nsmithuk/local-kms:circleci public.ecr.aws/nsmithuk/local-kms:latest
 
   build-docker-push-tag:
     docker:
@@ -383,7 +383,7 @@ jobs:
       - run:
           name: Login to AWS ECR
           command: |
-            aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/e2w7d9z3      
+            aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/nsmithuk
       - run:
           name: Login to Docker Hub
           command: |
@@ -403,8 +403,8 @@ jobs:
             ./regctl image copy nsmithuk/local-kms:circleci nsmithuk/local-kms:${VERSION_MAJOR}
             ./regctl image copy nsmithuk/local-kms:circleci nsmithuk/local-kms:<< pipeline.git.tag >>
 
-            ./regctl image copy nsmithuk/local-kms:circleci public.ecr.aws/e2w7d9z3/local-kms:${VERSION_MAJOR}
-            ./regctl image copy nsmithuk/local-kms:circleci public.ecr.aws/e2w7d9z3/local-kms:<< pipeline.git.tag >>
+            ./regctl image copy nsmithuk/local-kms:circleci public.ecr.aws/nsmithuk/local-kms:${VERSION_MAJOR}
+            ./regctl image copy nsmithuk/local-kms:circleci public.ecr.aws/nsmithuk/local-kms:<< pipeline.git.tag >>
 
   release-artifacts-s3:
     executor: aws-cli/default
