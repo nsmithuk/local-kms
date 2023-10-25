@@ -1,7 +1,8 @@
 version: 2.1
 
 orbs:
-  aws-cli: circleci/aws-cli@1.3.1
+  aws-cli: circleci/aws-cli@4.1.1
+  aws-ecr: circleci/aws-ecr@9.0.0
 
 workflows:
   build:
@@ -349,6 +350,13 @@ jobs:
       - image: cimg/base:stable
     steps:
       - setup_remote_docker
+      - aws-cli/setup:
+         role_arn: "${AWS_ROLE_ARN}"
+         region: "us-east-1"
+      - run:
+          name: Login to AWS ECR
+          command: |
+            aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/nsmithuk
       - run:
           name: Login to Docker Hub
           command: |
@@ -362,12 +370,20 @@ jobs:
           name: Copy image to new tag
           command: |
             ./regctl image copy nsmithuk/local-kms:circleci nsmithuk/local-kms:latest
+            ./regctl image copy nsmithuk/local-kms:circleci public.ecr.aws/nsmithuk/local-kms:latest
 
   build-docker-push-tag:
     docker:
       - image: cimg/base:stable
     steps:
       - setup_remote_docker
+      - aws-cli/setup:
+         role_arn: "${AWS_ROLE_ARN}"
+         region: "us-east-1"
+      - run:
+          name: Login to AWS ECR
+          command: |
+            aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/nsmithuk
       - run:
           name: Login to Docker Hub
           command: |
@@ -384,8 +400,11 @@ jobs:
             echo "Version Full << pipeline.git.tag >>"
             echo "Version Major $VERSION_MAJOR"
             
-            ./regctl image copy nsmithuk/local-kms:circleci nsmithuk/local-kms:${VERSION_MAJOR}            
-            ./regctl image copy nsmithuk/local-kms:circleci nsmithuk/local-kms:<< pipeline.git.tag >>            
+            ./regctl image copy nsmithuk/local-kms:circleci nsmithuk/local-kms:${VERSION_MAJOR}
+            ./regctl image copy nsmithuk/local-kms:circleci nsmithuk/local-kms:<< pipeline.git.tag >>
+
+            ./regctl image copy nsmithuk/local-kms:circleci public.ecr.aws/nsmithuk/local-kms:${VERSION_MAJOR}
+            ./regctl image copy nsmithuk/local-kms:circleci public.ecr.aws/nsmithuk/local-kms:<< pipeline.git.tag >>
 
   release-artifacts-s3:
     executor: aws-cli/default
