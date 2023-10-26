@@ -23,11 +23,10 @@ func (r *RequestHandler) CreateKey() Response {
 	//---
 
 	keyId := uuid.Must(uuid.NewV4()).String()
-
 	metadata := cmk.KeyMetadata{
-		Arn:          config.ArnPrefix() + "key/" + keyId,
+		Arn:          config.ArnPrefix(*r.accountId) + "key/" + keyId,
 		KeyId:        keyId,
-		AWSAccountId: config.AWSAccountId,
+		AWSAccountId: *r.accountId,
 		CreationDate: time.Now().Unix(),
 		Enabled:      true,
 		KeyManager:   "CUSTOMER",
@@ -76,7 +75,7 @@ func (r *RequestHandler) CreateKey() Response {
 				"Action": "kms:*",
 				"Resource": "*"
 			}]
-		}`, config.AWSAccountId)
+		}`, *r.accountId)
 		body.Policy = &policy
 	}
 

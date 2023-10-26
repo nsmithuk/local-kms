@@ -80,6 +80,18 @@ docker run -p 8080:8080 \
 nsmithuk/local-kms
 ```
 
+## Auth Identities file format
+
+```
+- name: nsmithuk
+  credentials:
+    - accesskey: ACAJEwJN5g0Et5f-yJJ7vOTEK
+      secretkey: CCOna0BvCI0PympSqiA1LZbq8_sdAs2TMDFEaBbO
+  actions:
+    - admin
+  accountid: 00000000001
+```
+
 ## Seeding file format
 
 _Both Symmetric and Asymmetric (RSA and ECC) keys are supported in the seeding file._

@@ -12,21 +12,23 @@ import (
 // Incoming request
 
 type RequestHandler struct {
-	request  *http.Request
-	logger   *log.Logger
-	database *data.Database
+	request   *http.Request
+	logger    *log.Logger
+	database  *data.Database
+	accountId *string
 }
 
-func NewRequestHandler(r *http.Request, l *log.Logger, d *data.Database) *RequestHandler {
+func NewRequestHandler(r *http.Request, l *log.Logger, d *data.Database, a *string) *RequestHandler {
 	return &RequestHandler{
-		request:  r,
-		logger:   l,
-		database: d,
+		request:   r,
+		logger:    l,
+		database:  d,
+		accountId: a,
 	}
 }
 
 /*
-	Decodes the request's JSON body into the passed interface
+Decodes the request's JSON body into the passed interface
 */
 func (r *RequestHandler) decodeBodyInto(v interface{}) error {
 	decoder := json.NewDecoder(r.request.Body)

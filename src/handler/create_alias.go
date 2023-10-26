@@ -57,7 +57,7 @@ func (r *RequestHandler) CreateAlias() Response {
 
 	// --------------------------------
 
-	target := config.EnsureArn("key/", *body.TargetKeyId)
+	target := config.EnsureArn("key/", *r.accountId, *body.TargetKeyId)
 
 	// Lookup the key
 	key, _ := r.database.LoadKey(target)
@@ -81,7 +81,7 @@ func (r *RequestHandler) CreateAlias() Response {
 
 	//---
 
-	aliasArn := config.ArnPrefix() + *body.AliasName
+	aliasArn := config.ArnPrefix(*r.accountId) + *body.AliasName
 
 	_, err = r.database.LoadAlias(aliasArn)
 

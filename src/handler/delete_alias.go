@@ -41,7 +41,7 @@ func (r *RequestHandler) DeleteAlias() Response {
 
 	//--------------------------------
 
-	aliasArn := config.ArnPrefix() + *body.AliasName
+	aliasArn := config.ArnPrefix(*r.accountId) + *body.AliasName
 
 	_, err = r.database.LoadAlias(aliasArn)
 

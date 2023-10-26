@@ -33,7 +33,7 @@ func (r *RequestHandler) DescribeKey() Response {
 
 	// If it's an alias, map it to a key
 	if strings.Contains(keyId, "alias/") {
-		aliasArn := config.EnsureArn("", *body.KeyId)
+		aliasArn := config.EnsureArn("", *r.accountId, *body.KeyId)
 
 		alias, err := r.database.LoadAlias(aliasArn)
 
@@ -50,7 +50,7 @@ func (r *RequestHandler) DescribeKey() Response {
 	//---
 
 	// Lookup the key
-	keyId = config.EnsureArn("key/", keyId)
+	keyId = config.EnsureArn("key/", *r.accountId, keyId)
 
 	key, err := r.database.LoadKey(keyId)
 

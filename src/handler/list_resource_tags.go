@@ -50,7 +50,7 @@ func (r *RequestHandler) ListResourceTags() Response {
 		return NewMissingParameterResponse(msg)
 	}
 
-	keyId := config.EnsureArn("key/", *body.KeyId)
+	keyId := config.EnsureArn("key/", *r.accountId, *body.KeyId)
 
 	key, _ := r.database.LoadKey(keyId)
 

@@ -55,10 +55,7 @@ func handleRequest(w http.ResponseWriter, r *http.Request, database *data.Databa
 		error415(w)
 
 	} else {
-
 		w.Header().Set("Content-Type", "application/x-amz-json-1.1")
-
-		h := handler.NewRequestHandler(r, logger, database)
 
 		/*
 			The target endpoint is specified in the `X-Amz-Target` header.
@@ -71,11 +68,19 @@ func handleRequest(w http.ResponseWriter, r *http.Request, database *data.Databa
 
 		// Ensure we have at least the 2 components we expect.
 		if len(target) >= 2 {
+			accountId := config.AWSAccountId
+			if config.IAM.IsEnabled() {
+				identity, err := config.IAM.AuthRequest(r, target[1], "")
+				if err != nil {
+					error400(w, err)
+					return
+				}
+				accountId = identity.AccountId
+			}
 
+			h := handler.NewRequestHandler(r, logger, database, &accountId)
 			method := reflect.ValueOf(h).MethodByName(target[1])
-
 			if method.IsValid() {
-
 				result := method.Call([]reflect.Value{})
 
 				if len(result) == 0 {
@@ -98,12 +103,16 @@ func handleRequest(w http.ResponseWriter, r *http.Request, database *data.Databa
 		error501(w, r)
 		return
 	}
-
 }
 
 func respond(w http.ResponseWriter, r handler.Response) {
 	w.WriteHeader(r.Code)
 	fmt.Fprint(w, r.Body)
+}
+
+func error400(w http.ResponseWriter, err error) {
+	w.WriteHeader(400)
+	fmt.Fprint(w, err.Error())
 }
 
 func error404(w http.ResponseWriter) {

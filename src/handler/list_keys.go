@@ -44,7 +44,7 @@ func (r *RequestHandler) ListKeys() Response {
 	//---
 
 	// Return 1 extra result to determine if there are > limit
-	keys, err := r.database.ListKeys(config.ArnPrefix()+"key/", limit+1, marker)
+	keys, err := r.database.ListKeys(config.ArnPrefix(*r.accountId)+"key/", limit+1, marker)
 	if err != nil {
 
 		if _, ok := err.(*data.InvalidMarkerExceptionError); ok {

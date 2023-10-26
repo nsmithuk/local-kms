@@ -46,7 +46,7 @@ func (r *RequestHandler) ScheduleKeyDeletion() Response {
 
 	//---
 
-	target := config.EnsureArn("key/", *body.KeyId)
+	target := config.EnsureArn("key/", *r.accountId, *body.KeyId)
 
 	// Lookup the key
 	key, _ := r.database.LoadKey(target)
