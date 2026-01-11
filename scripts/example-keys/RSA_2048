@@ -1,0 +1,35 @@
+  - KeyId: 879dff2f-4581-446d-9a51-5599c353961c
+    Metadata:
+      KeySpec: RSA_2048
+      KeyUsage: SIGN_VERIFY
+      Description: RSA key with 2048 bits
+    Material:
+      PrivateKeyPem: |
+        -----BEGIN PRIVATE KEY-----
+        MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQC5FpUrWgKHvm/A
+        OGDTMOfgLw7XfxlO93u6D6V1rlWzEDl2nzgWkA4aiPPekFz9/ZUmkdX7Vfg8r84m
+        mH2Bz6oTy21fJ39AzkIIBphyciB/ETsrTUEKM36GE7fpTb5ZZ7VF6bPYc1gnmlJv
+        uhDKvISltCz7+XqLXz6W0ywvlh8Ed35Zw+M9pl5THFethVm8VS7LD0AOY8He1uLo
+        RAYQJo9dkG40QsPbU6Uup8DSPr/2ueDF6Vi7n5etzuCOv5WCNwfjieX0PjxxUisE
+        9cWqm5/m3CGdCOkyJlM2WiEFXBgWLIoMWkPwzchuFIV91QUN1vqKOFQlEGl7Ko4m
+        B+xontrLAgMBAAECggEABu/naWI3RA/e2mKCkTJ9Dl7/0b3hcfST/kDwilJIGK0G
+        qlaEtfvHkOEJ2uaoRZtyh/6L+Z6a7j4HSP+1fIm5rdeVuCz1ImBYreT+uRNj+mnn
+        633lbn9y7OLiUBaU3X77QVflYLskq7SnWv6rUHNJDs42Ur9irhnvcPG7RJFThPRG
+        ms0qxdxj+ILOiJbDNgm7oESPd6PmJNIPm3PTjc/dLbhevrYqpyd9PUIIbGqqp/lh
+        +CSgCRp2sBdeF1JJ24UjgVP920Rv59VVxLMHAPxlIMnp6fPv6UckVrRy4iRmK6om
+        Crtg+4aJeAkcCKUTIU9XTOXLuTwV+wHzbmSaqyVNyQKBgQDenHdjzFmwA6LvNC9d
+        z1srKsAc5NaLjo3LLR6Ur/jPwuHYZoieNhOuGD9x6plwGXRdu2bJEvMsxK4Wt8ZU
+        LIk1nFOY/C4ptnGmdfPFqfaSJ4Zgyu1XHGg2TUvt4vHWhqqhwsj3J0hjKeE3X4oF
+        YW0XoYnYmrxklFZoLZshK3BztQKBgQDU2VuekRq9/Q8iJ0iYYZrlXhM0GDZ9EuDc
+        ywMVj3xmrZfIKxVEZE5Fl4IVd6JZ+fZ75jbPH2Xh1neD+ZrQGhC5UiNh/pka3aB2
+        un0vSE6J9X2PyBVU4pmAhrpzEGzLVVG3+e8gyArnB9TOBbhrOTxZEeh39XySvGIn
+        q+xsN1AkfwKBgC28pgb6IF86kApnhWfXx5p54RjOp4nq0xUwgvz3nr5JAw/sGRuw
+        bqCxWK+2DKpsgG0VqMudOhszmbUPMw9uSw6ZvM9M2Ms3MeiKiXhOMFvdBQ30A4mH
+        S54EiZopq5hw+LPdil7FUmkVXLF8zqXGW5ykUucO+7AKjio/XIUXILaVAoGAckx6
+        d68iNi4Dh2qjADlBzbP0CgCKmiWeHNLjyBsySY0kubfxBrX6lkJi95Yz1690Xlpk
+        ylrpAhqCOZu7N88Xdf0WxRPMMfIbrkY83Twt+MWcdK6UTe4VUkCHNSz3z0T0yh/r
+        +qWRvTimXTATNXkZ4BbOyERKbh29c+JN5lrZrY8CgYBJ2V90aNS0/+Q2MfMYiqxH
+        TlHAhHtdJmQGazRo5YFUOLKXusGJD5YD1sIuDebB2h7FciirMU2gcu7PF9Gp9c+Z
+        3Wx6gUO+gJYAAt4jkZKr7f0zXDwdEUvDCQ9X0Gs1Pt4yPj0B5OdWB3rHaWMYK4Az
+        UDjKfrOWQFa+n0IPnW43ag==
+        -----END PRIVATE KEY-----

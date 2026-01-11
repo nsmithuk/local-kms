@@ -1,0 +1,13 @@
+  - KeyId: 77de0112-30a4-4875-9bd5-f18b51727a3b
+    Metadata:
+      KeySpec: ECC_NIST_P384
+      KeyUsage: SIGN_VERIFY
+      Description: ECC key with curve secp384r1
+    Material:
+      PrivateKeyPem: |
+        -----BEGIN EC PRIVATE KEY-----
+        MIGkAgEBBDCIYBwsOf8fq/7vASmx4GV7H9KM62ak6Slk2QJBNAHz4Qn4MLiXkfpK
+        YPc7Fn+AN9qgBwYFK4EEACKhZANiAASPCdc7GSpSAIY4m7e3bj7yPsVv42QTjP5j
+        BYhUqDsPuC7q1x7uLLNRjlKu64MygcvPCEAI8iTX/BiZo63yRzjnyblU5LBvgOxY
+        FpadjG3eQoh+OwvEKYK3Tbqo0yxjQ14=
+        -----END EC PRIVATE KEY-----

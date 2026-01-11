@@ -1,0 +1,8 @@
+  - KeyId: d9e7695b-0c17-43af-a8de-6d1e0504d2b1
+    Metadata:
+      KeySpec: HMAC_256
+      KeyUsage: GENERATE_VERIFY_MAC
+      Description: HMAC key HMAC_256
+    Material:
+      BackingKeys:
+        - 21CACEE3C96F105CF73AE351084E1B4BE469678E61189D5B420127431A9A5299

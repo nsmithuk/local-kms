@@ -1,0 +1,8 @@
+  - KeyId: fb71bf3a-58a2-4fba-8d0c-8b2c86157622
+    Metadata:
+      KeySpec: HMAC_224
+      KeyUsage: GENERATE_VERIFY_MAC
+      Description: HMAC key HMAC_224
+    Material:
+      BackingKeys:
+        - 96BD7CDAEDA685EDEED9EA27DAF3464B39A22202BCD28EA085244D8A

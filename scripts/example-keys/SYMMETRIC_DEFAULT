@@ -1,0 +1,7 @@
+  - KeyId: bb1ae7fc-9259-46e1-8e55-2678ac5db78e
+    Metadata:
+      KeySpec: SYMMETRIC_DEFAULT
+      Description: AWS Key
+    Material:
+      BackingKeys:
+        - 403D1124683B1B16B97A74095537EE46F6420D9FF199683B048FBB76E8FADD27

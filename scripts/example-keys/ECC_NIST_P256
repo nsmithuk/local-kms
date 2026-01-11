@@ -1,0 +1,12 @@
+  - KeyId: 8e95a5b2-c752-484c-a56d-a432e799fb86
+    Metadata:
+      KeySpec: ECC_NIST_P256
+      KeyUsage: SIGN_VERIFY
+      Description: ECC key with curve secp256r1
+    Material:
+      PrivateKeyPem: |
+        -----BEGIN EC PRIVATE KEY-----
+        MHcCAQEEIPlS5+20i8C4CxJTzceOiO1BdBOZOSfdb0YnHRI2ne+aoAoGCCqGSM49
+        AwEHoUQDQgAESEly+jclzn63kFUK5NRe8wGOgVnSL1mUiOkMopH4OW3zC/2CKeg/
+        BC50FMdW+g8WFgKzkmxfic+n95iA1Oh+hQ==
+        -----END EC PRIVATE KEY-----

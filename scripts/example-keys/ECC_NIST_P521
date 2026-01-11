@@ -1,0 +1,14 @@
+  - KeyId: f25b7bce-e294-45d9-a93a-99b62abac72e
+    Metadata:
+      KeySpec: ECC_NIST_P521
+      KeyUsage: SIGN_VERIFY
+      Description: ECC key with curve secp521r1
+    Material:
+      PrivateKeyPem: |
+        -----BEGIN EC PRIVATE KEY-----
+        MIHcAgEBBEIBVdJ5l7AEaeMkMPbcs3dZHyBWI2j2dkqGr8G54/A9Nsm841/+OP9C
+        C9LGsJFLZdkcbebaxI5WwHx/LgBLNdRFzTigBwYFK4EEACOhgYkDgYYABABby1j+
+        pP6FIoFIUYWhM3/vyn7yUZvSIha1HPFfXvZGScSWo0qXsQMI8AV8Zeo3rlJ1sFNM
+        XW0mzLjw8x9xQsVr6ACu2oncIC6TvLi+1VjLGj8nY9iSNjkAExbOfcXsFy4p8lBI
+        yuMtFuBzPuHc1yiTVBWsnPUpRI3TIPFvD9zvV0T1/w==
+        -----END EC PRIVATE KEY-----

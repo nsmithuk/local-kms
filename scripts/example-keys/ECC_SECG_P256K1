@@ -1,0 +1,12 @@
+  - KeyId: bf0d1525-a267-4251-99d4-5cc3031a44ea
+    Metadata:
+      KeySpec: ECC_SECG_P256K1
+      KeyUsage: SIGN_VERIFY
+      Description: ECC key with curve secp256k1
+    Material:
+      PrivateKeyPem: |
+        -----BEGIN EC PRIVATE KEY-----
+        MHQCAQEEIDVMOB+LjwC8z7BW6/Uo+XhFTMdmEaL1F3ZIJqNnYuqMoAcGBSuBBAAK
+        oUQDQgAEk/cOFTaKsLmoM7zVJq0J2+62nj42BrMJT05j2N2mYTdM1Y+9KVEMdhMV
+        /mFh5WlkTUs/t7zAly7gl7uxtmGRug==
+        -----END EC PRIVATE KEY-----

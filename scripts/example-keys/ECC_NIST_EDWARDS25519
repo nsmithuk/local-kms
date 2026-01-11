@@ -1,0 +1,10 @@
+  - KeyId: d447c3d8-7755-4ab4-935b-59c6dd9d3de2
+    Metadata:
+      KeySpec: ECC_NIST_EDWARDS25519
+      KeyUsage: SIGN_VERIFY
+      Description: ECC key with Ed25519
+    Material:
+      PrivateKeyPem: |
+        -----BEGIN PRIVATE KEY-----
+        MC4CAQAwBQYDK2VwBCIEIFvmi9bcefeQUNL1z8YbE7hCm7avB6yzPYmhKVLKyP6K
+        -----END PRIVATE KEY-----

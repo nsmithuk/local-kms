@@ -1,0 +1,47 @@
+  - KeyId: bc124628-ed09-43a5-b1e8-2448a8f0bd89
+    Metadata:
+      KeySpec: RSA_3072
+      KeyUsage: SIGN_VERIFY
+      Description: RSA key with 3072 bits
+    Material:
+      PrivateKeyPem: |
+        -----BEGIN PRIVATE KEY-----
+        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
+        OrZeyVG6I3JmzZDswziajqs=
+        -----END PRIVATE KEY-----
