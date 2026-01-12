@@ -152,20 +152,20 @@ func buildDispatcher(kms *kms.KmsService) map[string]kmsHandler {
 			}
 			return kms.GenerateDataKey(ctx, in)
 		},
-		//"GenerateDataKeyPair": func(ctx context.Context, body []byte) (any, []error) {
-		//	var in awskms.GenerateDataKeyPairInput
-		//	if err := json.Unmarshal(body, &in); err != nil {
-		//		return nil, []error{err}
-		//	}
-		//	return kms.GenerateDataKeyPair(ctx, in)
-		//},
-		//"GenerateDataKeyPairWithoutPlaintext": func(ctx context.Context, body []byte) (any, []error) {
-		//	var in awskms.GenerateDataKeyPairWithoutPlaintextInput
-		//	if err := json.Unmarshal(body, &in); err != nil {
-		//		return nil, []error{err}
-		//	}
-		//	return kms.GenerateDataKeyPairWithoutPlaintext(ctx, in)
-		//},
+		"GenerateDataKeyPair": func(ctx context.Context, body []byte) (any, []error) {
+			var in awskms.GenerateDataKeyPairInput
+			if err := json.Unmarshal(body, &in); err != nil {
+				return nil, []error{err}
+			}
+			return kms.GenerateDataKeyPair(ctx, in)
+		},
+		"GenerateDataKeyPairWithoutPlaintext": func(ctx context.Context, body []byte) (any, []error) {
+			var in awskms.GenerateDataKeyPairWithoutPlaintextInput
+			if err := json.Unmarshal(body, &in); err != nil {
+				return nil, []error{err}
+			}
+			return kms.GenerateDataKeyPairWithoutPlaintext(ctx, in)
+		},
 		"GenerateDataKeyWithoutPlaintext": func(ctx context.Context, body []byte) (any, []error) {
 			var in awskms.GenerateDataKeyWithoutPlaintextInput
 			if err := json.Unmarshal(body, &in); err != nil {
