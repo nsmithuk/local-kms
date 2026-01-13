@@ -21,6 +21,9 @@ type Key interface {
 	ApplyNewKeyMaterial() error
 	ApplySeedingKeyMaterial(material SeedingKeyMaterial) error
 
+	SetParametersForImport(*ParametersForImport)
+	GetParametersForImport() *ParametersForImport
+
 	// Operation specific functions
 	GetPublicKey() ([]byte, error)
 
@@ -66,9 +69,10 @@ func GetKeyType(k KeyType) (Key, error) {
 }
 
 type BaseKey struct {
-	KeyType  KeyType
-	Metadata types.KeyMetadata
-	Policy   string
+	KeyType      KeyType
+	Metadata     types.KeyMetadata
+	Policy       string
+	ImportParams *ParametersForImport
 }
 
 func (b *BaseKey) GetId() string {
@@ -131,6 +135,15 @@ func (b *BaseKey) enforceKeyUsageType(v types.KeyUsageType) error {
 //	}
 //	return nil
 //}
+
+//---------------------------------------------
+
+func (b *BaseKey) SetParametersForImport(parameters *ParametersForImport) {
+	b.ImportParams = parameters
+}
+func (b *BaseKey) GetParametersForImport() *ParametersForImport {
+	return b.ImportParams
+}
 
 //---------------------------------------------
 // Base Operation functions

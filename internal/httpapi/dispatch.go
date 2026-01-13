@@ -201,13 +201,13 @@ func buildDispatcher(kms *kms.KmsService) map[string]kmsHandler {
 		//	}
 		//	return kms.GetKeyRotationStatus(ctx, in)
 		//},
-		//"GetParametersForImport": func(ctx context.Context, body []byte) (any, []error) {
-		//	var in awskms.GetParametersForImportInput
-		//	if err := json.Unmarshal(body, &in); err != nil {
-		//		return nil, []error{err}
-		//	}
-		//	return kms.GetParametersForImport(ctx, in)
-		//},
+		"GetParametersForImport": func(ctx context.Context, body []byte) (any, []error) {
+			var in awskms.GetParametersForImportInput
+			if err := json.Unmarshal(body, &in); err != nil {
+				return nil, []error{err}
+			}
+			return kms.GetParametersForImport(ctx, in)
+		},
 		"GetPublicKey": func(ctx context.Context, body []byte) (any, []error) {
 			var in awskms.GetPublicKeyInput
 			if err := json.Unmarshal(body, &in); err != nil {

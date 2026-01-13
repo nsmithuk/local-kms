@@ -36,6 +36,10 @@ func (k KmsService) Close() error {
 }
 
 func (k KmsService) getUsableKey(keyId *string) (cmk.Key, error) {
+	return k.getKeyWithState(keyId, types.KeyStateEnabled)
+}
+
+func (k KmsService) getKeyWithState(keyId *string, state types.KeyState) (cmk.Key, error) {
 	arn, err := k.ResolveKeyArn(keyId)
 	if err != nil {
 		return nil, err
@@ -52,11 +56,11 @@ func (k KmsService) getUsableKey(keyId *string) (cmk.Key, error) {
 	metadata := key.GetMetadata()
 
 	if !metadata.Enabled {
-		return nil, fmt.Errorf("key %s is disabled", keyId)
+		return nil, fmt.Errorf("key %s is disabled", key.GetArn())
 	}
 
-	if metadata.KeyState != types.KeyStateEnabled {
-		return nil, fmt.Errorf("key %s is not in an available state. Currently %s", keyId, metadata.KeyState)
+	if metadata.KeyState != state {
+		return nil, fmt.Errorf("key %s has state %s. Expected: %s", key.GetArn(), metadata.KeyState, state)
 	}
 
 	return key, nil
