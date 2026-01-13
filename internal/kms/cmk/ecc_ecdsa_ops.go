@@ -61,8 +61,8 @@ func (k *EcdsaKey) prepSigningDigest(message []byte, algorithm types.SigningAlgo
 }
 
 func (k *EcdsaKey) Sign(message []byte, algorithm types.SigningAlgorithmSpec, messageType types.MessageType) ([]byte, error) {
-	if k.GetMetadata().KeyUsage != types.KeyUsageTypeSignVerify {
-		return nil, fmt.Errorf("unsupported key usage: %v", k.GetMetadata().KeyUsage)
+	if err := k.enforceKeyUsageType(types.KeyUsageTypeSignVerify); err != nil {
+		return nil, err
 	}
 
 	digest, err := k.prepSigningDigest(message, algorithm, messageType)
@@ -81,8 +81,8 @@ func (k *EcdsaKey) Sign(message []byte, algorithm types.SigningAlgorithmSpec, me
 }
 
 func (k *EcdsaKey) Verify(message []byte, algorithm types.SigningAlgorithmSpec, messageType types.MessageType, signature []byte) (bool, error) {
-	if k.GetMetadata().KeyUsage != types.KeyUsageTypeSignVerify {
-		return false, fmt.Errorf("unsupported key usage: %v", k.GetMetadata().KeyUsage)
+	if err := k.enforceKeyUsageType(types.KeyUsageTypeSignVerify); err != nil {
+		return false, err
 	}
 
 	sig := ecdsaSignature{}
@@ -107,8 +107,8 @@ func (k *EcdsaKey) Verify(message []byte, algorithm types.SigningAlgorithmSpec, 
 }
 
 func (k *EcdsaKey) DeriveSharedSecret(peerPublicKey []byte, algorithm types.KeyAgreementAlgorithmSpec) ([]byte, error) {
-	if k.GetMetadata().KeyUsage != types.KeyUsageTypeKeyAgreement {
-		return nil, fmt.Errorf("unsupported key usage: %v", k.GetMetadata().KeyUsage)
+	if err := k.enforceKeyUsageType(types.KeyUsageTypeKeyAgreement); err != nil {
+		return nil, err
 	}
 
 	if algorithm != types.KeyAgreementAlgorithmSpecEcdh {

@@ -18,6 +18,10 @@ func (k *Ed25519Key) GetPublicKey() ([]byte, error) {
 }
 
 func (k *Ed25519Key) Sign(message []byte, algorithm types.SigningAlgorithmSpec, messageType types.MessageType) ([]byte, error) {
+	if err := k.enforceKeyUsageType(types.KeyUsageTypeSignVerify); err != nil {
+		return nil, err
+	}
+
 	// When using ECC_NIST_EDWARDS25519 KMS keys:
 	//   - ED25519_SHA_512 signing algorithm requires KMS MessageType:RAW
 	//   - ED25519_PH_SHA_512 signing algorithm requires KMS MessageType:DIGEST
@@ -42,6 +46,10 @@ func (k *Ed25519Key) Sign(message []byte, algorithm types.SigningAlgorithmSpec, 
 }
 
 func (k *Ed25519Key) Verify(message []byte, algorithm types.SigningAlgorithmSpec, messageType types.MessageType, signature []byte) (bool, error) {
+	if err := k.enforceKeyUsageType(types.KeyUsageTypeSignVerify); err != nil {
+		return false, err
+	}
+
 	// When using ECC_NIST_EDWARDS25519 KMS keys:
 	//   - ED25519_SHA_512 signing algorithm requires KMS MessageType:RAW
 	//   - ED25519_PH_SHA_512 signing algorithm requires KMS MessageType:DIGEST

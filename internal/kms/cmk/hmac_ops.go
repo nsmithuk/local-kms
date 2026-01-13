@@ -26,6 +26,10 @@ func (k *HmacKey) getHash() (types.MacAlgorithmSpec, hash.Hash, error) {
 }
 
 func (k *HmacKey) GenerateMac(message []byte, algorithm types.MacAlgorithmSpec) ([]byte, error) {
+	if err := k.enforceKeyUsageType(types.KeyUsageTypeGenerateVerifyMac); err != nil {
+		return nil, err
+	}
+
 	expectedAlgorithm, mac, err := k.getHash()
 	if err != nil {
 		return nil, err
@@ -40,6 +44,10 @@ func (k *HmacKey) GenerateMac(message []byte, algorithm types.MacAlgorithmSpec) 
 }
 
 func (k *HmacKey) VerifyMac(message []byte, algorithm types.MacAlgorithmSpec, macProvided []byte) (bool, error) {
+	if err := k.enforceKeyUsageType(types.KeyUsageTypeGenerateVerifyMac); err != nil {
+		return false, err
+	}
+
 	expectedAlgorithm, mac, err := k.getHash()
 	if err != nil {
 		return false, err

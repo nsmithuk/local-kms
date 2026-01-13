@@ -96,6 +96,35 @@ func (b *BaseKey) GetKeyType() KeyType {
 }
 
 //---------------------------------------------
+
+func (b *BaseKey) enforceKeyUsageType(v types.KeyUsageType) error {
+	if b.Metadata.KeyUsage != v {
+		return fmt.Errorf("unsupported KeyUsageType: %v. Expected %s", v, b.Metadata.KeyUsage)
+	}
+	return nil
+}
+
+//func (b *BaseKey) enforceMacAlgorithmSpec(v types.MacAlgorithmSpec) error {
+//	if b.Metadata.MacAlgorithms == nil {
+//		return fmt.Errorf("key does not support Mac Algorithms")
+//	}
+//	if !slices.Contains(b.Metadata.MacAlgorithms, v) {
+//		return fmt.Errorf("unsupported MacAlgorithm: %s. Expected %v", v, b.Metadata.MacAlgorithms)
+//	}
+//	return nil
+//}
+//
+//func (b *BaseKey) enforceSigningAlgorithmSpec(v types.SigningAlgorithmSpec) error {
+//	if b.Metadata.MacAlgorithms == nil {
+//		return fmt.Errorf("key does not support Mac Algorithms")
+//	}
+//	if !slices.Contains(b.Metadata.SigningAlgorithms, v) {
+//		return fmt.Errorf("unsupported SigningAlgorithmSpec: %s. Expected %v", v, b.Metadata.SigningAlgorithms)
+//	}
+//	return nil
+//}
+
+//---------------------------------------------
 // Base Operation functions
 // We override these at the key type level, if the operation is supported.
 
