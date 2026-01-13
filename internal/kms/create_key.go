@@ -99,22 +99,19 @@ func (k KmsService) CreateKeyWithoutMaterial(ctx context.Context, req awskms.Cre
 	//----------------------------
 	// Origin
 
-	if metadata.Origin == "EXTERNAL" {
+	if metadata.Origin == types.OriginTypeExternal {
+		metadata.KeyState = types.KeyStatePendingImport
+	}
+	if metadata.Origin == types.OriginTypeAwsCloudhsm {
 		validationErrors = append(
 			validationErrors,
-			errors.New("Local KMS does not (yet) support Origin = EXTERNAL"),
+			errors.New("Local KMS does not support Origin = AWS_CLOUDHSM"),
 		)
 	}
-	if metadata.Origin == "AWS_CLOUDHSM" {
+	if metadata.Origin == types.OriginTypeExternalKeyStore {
 		validationErrors = append(
 			validationErrors,
-			errors.New("Local KMS does not (yet) support Origin = AWS_CLOUDHSM"),
-		)
-	}
-	if metadata.Origin == "EXTERNAL_KEY_STORE" {
-		validationErrors = append(
-			validationErrors,
-			errors.New("Local KMS does not (yet) support Origin = EXTERNAL_KEY_STORE"),
+			errors.New("Local KMS does not support Origin = EXTERNAL_KEY_STORE"),
 		)
 	}
 	if metadata.Origin == "" {
@@ -203,15 +200,18 @@ func (k KmsService) CreateKey(ctx context.Context, req awskms.CreateKeyInput) (*
 		return nil, errs
 	}
 
-	err := key.ApplyNewKeyMaterial()
-	if err != nil {
-		return nil, []error{err}
+	if key.GetMetadata().Origin == types.OriginTypeAwsKms {
+		// We only apply material if the expected origin is KMS.
+		err := key.ApplyNewKeyMaterial()
+		if err != nil {
+			return nil, []error{err}
+		}
 	}
 
 	//----------------------------
 	// Save the key
 
-	err = k.Db.SaveKey(key)
+	err := k.Db.SaveKey(key)
 	if err != nil {
 		return nil, []error{err}
 	}
