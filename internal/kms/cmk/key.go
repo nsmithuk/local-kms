@@ -11,6 +11,7 @@ import (
 var ErrOperationNotSupported = errors.New("operation not supported")
 
 type Key interface {
+	GetId() string
 	GetArn() string
 	//GetPolicy() string
 	GetKeyType() KeyType
@@ -68,6 +69,13 @@ type BaseKey struct {
 	KeyType  KeyType
 	Metadata types.KeyMetadata
 	Policy   string
+}
+
+func (b *BaseKey) GetId() string {
+	if b.Metadata.KeyId == nil {
+		return ""
+	}
+	return *b.Metadata.KeyId
 }
 
 func (b *BaseKey) GetArn() string {
