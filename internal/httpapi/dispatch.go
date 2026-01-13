@@ -180,13 +180,13 @@ func buildDispatcher(kms *kms.KmsService) map[string]kmsHandler {
 			}
 			return kms.GenerateMac(ctx, in)
 		},
-		//"GenerateRandom": func(ctx context.Context, body []byte) (any, []error) {
-		//	var in awskms.GenerateRandomInput
-		//	if err := json.Unmarshal(body, &in); err != nil {
-		//		return nil, []error{err}
-		//	}
-		//	return kms.GenerateRandom(ctx, in)
-		//},
+		"GenerateRandom": func(ctx context.Context, body []byte) (any, []error) {
+			var in awskms.GenerateRandomInput
+			if err := json.Unmarshal(body, &in); err != nil {
+				return nil, []error{err}
+			}
+			return kms.GenerateRandom(ctx, in)
+		},
 		//"GetKeyPolicy": func(ctx context.Context, body []byte) (any, []error) {
 		//	var in awskms.GetKeyPolicyInput
 		//	if err := json.Unmarshal(body, &in); err != nil {
