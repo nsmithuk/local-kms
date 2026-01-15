@@ -127,7 +127,7 @@ func (k *EcdsaKey) ApplySeedingKeyMaterial(material SeedingKeyMaterial) error {
 
 //-----
 
-func (k *EcdsaKey) ApplyImportedKeyMaterial(material []byte, _ *string) error {
+func (k *EcdsaKey) ApplyImportedKeyMaterial(material []byte, _ *string, _ types.ImportType) error {
 	pk, err := x509ecc.ParsePKCS8PrivateKey(material)
 	if err != nil {
 		return err
@@ -135,6 +135,16 @@ func (k *EcdsaKey) ApplyImportedKeyMaterial(material []byte, _ *string) error {
 
 	k.PrivateKey = EcdsaPrivateKey(*pk)
 
+	return nil
+}
+
+func (k *EcdsaKey) DeleteImportedKeyMaterial(*string) error {
+	metadata := k.GetMetadata()
+	if metadata.Origin != types.OriginTypeExternal {
+		return fmt.Errorf("Cannot delete key that is not an external key")
+	}
+
+	k.PrivateKey = EcdsaPrivateKey{}
 	return nil
 }
 

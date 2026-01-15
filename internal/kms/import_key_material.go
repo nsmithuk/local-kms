@@ -1,7 +1,9 @@
 package kms
 
 import (
+	"bytes"
 	"context"
+	"crypto/sha3"
 	"crypto/subtle"
 	"errors"
 
@@ -56,7 +58,20 @@ func (k KmsService) ImportKeyMaterial(ctx context.Context, req awskms.ImportKeyM
 		return nil, []error{err}
 	}
 
-	err = key.ApplyImportedKeyMaterial(unwrappedKey, req.KeyMaterialId)
+	//---
+
+	// Detect if the material has changed.
+	digest := sha3.SumSHAKE256(unwrappedKey, 8)
+
+	if key.GetLastImportDigest() != nil && !bytes.Equal(key.GetLastImportDigest(), digest) {
+		return nil, []error{
+			kmserr.NewValidation(kmserr.CauseIncorrectKeyMaterialException, "Imported key material did not match expected digest"),
+		}
+	}
+
+	//---
+
+	err = key.ApplyImportedKeyMaterial(unwrappedKey, req.KeyMaterialId, req.ImportType)
 	if err != nil {
 		return nil, []error{err}
 	}
@@ -65,7 +80,18 @@ func (k KmsService) ImportKeyMaterial(ctx context.Context, req awskms.ImportKeyM
 
 	//---
 
+	//symmetric, isSymmetric := key.(*cmk.SymmetricKey)
+	//if isSymmetric {
+	//
+	//}
+
+	//---
+
 	key.GetMetadata().KeyState = types.KeyStateEnabled
+
+	//---
+
+	key.SetLastImportDigest(digest)
 
 	err = k.Db.SaveKey(key)
 	if err != nil {

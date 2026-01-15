@@ -3,18 +3,19 @@ module github.com/nsmithuk/local-kms
 go 1.25
 
 require (
+	github.com/aws/aws-sdk-go-v2 v1.41.0
 	github.com/aws/aws-sdk-go-v2/service/kms v1.49.4
 	github.com/cockroachdb/pebble v1.1.5
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.0
 	github.com/google/uuid v1.6.0
 	github.com/json-iterator/go v1.1.12
 	github.com/nsmithuk/ml-dsa v0.4.0
+	golang.org/x/exp v0.0.0-20251219203646-944ab1f22d93
 	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
 	github.com/DataDog/zstd v1.5.7 // indirect
-	github.com/aws/aws-sdk-go-v2 v1.41.0 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.16 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.16 // indirect
 	github.com/aws/smithy-go v1.24.0 // indirect
@@ -42,7 +43,6 @@ require (
 	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	golang.org/x/crypto v0.46.0 // indirect
-	golang.org/x/exp v0.0.0-20251219203646-944ab1f22d93 // indirect
 	golang.org/x/sys v0.39.0 // indirect
 	golang.org/x/text v0.32.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect

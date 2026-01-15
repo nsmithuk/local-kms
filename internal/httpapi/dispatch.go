@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	awskms "github.com/aws/aws-sdk-go-v2/service/kms"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/nsmithuk/local-kms/internal/kms"
 )
 
@@ -75,13 +76,13 @@ func buildDispatcher(kms *kms.KmsService) map[string]kmsHandler {
 		//	}
 		//	return kms.DeleteCustomKeyStore(ctx, in)
 		//},
-		//"DeleteImportedKeyMaterial": func(ctx context.Context, body []byte) (any, []error) {
-		//	var in awskms.DeleteImportedKeyMaterialInput
-		//	if err := json.Unmarshal(body, &in); err != nil {
-		//		return nil, []error{err}
-		//	}
-		//	return kms.DeleteImportedKeyMaterial(ctx, in)
-		//},
+		"DeleteImportedKeyMaterial": func(ctx context.Context, body []byte) (any, []error) {
+			var in awskms.DeleteImportedKeyMaterialInput
+			if err := json.Unmarshal(body, &in); err != nil {
+				return nil, []error{err}
+			}
+			return kms.DeleteImportedKeyMaterial(ctx, in)
+		},
 		"DeriveSharedSecret": func(ctx context.Context, body []byte) (any, []error) {
 			var in awskms.DeriveSharedSecretInput
 			if err := json.Unmarshal(body, &in); err != nil {
@@ -217,7 +218,7 @@ func buildDispatcher(kms *kms.KmsService) map[string]kmsHandler {
 		},
 		"ImportKeyMaterial": func(ctx context.Context, body []byte) (any, []error) {
 			var in awskms.ImportKeyMaterialInput
-			if err := json.Unmarshal(body, &in); err != nil {
+			if err := jsoniter.Unmarshal(body, &in); err != nil {
 				return nil, []error{err}
 			}
 			return kms.ImportKeyMaterial(ctx, in)

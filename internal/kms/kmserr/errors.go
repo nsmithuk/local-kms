@@ -24,6 +24,7 @@ const (
 	CauseUnsupportedOperationException ErrCause = "UnsupportedOperationException"
 	CauseInvalidAliasNameException     ErrCause = "InvalidAliasNameException"
 	CauseInvalidImportTokenException   ErrCause = "InvalidImportTokenException"
+	CauseIncorrectKeyMaterialException ErrCause = "IncorrectKeyMaterialException"
 )
 
 //---

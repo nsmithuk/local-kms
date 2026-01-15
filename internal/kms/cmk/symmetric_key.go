@@ -1,7 +1,7 @@
 package cmk
 
 import (
-	"crypto/sha256"
+	"crypto/sha3"
 	"encoding/hex"
 	"fmt"
 	"time"
@@ -23,9 +23,9 @@ func NewSymmetricBackingKey() SymmetricBackingKey {
 	}
 }
 
-func (bk SymmetricBackingKey) MaterialId() string {
-	hash := sha256.Sum256(bk.Material[:])
-	return hex.EncodeToString(hash[:])
+func (bk SymmetricBackingKey) MaterialId(keyID string) string {
+	m := append([]byte(keyID), bk.Material[:]...)
+	return hex.EncodeToString(sha3.SumSHAKE256(m, 32))
 }
 
 //--------------------------------
@@ -36,6 +36,8 @@ type SymmetricKey struct {
 	RotationPeriodInDays int32
 	ManualKeyRotations   uint8
 	BackingKeys          map[string]SymmetricBackingKey
+	PreviousBackingKeys  map[string]SymmetricBackingKey
+	PendingKey           *SymmetricBackingKey
 }
 
 func NewSymmetricKey(metadata types.KeyMetadata, policy string) (*SymmetricKey, error) {
@@ -64,7 +66,7 @@ func NewSymmetricKey(metadata types.KeyMetadata, policy string) (*SymmetricKey, 
 
 func (k *SymmetricKey) ApplyNewKeyMaterial() error {
 	key := NewSymmetricBackingKey()
-	materialId := key.MaterialId()
+	materialId := key.MaterialId(k.GetId())
 
 	k.BackingKeys[materialId] = key
 	k.Metadata.CurrentKeyMaterialId = &materialId
@@ -92,7 +94,7 @@ func (k *SymmetricKey) ApplySeedingKeyMaterial(material SeedingKeyMaterial) erro
 			Material: keyArr,
 		}
 
-		materialId := key.MaterialId()
+		materialId := key.MaterialId(k.GetId())
 		k.BackingKeys[materialId] = key
 
 		// Results in the last key being set as the current material.
@@ -104,7 +106,10 @@ func (k *SymmetricKey) ApplySeedingKeyMaterial(material SeedingKeyMaterial) erro
 
 //--------------------------------
 
-func (k *SymmetricKey) ApplyImportedKeyMaterial(material []byte, passedMaterialId *string) error {
+func (k *SymmetricKey) ApplyImportedKeyMaterial(material []byte, materialId *string, importType types.ImportType) error {
+	if k.GetMetadata().Origin != types.OriginTypeExternal {
+		return fmt.Errorf("Cannot import key that is not an external key")
+	}
 	if len(material) != 32 {
 		return fmt.Errorf("material must be exactly 32 bytes")
 	}
@@ -115,29 +120,93 @@ func (k *SymmetricKey) ApplyImportedKeyMaterial(material []byte, passedMaterialI
 		Material: keyArr,
 	}
 
-	newMaterialId := key.MaterialId()
-	currentMaterialId := k.GetMetadata().CurrentKeyMaterialId
+	newMaterialId := key.MaterialId(k.GetId())
 
-	if currentMaterialId != nil {
-		// Then it's a re-import
-		if passedMaterialId == nil {
-			return fmt.Errorf("passed materialId must be set for a re-import")
+	switch importType {
+	case types.ImportTypeNewKeyMaterial:
+		// For NEW material, callers must not specify KeyMaterialId.
+		if materialId != nil && *materialId != "" {
+			return fmt.Errorf("KeyMaterialId must not be specified for NEW_KEY_MATERIAL")
 		}
-		if *currentMaterialId != *passedMaterialId {
-			return fmt.Errorf("the passed material ID must match the current material ID for re-import")
+
+		// First-ever import becomes current immediately.
+		if len(k.BackingKeys) == 0 && k.PendingKey == nil && k.Metadata.CurrentKeyMaterialId == nil {
+			k.BackingKeys[newMaterialId] = key
+			k.Metadata.CurrentKeyMaterialId = &newMaterialId
+			return nil
 		}
-		if *currentMaterialId != newMaterialId {
-			return fmt.Errorf("the passed key must be exactly the same as the previous for a re-improt")
+
+		// Otherwise, stage as pending (only one pending at a time).
+		if k.PendingKey != nil {
+			return fmt.Errorf("key already has pending imported key material")
 		}
-	} else if passedMaterialId != nil {
-		// We should not have a passed value if it's not a re-import
-		return fmt.Errorf("passed material id should not be nil for a key re-import")
+
+		// Optional: prevent importing the same bytes as the current material as "new".
+		if k.Metadata.CurrentKeyMaterialId != nil && *k.Metadata.CurrentKeyMaterialId == newMaterialId {
+			return fmt.Errorf("cannot import NEW_KEY_MATERIAL: material already current")
+		}
+
+		k.PendingKey = &key
+
+	case types.ImportTypeExistingKeyMaterial:
+		// EXISTING requires a KeyMaterialId and it must match the computed ID.
+		if materialId == nil || *materialId == "" {
+			return fmt.Errorf("KeyMaterialId is required for EXISTING_KEY_MATERIAL")
+		}
+		if newMaterialId != *materialId {
+			return fmt.Errorf("KeyMaterialId mismatch: computed %s does not match provided %s", newMaterialId, *materialId)
+		}
+
+		// Must be a previously-known material id (active or deleted).
+		_, inActive := k.BackingKeys[*materialId]
+		_, inDeleted := k.PreviousBackingKeys[*materialId]
+		if !inActive && !inDeleted {
+			return fmt.Errorf("materialId %s does not exist for this key", *materialId)
+		}
+
+		// Re-import restores the material bytes.
+		k.BackingKeys[*materialId] = key
+		delete(k.PreviousBackingKeys, *materialId)
+
+		// If the key currently has no usable current material, make this current.
+		// (Simplified model: always promote to current on re-import.)
+		k.Metadata.CurrentKeyMaterialId = materialId
+
+	default:
+		return fmt.Errorf("unsupported ImportType %s", importType)
 	}
 
-	//---
+	return nil
+}
 
-	k.BackingKeys[newMaterialId] = key
-	k.Metadata.CurrentKeyMaterialId = &newMaterialId
+func (k *SymmetricKey) DeleteImportedKeyMaterial(passedMaterialId *string) error {
+	metadata := k.GetMetadata()
+	if metadata.Origin != types.OriginTypeExternal {
+		return fmt.Errorf("Cannot delete key that is not an external key")
+	}
+
+	if k.PreviousBackingKeys == nil {
+		k.PreviousBackingKeys = make(map[string]SymmetricBackingKey)
+	}
+
+	// Delete-all: move everything to PreviousBackingKeys.
+	if passedMaterialId == nil {
+		for id, key := range k.BackingKeys {
+			k.PreviousBackingKeys[id] = key
+		}
+		k.BackingKeys = make(map[string]SymmetricBackingKey)
+		return nil
+	}
+
+	key, found := k.BackingKeys[*passedMaterialId]
+	if !found {
+		return fmt.Errorf("materialId %s does not exist", *passedMaterialId)
+	}
+
+	k.PreviousBackingKeys[*passedMaterialId] = key
+	delete(k.BackingKeys, *passedMaterialId)
+
+	k.Metadata.CurrentKeyMaterialId = nil
 
 	return nil
 }

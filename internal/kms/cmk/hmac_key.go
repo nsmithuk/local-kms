@@ -86,10 +86,50 @@ func (k *HmacKey) ApplySeedingKeyMaterial(material SeedingKeyMaterial) error {
 			return fmt.Errorf("KeySpec %s is not compatible with a %d bit key", keySpec, len(keyBytes)*8)
 		}
 	default:
-		return fmt.Errorf("Unknwon key length %d", len(material.BackingKeys))
+		return fmt.Errorf("unknown key length %d", len(material.BackingKeys))
 	}
 
 	k.PrivateKey = keyBytes
+
+	return nil
+}
+
+func (k *HmacKey) ApplyImportedKeyMaterial(material []byte, _ *string, _ types.ImportType) error {
+	keySpec := k.GetMetadata().KeySpec
+
+	switch len(material) {
+	case 224 / 8:
+		if keySpec != types.KeySpecHmac224 {
+			return fmt.Errorf("KeySpec %s is not compatible with a %d bit key", keySpec, len(material)*8)
+		}
+	case 256 / 8:
+		if keySpec != types.KeySpecHmac256 {
+			return fmt.Errorf("KeySpec %s is not compatible with a %d bit key", keySpec, len(material)*8)
+		}
+	case 384 / 8:
+		if keySpec != types.KeySpecHmac384 {
+			return fmt.Errorf("KeySpec %s is not compatible with a %d bit key", keySpec, len(material)*8)
+		}
+	case 512 / 8:
+		if keySpec != types.KeySpecHmac512 {
+			return fmt.Errorf("KeySpec %s is not compatible with a %d bit key", keySpec, len(material)*8)
+		}
+	default:
+		return fmt.Errorf("unknown key length %d", len(material))
+	}
+
+	k.PrivateKey = material
+
+	return nil
+}
+
+func (k *HmacKey) DeleteImportedKeyMaterial(*string) error {
+	metadata := k.GetMetadata()
+	if metadata.Origin != types.OriginTypeExternal {
+		return fmt.Errorf("Cannot delete key that is not an external key")
+	}
+
+	k.PrivateKey = nil
 
 	return nil
 }

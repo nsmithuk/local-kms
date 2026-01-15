@@ -21,10 +21,13 @@ type Key interface {
 
 	ApplyNewKeyMaterial() error
 	ApplySeedingKeyMaterial(SeedingKeyMaterial) error
-	ApplyImportedKeyMaterial([]byte, *string) error
 
 	SetParametersForImport(*ParametersForImport)
 	GetParametersForImport() *ParametersForImport
+	ApplyImportedKeyMaterial([]byte, *string, types.ImportType) error
+	DeleteImportedKeyMaterial(*string) error
+	GetLastImportDigest() []byte
+	SetLastImportDigest([]byte)
 
 	// Operation specific functions
 	GetPublicKey() ([]byte, error)
@@ -71,10 +74,11 @@ func GetKeyType(k KeyType) (Key, error) {
 }
 
 type BaseKey struct {
-	KeyType      KeyType
-	Metadata     types.KeyMetadata
-	Policy       string
-	ImportParams *ParametersForImport
+	KeyType            KeyType
+	Metadata           types.KeyMetadata
+	Policy             string
+	ImportParams       *ParametersForImport
+	LastImportedDigest []byte
 }
 
 func (b *BaseKey) GetId() string {
@@ -140,13 +144,23 @@ func (b *BaseKey) enforceKeyUsageType(v types.KeyUsageType) error {
 
 //---------------------------------------------
 
+func (b *BaseKey) GetLastImportDigest() []byte {
+	return b.LastImportedDigest
+}
+func (b *BaseKey) SetLastImportDigest(digest []byte) {
+	b.LastImportedDigest = digest
+}
+
 func (b *BaseKey) SetParametersForImport(parameters *ParametersForImport) {
 	b.ImportParams = parameters
 }
 func (b *BaseKey) GetParametersForImport() *ParametersForImport {
 	return b.ImportParams
 }
-func (b *BaseKey) ApplyImportedKeyMaterial(material []byte, materialId *string) error {
+func (b *BaseKey) ApplyImportedKeyMaterial([]byte, *string, types.ImportType) error {
+	return ErrOperationNotSupported
+}
+func (b *BaseKey) DeleteImportedKeyMaterial(*string) error {
 	return ErrOperationNotSupported
 }
 
