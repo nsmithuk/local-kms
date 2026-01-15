@@ -104,6 +104,46 @@ func (k *SymmetricKey) ApplySeedingKeyMaterial(material SeedingKeyMaterial) erro
 
 //--------------------------------
 
+func (k *SymmetricKey) ApplyImportedKeyMaterial(material []byte, passedMaterialId *string) error {
+	if len(material) != 32 {
+		return fmt.Errorf("material must be exactly 32 bytes")
+	}
+
+	var keyArr [32]byte
+	copy(keyArr[:], material)
+	key := SymmetricBackingKey{
+		Material: keyArr,
+	}
+
+	newMaterialId := key.MaterialId()
+	currentMaterialId := k.GetMetadata().CurrentKeyMaterialId
+
+	if currentMaterialId != nil {
+		// Then it's a re-import
+		if passedMaterialId == nil {
+			return fmt.Errorf("passed materialId must be set for a re-import")
+		}
+		if *currentMaterialId != *passedMaterialId {
+			return fmt.Errorf("the passed material ID must match the current material ID for re-import")
+		}
+		if *currentMaterialId != newMaterialId {
+			return fmt.Errorf("the passed key must be exactly the same as the previous for a re-improt")
+		}
+	} else if passedMaterialId != nil {
+		// We should not have a passed value if it's not a re-import
+		return fmt.Errorf("passed material id should not be nil for a key re-import")
+	}
+
+	//---
+
+	k.BackingKeys[newMaterialId] = key
+	k.Metadata.CurrentKeyMaterialId = &newMaterialId
+
+	return nil
+}
+
+//--------------------------------
+
 func (k *SymmetricKey) RotateIfNeeded() bool {
 
 	if k.RotationPeriodInDays > 0 && k.NextKeyRotation.Before(time.Now()) {

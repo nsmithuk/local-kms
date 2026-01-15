@@ -22,11 +22,11 @@ func (k KmsService) GetParametersForImport(ctx context.Context, req awskms.GetPa
 		return nil, []error{err}
 	}
 
-	if err := validation.ValidOption(req.WrappingKeySpec, "WrappingKeySpec"); err != nil {
+	if err := validation.ValidateEnum(req.WrappingKeySpec, "WrappingKeySpec"); err != nil {
 		return nil, []error{err}
 	}
 
-	if err := validation.ValidOption(req.WrappingAlgorithm, "WrappingAlgorithm"); err != nil {
+	if err := validation.ValidateEnum(req.WrappingAlgorithm, "WrappingAlgorithm"); err != nil {
 		return nil, []error{err}
 	}
 
@@ -60,6 +60,8 @@ func (k KmsService) GetParametersForImport(ctx context.Context, req awskms.GetPa
 		bits = 3072
 	case types.WrappingKeySpecRsa4096:
 		bits = 4096
+	default:
+		return nil, []error{fmt.Errorf("unsupported wrappingKeySpec: %s", req.WrappingKeySpec)}
 	}
 
 	rsaKey, err := rsa.GenerateKey(rand.Reader, bits)
@@ -73,7 +75,7 @@ func (k KmsService) GetParametersForImport(ctx context.Context, req awskms.GetPa
 	}
 
 	params := &cmk.ParametersForImport{
-		ImportToken:       cmk.GenerateRandomData(2048 / 8),
+		ImportToken:       cmk.GenerateRandomData(128 / 8),
 		ParametersValidTo: time.Now().Add(24 * time.Duration(time.Hour)),
 		PrivateKey:        *rsaKey,
 		WrappingAlgorithm: req.WrappingAlgorithm,
@@ -91,7 +93,7 @@ func (k KmsService) GetParametersForImport(ctx context.Context, req awskms.GetPa
 	//---
 
 	return &awskms.GetParametersForImportOutput{
-		KeyId:             aws.String(key.GetId()),
+		KeyId:             aws.String(key.GetArn()),
 		ImportToken:       params.ImportToken,
 		PublicKey:         pubKeyBytes,
 		ParametersValidTo: &params.ParametersValidTo,

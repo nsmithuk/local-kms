@@ -18,8 +18,10 @@ type Key interface {
 	GetMetadata() *types.KeyMetadata
 	IsPendingDeletion() bool
 	ShouldBeDeleted() bool
+
 	ApplyNewKeyMaterial() error
-	ApplySeedingKeyMaterial(material SeedingKeyMaterial) error
+	ApplySeedingKeyMaterial(SeedingKeyMaterial) error
+	ApplyImportedKeyMaterial([]byte, *string) error
 
 	SetParametersForImport(*ParametersForImport)
 	GetParametersForImport() *ParametersForImport
@@ -143,6 +145,9 @@ func (b *BaseKey) SetParametersForImport(parameters *ParametersForImport) {
 }
 func (b *BaseKey) GetParametersForImport() *ParametersForImport {
 	return b.ImportParams
+}
+func (b *BaseKey) ApplyImportedKeyMaterial(material []byte, materialId *string) error {
+	return ErrOperationNotSupported
 }
 
 //---------------------------------------------

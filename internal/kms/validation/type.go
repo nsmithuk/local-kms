@@ -13,7 +13,7 @@ type Enum[T any] interface {
 	Values() []T
 }
 
-func ValidOption[T Enum[T]](value T, fieldName string) error {
+func ValidateEnum[T Enum[T]](value T, fieldName string) error {
 	options := value.Values()
 	for _, option := range options {
 		if value == option {

@@ -215,13 +215,13 @@ func buildDispatcher(kms *kms.KmsService) map[string]kmsHandler {
 			}
 			return kms.GetPublicKey(ctx, in)
 		},
-		//"ImportKeyMaterial": func(ctx context.Context, body []byte) (any, []error) {
-		//	var in awskms.ImportKeyMaterialInput
-		//	if err := json.Unmarshal(body, &in); err != nil {
-		//		return nil, []error{err}
-		//	}
-		//	return kms.ImportKeyMaterial(ctx, in)
-		//},
+		"ImportKeyMaterial": func(ctx context.Context, body []byte) (any, []error) {
+			var in awskms.ImportKeyMaterialInput
+			if err := json.Unmarshal(body, &in); err != nil {
+				return nil, []error{err}
+			}
+			return kms.ImportKeyMaterial(ctx, in)
+		},
 		//"ListAliases": func(ctx context.Context, body []byte) (any, []error) {
 		//	var in awskms.ListAliasesInput
 		//	if err := json.Unmarshal(body, &in); err != nil {

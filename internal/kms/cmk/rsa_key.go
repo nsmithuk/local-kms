@@ -124,3 +124,14 @@ func (k *RsaKey) ApplySeedingKeyMaterial(material SeedingKeyMaterial) error {
 
 	return nil
 }
+
+func (k *RsaKey) ApplyImportedKeyMaterial(material []byte, _ *string) error {
+	pk, err := x509.ParsePKCS8PrivateKey(material)
+	if err != nil {
+		return err
+	}
+
+	k.PrivateKey = RsaPrivateKey(*pk.(*rsa.PrivateKey))
+
+	return nil
+}
