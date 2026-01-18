@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awskms "github.com/aws/aws-sdk-go-v2/service/kms"
 	"github.com/aws/aws-sdk-go-v2/service/kms/types"
+	"github.com/nsmithuk/local-kms/internal/kms/cmk"
 	"github.com/nsmithuk/local-kms/internal/kms/kmserr"
 	"github.com/nsmithuk/local-kms/internal/kms/validation"
 )
@@ -35,7 +36,10 @@ func (k KmsService) ImportKeyMaterial(ctx context.Context, req awskms.ImportKeyM
 
 	key, err := k.getKeyWithState(req.KeyId, types.KeyStatePendingImport)
 	if err != nil {
-		return nil, []error{err}
+		key, err = k.getUsableKey(req.KeyId)
+		if err != nil {
+			return nil, []error{err}
+		}
 	}
 
 	params := key.GetParametersForImport()
@@ -60,12 +64,16 @@ func (k KmsService) ImportKeyMaterial(ctx context.Context, req awskms.ImportKeyM
 
 	//---
 
-	// Detect if the material has changed.
 	digest := sha3.SumSHAKE256(unwrappedKey, 8)
 
-	if key.GetLastImportDigest() != nil && !bytes.Equal(key.GetLastImportDigest(), digest) {
-		return nil, []error{
-			kmserr.NewValidation(kmserr.CauseIncorrectKeyMaterialException, "Imported key material did not match expected digest"),
+	if _, isSymmetric := key.(*cmk.SymmetricKey); !isSymmetric {
+		// Detect if the material has changed.
+		// Symmetric Keys have their own way of doing this.
+
+		if key.GetLastImportDigest() != nil && !bytes.Equal(key.GetLastImportDigest(), digest) {
+			return nil, []error{
+				kmserr.NewValidation(kmserr.CauseIncorrectKeyMaterialException, "Imported key material did not match expected digest"),
+			}
 		}
 	}
 
@@ -77,13 +85,6 @@ func (k KmsService) ImportKeyMaterial(ctx context.Context, req awskms.ImportKeyM
 	}
 
 	// TODO: ValidTo
-
-	//---
-
-	//symmetric, isSymmetric := key.(*cmk.SymmetricKey)
-	//if isSymmetric {
-	//
-	//}
 
 	//---
 

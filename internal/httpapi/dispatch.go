@@ -307,13 +307,13 @@ func buildDispatcher(kms *kms.KmsService) map[string]kmsHandler {
 		//	}
 		//	return kms.RevokeGrant(ctx, in)
 		//},
-		//"RotateKeyOnDemand": func(ctx context.Context, body []byte) (any, []error) {
-		//	var in awskms.RotateKeyOnDemandInput
-		//	if err := json.Unmarshal(body, &in); err != nil {
-		//		return nil, []error{err}
-		//	}
-		//	return kms.RotateKeyOnDemand(ctx, in)
-		//},
+		"RotateKeyOnDemand": func(ctx context.Context, body []byte) (any, []error) {
+			var in awskms.RotateKeyOnDemandInput
+			if err := json.Unmarshal(body, &in); err != nil {
+				return nil, []error{err}
+			}
+			return kms.RotateKeyOnDemand(ctx, in)
+		},
 		"ScheduleKeyDeletion": func(ctx context.Context, body []byte) (any, []error) {
 			var in awskms.ScheduleKeyDeletionInput
 			if err := json.Unmarshal(body, &in); err != nil {

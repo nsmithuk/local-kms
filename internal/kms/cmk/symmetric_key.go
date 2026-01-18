@@ -213,6 +213,28 @@ func (k *SymmetricKey) DeleteImportedKeyMaterial(passedMaterialId *string) error
 
 //--------------------------------
 
+func (k *SymmetricKey) RotateKeyOnDemand() error {
+	if k.ManualKeyRotations >= 10 {
+		return kmserr.NewValidation(kmserr.CauseLimitExceededException, "key has already rotated 10 times")
+	}
+
+	if k.PendingKey != nil {
+		// We use the pending key
+		materialId := k.PendingKey.MaterialId(k.GetId())
+
+		// Then we enable this
+		k.BackingKeys[materialId] = *k.PendingKey
+		k.Metadata.CurrentKeyMaterialId = &materialId
+		k.PendingKey = nil
+	} else {
+		// We create a new one
+		_ = k.ApplyNewKeyMaterial()
+	}
+
+	k.ManualKeyRotations++
+	return nil
+}
+
 func (k *SymmetricKey) RotateIfNeeded() bool {
 
 	if k.RotationPeriodInDays > 0 && k.NextKeyRotation.Before(time.Now()) {

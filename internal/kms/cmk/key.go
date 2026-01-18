@@ -29,6 +29,8 @@ type Key interface {
 	GetLastImportDigest() []byte
 	SetLastImportDigest([]byte)
 
+	RotateKeyOnDemand() error
+
 	// Operation specific functions
 	GetPublicKey() ([]byte, error)
 
@@ -161,6 +163,9 @@ func (b *BaseKey) ApplyImportedKeyMaterial([]byte, *string, types.ImportType) er
 	return ErrOperationNotSupported
 }
 func (b *BaseKey) DeleteImportedKeyMaterial(*string) error {
+	return ErrOperationNotSupported
+}
+func (b *BaseKey) RotateKeyOnDemand() error {
 	return ErrOperationNotSupported
 }
 

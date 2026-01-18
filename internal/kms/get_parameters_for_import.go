@@ -19,7 +19,10 @@ func (k KmsService) GetParametersForImport(ctx context.Context, req awskms.GetPa
 
 	key, err := k.getKeyWithState(req.KeyId, types.KeyStatePendingImport)
 	if err != nil {
-		return nil, []error{err}
+		key, err = k.getUsableKey(req.KeyId)
+		if err != nil {
+			return nil, []error{err}
+		}
 	}
 
 	if err := validation.ValidateEnum(req.WrappingKeySpec, "WrappingKeySpec"); err != nil {
