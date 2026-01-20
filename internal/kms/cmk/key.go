@@ -30,6 +30,7 @@ type Key interface {
 	SetLastImportDigest([]byte)
 
 	RotateKeyOnDemand() error
+	ListKeyRotations(types.IncludeKeyMaterial) []types.RotationsListEntry
 
 	// Operation specific functions
 	GetPublicKey() ([]byte, error)
@@ -165,8 +166,12 @@ func (b *BaseKey) ApplyImportedKeyMaterial([]byte, *string, types.ImportType) er
 func (b *BaseKey) DeleteImportedKeyMaterial(*string) error {
 	return ErrOperationNotSupported
 }
+
 func (b *BaseKey) RotateKeyOnDemand() error {
 	return ErrOperationNotSupported
+}
+func (b *BaseKey) ListKeyRotations(types.IncludeKeyMaterial) []types.RotationsListEntry {
+	return nil
 }
 
 //---------------------------------------------

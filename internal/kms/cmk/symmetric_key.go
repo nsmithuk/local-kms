@@ -6,25 +6,41 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/kms/types"
 	"github.com/nsmithuk/local-kms/internal/kms/kmserr"
 	"gopkg.in/yaml.v3"
 )
 
 type SymmetricBackingKey struct {
-	Material [32]byte
+	ParentKeyIdDigest [8]byte
+	Material          [32]byte
+
+	//MaterialState types.KeyMaterialState
+	//ImportState   types.ImportState
+	//RotationDate  *time.Time
+	//RotationType  types.RotationType
+	//ValidTo       *time.Time
 }
 
-func NewSymmetricBackingKey() SymmetricBackingKey {
+func NewSymmetricBackingKey(k *SymmetricKey) SymmetricBackingKey {
 	var key [32]byte
 	copy(key[:], GenerateRandomData(32))
+	return NewSymmetricBackingKeyWithMaterial(k, key)
+}
+
+func NewSymmetricBackingKeyWithMaterial(k *SymmetricKey, material [32]byte) SymmetricBackingKey {
+	var digest [8]byte
+	copy(digest[:], sha3.SumSHAKE256([]byte(k.GetId()), 8))
+
 	return SymmetricBackingKey{
-		Material: key,
+		Material:          material,
+		ParentKeyIdDigest: digest,
 	}
 }
 
-func (bk SymmetricBackingKey) MaterialId(keyID string) string {
-	m := append([]byte(keyID), bk.Material[:]...)
+func (bk *SymmetricBackingKey) MaterialId() string {
+	m := append(bk.ParentKeyIdDigest[:], bk.Material[:]...)
 	return hex.EncodeToString(sha3.SumSHAKE256(m, 32))
 }
 
@@ -65,8 +81,8 @@ func NewSymmetricKey(metadata types.KeyMetadata, policy string) (*SymmetricKey, 
 }
 
 func (k *SymmetricKey) ApplyNewKeyMaterial() error {
-	key := NewSymmetricBackingKey()
-	materialId := key.MaterialId(k.GetId())
+	key := NewSymmetricBackingKey(k)
+	materialId := key.MaterialId()
 
 	k.BackingKeys[materialId] = key
 	k.Metadata.CurrentKeyMaterialId = &materialId
@@ -90,11 +106,9 @@ func (k *SymmetricKey) ApplySeedingKeyMaterial(material SeedingKeyMaterial) erro
 
 		var keyArr [32]byte
 		copy(keyArr[:], keyBytes)
-		key := SymmetricBackingKey{
-			Material: keyArr,
-		}
+		key := NewSymmetricBackingKeyWithMaterial(k, keyArr)
 
-		materialId := key.MaterialId(k.GetId())
+		materialId := key.MaterialId()
 		k.BackingKeys[materialId] = key
 
 		// Results in the last key being set as the current material.
@@ -116,11 +130,9 @@ func (k *SymmetricKey) ApplyImportedKeyMaterial(material []byte, materialId *str
 
 	var keyArr [32]byte
 	copy(keyArr[:], material)
-	key := SymmetricBackingKey{
-		Material: keyArr,
-	}
+	key := NewSymmetricBackingKeyWithMaterial(k, keyArr)
 
-	newMaterialId := key.MaterialId(k.GetId())
+	newMaterialId := key.MaterialId()
 
 	switch importType {
 	case types.ImportTypeNewKeyMaterial:
@@ -220,7 +232,7 @@ func (k *SymmetricKey) RotateKeyOnDemand() error {
 
 	if k.PendingKey != nil {
 		// We use the pending key
-		materialId := k.PendingKey.MaterialId(k.GetId())
+		materialId := k.PendingKey.MaterialId()
 
 		// Then we enable this
 		k.BackingKeys[materialId] = *k.PendingKey
@@ -248,6 +260,45 @@ func (k *SymmetricKey) RotateIfNeeded() bool {
 
 	// The key did not rotate
 	return false
+}
+
+func (k *SymmetricKey) ListKeyRotations(types.IncludeKeyMaterial) []types.RotationsListEntry {
+	rotations := make([]types.RotationsListEntry, 0, len(k.BackingKeys)+len(k.PreviousBackingKeys))
+
+	for _, key := range k.BackingKeys {
+		state := types.KeyMaterialStateNonCurrent
+		if k.GetMetadata().CurrentKeyMaterialId != nil && key.MaterialId() == *k.GetMetadata().CurrentKeyMaterialId {
+			state = types.KeyMaterialStateCurrent
+		}
+
+		rotations = append(rotations, types.RotationsListEntry{
+			KeyId:            aws.String(k.GetId()),
+			ExpirationModel:  types.ExpirationModelTypeKeyMaterialDoesNotExpire,
+			ImportState:      types.ImportStateImported,
+			KeyMaterialId:    aws.String(key.MaterialId()),
+			KeyMaterialState: state,
+		})
+	}
+	for _, key := range k.PreviousBackingKeys {
+		rotations = append(rotations, types.RotationsListEntry{
+			KeyId:            aws.String(k.GetId()),
+			ExpirationModel:  types.ExpirationModelTypeKeyMaterialDoesNotExpire,
+			ImportState:      types.ImportStateImported,
+			KeyMaterialId:    aws.String(key.MaterialId()),
+			KeyMaterialState: types.KeyMaterialStateNonCurrent,
+		})
+	}
+	if k.PendingKey != nil {
+		rotations = append(rotations, types.RotationsListEntry{
+			KeyId:            aws.String(k.GetId()),
+			ExpirationModel:  types.ExpirationModelTypeKeyMaterialDoesNotExpire,
+			ImportState:      types.ImportStatePendingImport,
+			KeyMaterialId:    aws.String(k.PendingKey.MaterialId()),
+			KeyMaterialState: types.KeyMaterialStatePendingRotation,
+		})
+	}
+
+	return rotations
 }
 
 func (k *SymmetricKey) UnmarshalYAML(value *yaml.Node) error {

@@ -244,13 +244,13 @@ func buildDispatcher(kms *kms.KmsService) map[string]kmsHandler {
 		//	}
 		//	return kms.ListKeyPolicies(ctx, in)
 		//},
-		//"ListKeyRotations": func(ctx context.Context, body []byte) (any, []error) {
-		//	var in awskms.ListKeyRotationsInput
-		//	if err := json.Unmarshal(body, &in); err != nil {
-		//		return nil, []error{err}
-		//	}
-		//	return kms.ListKeyRotations(ctx, in)
-		//},
+		"ListKeyRotations": func(ctx context.Context, body []byte) (any, []error) {
+			var in awskms.ListKeyRotationsInput
+			if err := json.Unmarshal(body, &in); err != nil {
+				return nil, []error{err}
+			}
+			return kms.ListKeyRotations(ctx, in)
+		},
 		"ListKeys": func(ctx context.Context, body []byte) (any, []error) {
 			var in awskms.ListKeysInput
 			if err := json.Unmarshal(body, &in); err != nil {

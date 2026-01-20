@@ -127,7 +127,7 @@ func (k *SymmetricKey) Encrypt(plaintext []byte, algorithm types.EncryptionAlgor
 	ciphertext := gcm.Seal(nil, nonce, plaintext, additionalData)
 
 	nonceCiphertext := append(nonce, ciphertext...)
-	result := NewCiphertextBlob(k.GetArn(), nonceCiphertext, backingKey.MaterialId(k.GetId()))
+	result := NewCiphertextBlob(k.GetArn(), nonceCiphertext, backingKey.MaterialId())
 
 	return result, nil
 }
