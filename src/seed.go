@@ -142,12 +142,14 @@ func seed(path string, database *data.Database) {
 	for _, key := range rsaKeys {
 		if keyIsNew(database, &key.Metadata) {
 			database.SaveKey(&key)
+			logger.Infof("Imported RSA key: %+v\n", key.GetMetadata())
 			keysAdded++
 		}
 	}
 	for _, key := range eccKeys {
 		if keyIsNew(database, &key.Metadata) {
 			database.SaveKey(&key)
+			logger.Infof("Imported ECC key: %+v\n", key.GetMetadata())
 			keysAdded++
 		}
 	}
