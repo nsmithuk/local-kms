@@ -45,6 +45,8 @@ func (d *Database) LoadKey(arn string) (cmk.Key, error) {
 		}
 
 		key = k
+	case *cmk.HmacKey:
+		key = k
 	case *cmk.EccKey:
 		// This section/switch isn't really needed?
 		key = k
@@ -164,6 +166,8 @@ func unmarshalKey(encoded []byte) (cmk.Key, error) {
 	switch kt.Type {
 	case cmk.TypeAes:
 		key = new(cmk.AesKey)
+	case cmk.TypeHmac:
+		key = new(cmk.HmacKey)
 	case cmk.TypeEcc:
 		key = new(cmk.EccKey)
 	case cmk.TypeRsa:

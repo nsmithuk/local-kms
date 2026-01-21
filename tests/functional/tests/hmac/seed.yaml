@@ -1,0 +1,41 @@
+Keys:
+  Symmetric:
+    Hmac:
+      - Metadata:
+          KeyId: f1234567-89ab-cdef-0123-456789abcdef
+          KeyUsage: GENERATE_VERIFY_MAC
+          KeySpec: HMAC_256
+          Description: Test HMAC-256 key for message authentication
+        BackingKeys:
+          - 1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
+      - Metadata:
+          KeyId: f2345678-9abc-def0-1234-56789abcdef0
+          KeyUsage: GENERATE_VERIFY_MAC
+          KeySpec: HMAC_512
+          Description: Test HMAC-512 key for high-security authentication
+        BackingKeys:
+          - abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890
+      - Metadata:
+          KeyId: f3456789-abcd-ef01-2345-6789abcdef01
+          KeyUsage: GENERATE_VERIFY_MAC
+          KeySpec: HMAC_224
+          Description: Test HMAC-224 key for lightweight authentication
+        BackingKeys:
+          - fedcba0987654321fedcba0987654321fedcba0987654321fedcba09
+      - Metadata:
+          KeyId: f4567890-bcde-f012-3456-789abcdef012
+          KeyUsage: GENERATE_VERIFY_MAC
+          KeySpec: HMAC_384
+          Description: Test HMAC-384 key for medium-security authentication
+        BackingKeys:
+          - 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+
+Aliases:
+  - AliasName: alias/test-hmac-256
+    TargetKeyId: f1234567-89ab-cdef-0123-456789abcdef
+  - AliasName: alias/test-hmac-512
+    TargetKeyId: f2345678-9abc-def0-1234-56789abcdef0
+  - AliasName: alias/test-hmac-224
+    TargetKeyId: f3456789-abcd-ef01-2345-6789abcdef01
+  - AliasName: alias/test-hmac-384
+    TargetKeyId: f4567890-bcde-f012-3456-789abcdef012

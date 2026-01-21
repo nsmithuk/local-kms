@@ -16,6 +16,7 @@ development and testing against KMS; not for use in a production environment._
 
 * Symmetric (AES) keys
 * Asymmetric keys (ECC and RSA)
+* HMAC keys (HMAC_224, HMAC_256, HMAC_384, HMAC_512)
 * Management of Customer Master Keys; including:
     * Enabling and disabling keys
     * Scheduling key deletion
@@ -30,6 +31,7 @@ development and testing against KMS; not for use in a production environment._
 * Importing your own key material
 * Signing and verifying messages
     * RAW and DIGEST
+* Generating and verifying MACs with HMAC keys
 * Tags
 * Key Policies: Get & Put
 
@@ -82,7 +84,7 @@ nsmithuk/local-kms
 
 ## Seeding file format
 
-_Both Symmetric and Asymmetric (RSA and ECC) keys are supported in the seeding file._
+_Symmetric (AES and HMAC), and Asymmetric (RSA and ECC) keys are supported in the seeding file._
 
 A simple seeding file looks like
 ```yaml
@@ -93,6 +95,14 @@ Keys:
           KeyId: bc436485-5092-42b8-92a3-0aa8b93536dc
         BackingKeys:
           - 5cdaead27fe7da2de47945d73cd6d79e36494e73802f3cd3869f1d2cb0b5d7a9
+    Hmac:
+      - Metadata:
+          KeyId: 01234567-89ab-cdef-0123-456789abcdef
+          KeyUsage: GENERATE_VERIFY_MAC
+          KeySpec: HMAC_256
+          Description: HMAC key for message authentication
+        BackingKeys:
+          - 1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
   Asymmetric:
     Ecc:
       - Metadata:
@@ -110,11 +120,18 @@ Aliases:
   - AliasName: alias/testing
     TargetKeyId: bc436485-5092-42b8-92a3-0aa8b93536dc
 ```
-Which will create two keys: an AES Key with ID `bc436485-5092-42b8-92a3-0aa8b93536dc` and a 256 bit ECC Key. 
+Which will create three keys: an AES Key with ID `bc436485-5092-42b8-92a3-0aa8b93536dc`, an HMAC Key with ID `f01234567-89ab-cdef-0123-456789abcdef`, and a 256 bit ECC Key.
 An alias with the name `alias/testing` refers to the AES key.
 
-`BackingKeys ` must be an array of **one or more** hex encoded 256bit keys (can be generated using `openssl rand -hex 32`).
-Only AES Keys support backing keys.
+`BackingKeys ` must be an array of **one or more** hex encoded keys.
+- AES Keys: 256-bit keys (can be generated using `openssl rand -hex 32`)
+- HMAC Keys: Key size depends on the KeySpec:
+  - HMAC_224: 224-bit keys (28 bytes, `openssl rand -hex 28`)
+  - HMAC_256: 256-bit keys (32 bytes, `openssl rand -hex 32`)
+  - HMAC_384: 384-bit keys (48 bytes, `openssl rand -hex 48`)
+  - HMAC_512: 512-bit keys (64 bytes, `openssl rand -hex 64`)
+
+Only AES and HMAC Keys support backing keys.
 
 Seeding files also support multiple keys, aliases and backing keys. Adding more than one backing key simulates the effect of the CMK having been rotated. 
 
@@ -303,7 +320,7 @@ awslocal kms create-key
 
 #### Encrypt data
 ```bash
-awslocal kms Dncrypt \
+awslocal kms encrypt \
 --key-id 0579fe9c-129b-490a-adb0-42589ac4a017 \
 --plaintext "My Test String"
 ```
@@ -319,6 +336,33 @@ awslocal kms decrypt \
 awslocal kms generate-data-key \
 --key-id 0579fe9c-129b-490a-adb0-42589ac4a017 \
 --key-spec AES_128
+```
+
+#### Creating and Using HMAC Keys
+
+Create an HMAC key:
+```bash
+awslocal kms create-key \
+--key-usage GENERATE_VERIFY_MAC \
+--key-spec HMAC_256 \
+--description "HMAC key for message authentication"
+```
+
+Generate a MAC for a message:
+```bash
+awslocal kms generate-mac \
+--key-id 01234567-89ab-cdef-0123-456789abcdef \
+--message "$(echo 'Hello, World!' |base64)" \
+--mac-algorithm HMAC_SHA_256 \
+```
+
+Verify a MAC:
+```bash
+awslocal kms verify-mac \
+--key-id 01234567-89ab-cdef-0123-456789abcdef \
+--message "$(echo 'Hello, World!' |base64)" \
+--mac AQECAHhqBCCY1MSimw8gOGneYWpuJAkBNJGEwYtODLGBT4cQNGb6egAAACQwggEgBgkqhkiG9w0BBwaggawwgAkwgAkwgAkwgAkwgAkwgAkwgAkwgAkwgAkwgAkwgAkwgAkwgAkwgAkwgAkwgA \
+--mac-algorithm HMAC_SHA_256
 ```
 
 #### Importing custom key material
@@ -573,6 +617,51 @@ This function can be sourced then executed with the commands below. The output c
 ecckey secp256r1
 ecckey secp384r1
 ecckey secp521r1
+```
+
+#### HMAC Key Generation
+
+```bash
+function hmackey(){
+local keyspec=$1
+if ! [[ "$keyspec" =~ ^(HMAC_224|HMAC_256|HMAC_384|HMAC_512)$ ]];
+then
+   echo "KeySpec must be one of: HMAC_224 HMAC_256 HMAC_384 HMAC_512"
+   return
+fi
+
+local keysize
+case $keyspec in
+  HMAC_224) keysize=28 ;;
+  HMAC_256) keysize=32 ;;
+  HMAC_384) keysize=48 ;;
+  HMAC_512) keysize=64 ;;
+esac
+
+keyId=$(uuidgen | tr '[:upper:]' '[:lower:]')
+backingKey=$(openssl rand -hex $keysize)
+
+echo "
+Keys:
+  Symmetric:
+    Hmac:
+      - Metadata:
+          KeyId: ${keyId}
+          KeyUsage: GENERATE_VERIFY_MAC
+          KeySpec: ${keyspec}
+          Description: HMAC key for message authentication
+        BackingKeys:
+          - ${backingKey}
+"
+}
+```
+
+This function can be sourced then executed with the commands below. The output can be pasted into the seed.yaml file.
+```bash
+hmackey HMAC_224
+hmackey HMAC_256
+hmackey HMAC_384
+hmackey HMAC_512
 ```
 
 

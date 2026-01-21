@@ -34,7 +34,8 @@ func seed(path string, database *data.Database) {
 	//---
 
 	type InputSymmetric struct {
-		Aes []cmk.AesKey `yaml:"Aes"`
+		Aes  []cmk.AesKey  `yaml:"Aes"`
+		Hmac []cmk.HmacKey `yaml:"Hmac"`
 	}
 	type InputAsymmetric struct {
 		Rsa []cmk.RsaKey `yaml:"Rsa"`
@@ -56,6 +57,7 @@ func seed(path string, database *data.Database) {
 	var eccKeys []cmk.EccKey
 	var rsaKeys []cmk.RsaKey
 	var aesKeys []cmk.AesKey
+	var hmacKeys []cmk.HmacKey
 	var aliases []data.Alias
 
 	err = yaml.Unmarshal([]byte(context), &seed)
@@ -99,6 +101,9 @@ func seed(path string, database *data.Database) {
 		for _, key := range seed.Keys.Symmetric.Aes {
 			aesKeys = append(aesKeys, key)
 		}
+		for _, key := range seed.Keys.Symmetric.Hmac {
+			hmacKeys = append(hmacKeys, key)
+		}
 		for _, key := range seed.Keys.Asymmetric.Rsa {
 			rsaKeys = append(rsaKeys, key)
 		}
@@ -123,6 +128,14 @@ func seed(path string, database *data.Database) {
 	for _, key := range aesKeys {
 		if keyIsNew(database, &key.Metadata) {
 			database.SaveKey(&key)
+			logger.Infof("Imported AES key: %+v\n", key.GetMetadata())
+			keysAdded++
+		}
+	}
+	for _, key := range hmacKeys {
+		if keyIsNew(database, &key.Metadata) {
+			database.SaveKey(&key)
+			logger.Infof("Imported HMAC key: %+v\n", key.GetMetadata())
 			keysAdded++
 		}
 	}

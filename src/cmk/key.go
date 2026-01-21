@@ -15,6 +15,7 @@ const (
 	TypeAes KeyType = iota
 	TypeRsa
 	TypeEcc
+	TypeHmac
 )
 
 //---
@@ -30,6 +31,10 @@ const (
 	SpecRsa2048          KeySpec = "RSA_2048"
 	SpecRsa3072          KeySpec = "RSA_3072"
 	SpecRsa4096          KeySpec = "RSA_4096"
+	SpecHmac224          KeySpec = "HMAC_224"
+	SpecHmac256          KeySpec = "HMAC_256"
+	SpecHmac384          KeySpec = "HMAC_384"
+	SpecHmac512          KeySpec = "HMAC_512"
 )
 
 //---
@@ -56,6 +61,10 @@ const (
 	SigningAlgorithmRsaPkcsSha256 SigningAlgorithm = "RSASSA_PKCS1_V1_5_SHA_256"
 	SigningAlgorithmRsaPkcsSha384 SigningAlgorithm = "RSASSA_PKCS1_V1_5_SHA_384"
 	SigningAlgorithmRsaPkcsSha512 SigningAlgorithm = "RSASSA_PKCS1_V1_5_SHA_512"
+	SigningAlgorithmHmacSha224    SigningAlgorithm = "HMAC_SHA_224"
+	SigningAlgorithmHmacSha256    SigningAlgorithm = "HMAC_SHA_256"
+	SigningAlgorithmHmacSha384    SigningAlgorithm = "HMAC_SHA_384"
+	SigningAlgorithmHmacSha512    SigningAlgorithm = "HMAC_SHA_512"
 )
 
 //---
@@ -75,8 +84,9 @@ const (
 type KeyUsage string
 
 const (
-	UsageEncryptDecrypt KeyUsage = "ENCRYPT_DECRYPT"
-	UsageSignVerify     KeyUsage = "SIGN_VERIFY"
+	UsageEncryptDecrypt    KeyUsage = "ENCRYPT_DECRYPT"
+	UsageSignVerify        KeyUsage = "SIGN_VERIFY"
+	UsageGenerateVerifyMac KeyUsage = "GENERATE_VERIFY_MAC"
 )
 
 //---
@@ -125,6 +135,12 @@ type SigningKey interface {
 	HashAndVerify(signature []byte, digest []byte, algorithm SigningAlgorithm) (bool, error)
 }
 
+type MacKey interface {
+	Key
+	GenerateMac(message []byte, algorithm SigningAlgorithm) ([]byte, error)
+	VerifyMac(message []byte, mac []byte, algorithm SigningAlgorithm) (bool, error)
+}
+
 //------------------------------------------
 
 type BaseKey struct {
@@ -150,7 +166,7 @@ type KeyMetadata struct {
 
 	SigningAlgorithms     []SigningAlgorithm    `json:",omitempty"`
 	EncryptionAlgorithms  []EncryptionAlgorithm `json:",omitempty"`
-	KeySpec               KeySpec               `json:",omitempty"`
+	KeySpec               KeySpec               `json:",omitempty"  yaml:"KeySpec"`
 	CustomerMasterKeySpec KeySpec               `json:",omitempty"`
 }
 
