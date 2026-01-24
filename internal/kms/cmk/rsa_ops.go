@@ -122,6 +122,10 @@ func (k *RsaKey) Verify(message []byte, algorithm types.SigningAlgorithmSpec, me
 // Encrypt/Decrypt
 
 func (k *RsaKey) Encrypt(plaintext []byte, algorithm types.EncryptionAlgorithmSpec, context map[string]string) ([]byte, error) {
+	if err := k.enforceKeyUsageType(types.KeyUsageTypeEncryptDecrypt); err != nil {
+		return nil, err
+	}
+
 	if context != nil {
 		return nil, fmt.Errorf("encryption context not supported for key type %s", k.GetMetadata().KeySpec)
 	}
@@ -172,6 +176,10 @@ func (k *RsaKey) Encrypt(plaintext []byte, algorithm types.EncryptionAlgorithmSp
 }
 
 func (k *RsaKey) Decrypt(ciphertextblob []byte, algorithm types.EncryptionAlgorithmSpec, context map[string]string) ([]byte, error) {
+	if err := k.enforceKeyUsageType(types.KeyUsageTypeEncryptDecrypt); err != nil {
+		return nil, err
+	}
+
 	if context != nil {
 		return nil, fmt.Errorf("encryption context not supported for key type %s", k.GetMetadata().KeySpec)
 	}

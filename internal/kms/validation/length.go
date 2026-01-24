@@ -32,3 +32,15 @@ func (*Validator) ByteLength(value []byte, field string, max int) error {
 	}
 	return nil
 }
+
+func ByteLength(value []byte, field string, max int) error {
+	if value != nil && len(value) > max {
+		return kmserr.New(
+			kmserr.TypeValidation,
+			kmserr.CauseLimitExceededException,
+			fmt.Sprintf("Value at '%s' failed to satisfy "+
+				"constraint: Member must have length less than or equal to %d bytes", field, max),
+		)
+	}
+	return nil
+}

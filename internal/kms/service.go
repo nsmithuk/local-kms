@@ -2,9 +2,12 @@ package kms
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
+	"github.com/aws/aws-sdk-go-v2/service/kms/types"
 	"github.com/cockroachdb/pebble"
+	"github.com/nsmithuk/local-kms/internal/kms/cmk"
 	"github.com/nsmithuk/local-kms/internal/kms/data"
 	"github.com/nsmithuk/local-kms/internal/kms/kmserr"
 )
@@ -30,6 +33,37 @@ func NewKmsService(region, accountId, dbPath string) (*KmsService, error) {
 
 func (k KmsService) Close() error {
 	return k.Db.Close()
+}
+
+func (k KmsService) getUsableKey(keyId *string) (cmk.Key, error) {
+	return k.getKeyWithState(keyId, types.KeyStateEnabled)
+}
+
+func (k KmsService) getKeyWithState(keyId *string, state types.KeyState) (cmk.Key, error) {
+	arn, err := k.ResolveKeyArn(keyId)
+	if err != nil {
+		return nil, err
+	}
+
+	key, err := k.Db.LoadKey(arn)
+	if err != nil {
+		if errors.Is(err, data.ErrKeyNotFound) {
+			return nil, kmserr.NewValidation(kmserr.CauseNotFoundException, "A key with the arn %s does not exists", keyId)
+		}
+		return nil, err
+	}
+
+	metadata := key.GetMetadata()
+
+	if !metadata.Enabled {
+		return nil, fmt.Errorf("key %s is disabled", key.GetArn())
+	}
+
+	if metadata.KeyState != state {
+		return nil, fmt.Errorf("key %s has state %s. Expected: %s", key.GetArn(), metadata.KeyState, state)
+	}
+
+	return key, nil
 }
 
 func (k KmsService) ResolveKeyArn(keyId *string) (string, error) {

@@ -1,6 +1,8 @@
 package kms
 
-import "encoding/base64"
+import (
+	"encoding/base64"
+)
 
 func EncodeMarker(in string) *string {
 	nextMarkerB64 := base64.StdEncoding.EncodeToString([]byte(in))

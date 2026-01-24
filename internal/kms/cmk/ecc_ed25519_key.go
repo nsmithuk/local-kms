@@ -74,3 +74,27 @@ func (k *Ed25519Key) ApplySeedingKeyMaterial(material SeedingKeyMaterial) error 
 
 	return nil
 }
+
+func (k *Ed25519Key) ApplyImportedKeyMaterial(material []byte, _ *string, _ types.ImportType) error {
+	pk, err := x509.ParsePKCS8PrivateKey(material)
+	if err != nil {
+		return err
+	}
+
+	k.PrivateKey = pk.(ed25519.PrivateKey)
+	k.PublicKey = k.PrivateKey.Public().(ed25519.PublicKey)
+
+	return nil
+}
+
+func (k *Ed25519Key) DeleteImportedKeyMaterial(*string) error {
+	metadata := k.GetMetadata()
+	if metadata.Origin != types.OriginTypeExternal {
+		return fmt.Errorf("Cannot delete key that is not an external key")
+	}
+
+	k.PrivateKey = nil
+	k.PublicKey = nil
+
+	return nil
+}

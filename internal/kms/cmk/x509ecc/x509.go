@@ -1,4 +1,4 @@
-// Package x509 provides pure-Go (no cgo) ASN.1 marshal/unmarshal helpers for
+// Package x509ecc provides pure-Go (no cgo) ASN.1 marshal/unmarshal helpers for
 // ECDSA keys on these named curves:
 //
 //   - NIST: P-224, P-256, P-384, P-521
@@ -14,10 +14,17 @@
 // It intentionally does NOT implement certificate parsing/verification and
 // avoids any Go stdlib internal packages (e.g. internal/godebug).
 //
-// Note: We deliberately do NOT expose ParseECPrivateKey because SEC1 ECPrivateKey
-// parsing is ambiguous if the optional curve parameters are omitted. PKCS#8
-// always carries the curve OID, so it's a better, deterministic format for
-// storage/parsing.
+// Notes:
+//
+//   - For PKCS#8 EC private keys, we follow the Go stdlib approach:
+//
+//   - The curve OID is carried in the *outer* AlgorithmIdentifier.parameters
+//
+//   - The embedded SEC1 ECPrivateKey omits the optional [0] parameters field
+//     This avoids explicit-tagging edge cases and matches widely-accepted encodings.
+//
+//   - We still support parsing SEC1 ECPrivateKey where parameters may be present
+//     or omitted (with ambiguity checks when omitted).
 package x509ecc
 
 import (
@@ -47,9 +54,11 @@ var (
 
 // --- ASN.1 structures (minimal) ---
 
+// We model AlgorithmIdentifier.parameters as an OID directly.
+// For EC keys, parameters is the namedCurve OID.
 type algorithmIdentifier struct {
 	Algorithm  asn1.ObjectIdentifier
-	Parameters asn1.RawValue `asn1:"optional"`
+	Parameters asn1.ObjectIdentifier `asn1:"optional"`
 }
 
 type subjectPublicKeyInfo struct {
@@ -60,7 +69,7 @@ type subjectPublicKeyInfo struct {
 type pkcs8 struct {
 	Version    int
 	Algo       algorithmIdentifier
-	PrivateKey []byte // OCTET STRING containing the private key (SEC1 for EC)
+	PrivateKey []byte // OCTET STRING containing DER SEC1 ECPrivateKey (for EC)
 	// Attributes omitted; not needed for KMS-style keys.
 }
 
@@ -68,8 +77,8 @@ type pkcs8 struct {
 type ecPrivateKey struct {
 	Version    int
 	PrivateKey []byte
-	Parameters asn1.RawValue  `asn1:"optional,tag:0,explicit"`
-	PublicKey  asn1.BitString `asn1:"optional,tag:1,explicit"`
+	NamedCurve asn1.ObjectIdentifier `asn1:"optional,explicit,tag:0"` // NamedCurveOID
+	PublicKey  asn1.BitString        `asn1:"optional,explicit,tag:1"`
 }
 
 // --- Public key: PKIX / SPKI ("PUBLIC KEY") ---
@@ -92,13 +101,10 @@ func MarshalPKIXPublicKey(pub *ecdsa.PublicKey) ([]byte, error) {
 		return nil, errors.New("x509: failed to marshal EC point")
 	}
 
-	paramDER, _ := asn1.Marshal(curveOID)
 	spki := subjectPublicKeyInfo{
 		Algorithm: algorithmIdentifier{
-			Algorithm: oidEcPublicKey,
-			Parameters: asn1.RawValue{
-				FullBytes: paramDER, // DER for OBJECT IDENTIFIER
-			},
+			Algorithm:  oidEcPublicKey,
+			Parameters: curveOID,
 		},
 		SubjectPublicKey: asn1.BitString{Bytes: point, BitLength: len(point) * 8},
 	}
@@ -137,7 +143,8 @@ func ParsePKIXPublicKey(der []byte) (*ecdsa.PublicKey, error) {
 // --- Private key: PKCS#8 ("PRIVATE KEY") ---
 
 // MarshalPKCS8PrivateKey marshals an ECDSA private key as DER PKCS#8 PrivateKeyInfo.
-// The privateKey field contains a SEC1 ECPrivateKey. We include curve parameters and public key.
+// The privateKey field contains a DER-encoded SEC1 ECPrivateKey.
+// We carry the curve OID in the *outer* AlgorithmIdentifier.parameters (like Go stdlib).
 func MarshalPKCS8PrivateKey(priv *ecdsa.PrivateKey) ([]byte, error) {
 	if priv == nil || priv.Curve == nil || priv.D == nil {
 		return nil, errors.New("x509: nil private key")
@@ -147,19 +154,16 @@ func MarshalPKCS8PrivateKey(priv *ecdsa.PrivateKey) ([]byte, error) {
 		return nil, fmt.Errorf("x509: unsupported curve: %s", curveName(priv.Curve))
 	}
 
-	sec1DER, err := marshalECPrivateKeyForPKCS8(priv, curveOID)
+	sec1DER, err := marshalECPrivateKeyForPKCS8(priv)
 	if err != nil {
 		return nil, err
 	}
 
-	paramDER, _ := asn1.Marshal(curveOID)
 	p8 := pkcs8{
 		Version: 0,
 		Algo: algorithmIdentifier{
-			Algorithm: oidEcPublicKey,
-			Parameters: asn1.RawValue{
-				FullBytes: paramDER,
-			},
+			Algorithm:  oidEcPublicKey,
+			Parameters: curveOID,
 		},
 		PrivateKey: sec1DER,
 	}
@@ -200,14 +204,8 @@ func ParsePKCS8PrivateKey(der []byte) (*ecdsa.PrivateKey, error) {
 	}
 
 	// If embedded parameters are present, they must match PKCS#8.
-	if len(ec.Parameters.FullBytes) != 0 {
-		innerOID, ierr := curveOIDFromECPrivateKeyParams(ec.Parameters)
-		if ierr != nil {
-			return nil, ierr
-		}
-		if !innerOID.Equal(curveOID) {
-			return nil, errors.New("x509: curve OID mismatch between PKCS#8 and SEC1")
-		}
+	if len(ec.NamedCurve) != 0 && !ec.NamedCurve.Equal(curveOID) {
+		return nil, errors.New("x509: curve OID mismatch between PKCS#8 and SEC1")
 	}
 
 	return buildECDSAPrivateKey(curve, ec.PrivateKey)
@@ -233,8 +231,7 @@ func curveFromOID(oid asn1.ObjectIdentifier) elliptic.Curve {
 }
 
 func oidFromCurve(c elliptic.Curve) (asn1.ObjectIdentifier, bool) {
-	// Robust matching by curve Params().Name, because callers may pass
-	// different instances.
+	// Robust matching by curve Params().Name, because callers may pass different instances.
 	switch curveName(c) {
 	case "P-224":
 		return oidNamedCurveP224, true
@@ -263,15 +260,11 @@ func scalarLen(c elliptic.Curve) int {
 	return (c.Params().N.BitLen() + 7) / 8
 }
 
-func curveOIDFromParams(params asn1.RawValue) (asn1.ObjectIdentifier, error) {
-	if len(params.FullBytes) == 0 {
+func curveOIDFromParams(params asn1.ObjectIdentifier) (asn1.ObjectIdentifier, error) {
+	if len(params) == 0 {
 		return nil, errors.New("x509: missing EC parameters (named curve OID)")
 	}
-	var oid asn1.ObjectIdentifier
-	if _, err := asn1.Unmarshal(params.FullBytes, &oid); err != nil {
-		return nil, errors.New("x509: invalid EC parameters (expected OID)")
-	}
-	return oid, nil
+	return params, nil
 }
 
 func buildECDSAPrivateKey(curve elliptic.Curve, privScalar []byte) (*ecdsa.PrivateKey, error) {
@@ -303,7 +296,7 @@ func buildECDSAPrivateKey(curve elliptic.Curve, privScalar []byte) (*ecdsa.Priva
 	}, nil
 }
 
-func marshalECPrivateKeyForPKCS8(priv *ecdsa.PrivateKey, curveOID asn1.ObjectIdentifier) ([]byte, error) {
+func marshalECPrivateKeyForPKCS8(priv *ecdsa.PrivateKey) ([]byte, error) {
 	// Normalize scalar to fixed length.
 	nBytes := scalarLen(priv.Curve)
 	d := priv.D.FillBytes(make([]byte, nBytes))
@@ -315,11 +308,10 @@ func marshalECPrivateKeyForPKCS8(priv *ecdsa.PrivateKey, curveOID asn1.ObjectIde
 	}
 	pubBytes := elliptic.Marshal(priv.Curve, x, y)
 
-	paramDER, _ := asn1.Marshal(curveOID)
+	// Match stdlib behavior: omit the optional [0] parameters in embedded SEC1 for PKCS#8.
 	ec := ecPrivateKey{
 		Version:    1,
 		PrivateKey: d,
-		Parameters: asn1.RawValue{FullBytes: paramDER},
 		PublicKey:  asn1.BitString{Bytes: pubBytes, BitLength: len(pubBytes) * 8},
 	}
 	return asn1.Marshal(ec)
@@ -345,14 +337,10 @@ func ParseECPrivateKey(der []byte) (*ecdsa.PrivateKey, error) {
 	}
 
 	// If parameters are present, they're [0] EXPLICIT NamedCurve (OID).
-	if len(ec.Parameters.FullBytes) != 0 {
-		oid, err := curveOIDFromECPrivateKeyParams(ec.Parameters)
-		if err != nil {
-			return nil, err
-		}
-		curve := curveFromOID(oid)
+	if len(ec.NamedCurve) != 0 {
+		curve := curveFromOID(ec.NamedCurve)
 		if curve == nil {
-			return nil, fmt.Errorf("x509: unsupported curve OID: %v", oid)
+			return nil, fmt.Errorf("x509: unsupported curve OID: %v", ec.NamedCurve)
 		}
 		return buildECDSAPrivateKey(curve, ec.PrivateKey)
 	}
@@ -401,37 +389,6 @@ func ParseECPrivateKey(der []byte) (*ecdsa.PrivateKey, error) {
 		return nil, errors.New("x509: invalid EC private key")
 	}
 	return match, nil
-}
-
-// curveOIDFromECPrivateKeyParams extracts the named-curve OID from the SEC1
-// ECPrivateKey parameters field, which is [0] EXPLICIT OBJECT IDENTIFIER.
-//
-// Your existing curveOIDFromParams expects raw OBJECT IDENTIFIER DER.
-// SEC1 wraps it in an explicit context-specific tag, so we unwrap that here.
-func curveOIDFromECPrivateKeyParams(params asn1.RawValue) (asn1.ObjectIdentifier, error) {
-	if len(params.FullBytes) == 0 {
-		return nil, errors.New("x509: missing EC parameters (named curve OID)")
-	}
-
-	// First try direct (in case FullBytes already contains the OID DER).
-	var oid asn1.ObjectIdentifier
-	if _, err := asn1.Unmarshal(params.FullBytes, &oid); err == nil {
-		return oid, nil
-	}
-
-	// Otherwise unwrap the EXPLICIT tag: decode the outer RawValue,
-	// then decode its contents as an OID.
-	var outer asn1.RawValue
-	if _, err := asn1.Unmarshal(params.FullBytes, &outer); err != nil {
-		return nil, errors.New("x509: invalid EC parameters (expected OID)")
-	}
-	if len(outer.Bytes) == 0 {
-		return nil, errors.New("x509: invalid EC parameters (empty)")
-	}
-	if _, err := asn1.Unmarshal(outer.Bytes, &oid); err != nil {
-		return nil, errors.New("x509: invalid EC parameters (expected OID)")
-	}
-	return oid, nil
 }
 
 // bytesEqual is a small helper to avoid pulling in subtle/constant-time concerns here.

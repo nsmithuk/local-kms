@@ -102,6 +102,10 @@ func (c CiphertextBlob) Ciphertext() ([]byte, error) {
 //------------------------------------------------------
 
 func (k *SymmetricKey) Encrypt(plaintext []byte, algorithm types.EncryptionAlgorithmSpec, context map[string]string) ([]byte, error) {
+	if err := k.enforceKeyUsageType(types.KeyUsageTypeEncryptDecrypt); err != nil {
+		return nil, err
+	}
+
 	backingKey, ok := k.BackingKeys[*k.GetMetadata().CurrentKeyMaterialId]
 	if !ok {
 		return nil, fmt.Errorf("backing key not found")
@@ -129,6 +133,10 @@ func (k *SymmetricKey) Encrypt(plaintext []byte, algorithm types.EncryptionAlgor
 }
 
 func (k *SymmetricKey) Decrypt(ciphertextblob []byte, algorithm types.EncryptionAlgorithmSpec, context map[string]string) ([]byte, error) {
+	if err := k.enforceKeyUsageType(types.KeyUsageTypeEncryptDecrypt); err != nil {
+		return nil, err
+	}
+
 	ctb := CiphertextBlob(ciphertextblob)
 
 	materialId, err := ctb.MaterialId()

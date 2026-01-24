@@ -5,23 +5,23 @@ import (
 	"errors"
 	"log/slog"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	awskms "github.com/aws/aws-sdk-go-v2/service/kms"
 	awskmstypes "github.com/aws/aws-sdk-go-v2/service/kms/types"
 	"github.com/nsmithuk/local-kms/internal/kms/cmk"
-	"github.com/nsmithuk/local-kms/internal/kms/data"
 	"github.com/nsmithuk/local-kms/internal/kms/kmserr"
 	"github.com/nsmithuk/local-kms/internal/kms/validation"
 )
 
 func (k KmsService) Sign(ctx context.Context, req awskms.SignInput) (*awskms.SignOutput, []error) {
 
+	key, err := k.getUsableKey(req.KeyId)
+	if err != nil {
+		return nil, []error{err}
+	}
+
 	validator := validation.Validator{}
 	validationErrors := make([]error, 0)
-
-	keyId, err := k.ResolveKeyArn(req.KeyId)
-	if err != nil {
-		validationErrors = append(validationErrors, err)
-	}
 
 	if err = validator.RequiredPointer(req.Message, "Message"); err != nil {
 		validationErrors = append(validationErrors, err)
@@ -46,18 +46,6 @@ func (k KmsService) Sign(ctx context.Context, req awskms.SignInput) (*awskms.Sig
 	}
 
 	// ---
-
-	key, err := k.Db.LoadKey(keyId)
-	if err != nil {
-		if errors.Is(err, data.ErrKeyNotFound) {
-			return nil, []error{
-				kmserr.NewValidation(kmserr.CauseNotFoundException, "A key with the arn %s does not exists", keyId),
-			}
-		}
-		return nil, []error{err}
-	}
-
-	//---
 
 	metadata := key.GetMetadata()
 
@@ -84,7 +72,7 @@ func (k KmsService) Sign(ctx context.Context, req awskms.SignInput) (*awskms.Sig
 	//---
 
 	return &awskms.SignOutput{
-		KeyId:            &keyId,
+		KeyId:            aws.String(key.GetId()),
 		Signature:        signature,
 		SigningAlgorithm: req.SigningAlgorithm,
 	}, nil

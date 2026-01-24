@@ -11,14 +11,29 @@ import (
 var ErrOperationNotSupported = errors.New("operation not supported")
 
 type Key interface {
+	GetId() string
 	GetArn() string
-	//GetPolicy() string
+
+	GetPolicy() string
+	SetPolicy(string)
+
 	GetKeyType() KeyType
 	GetMetadata() *types.KeyMetadata
 	IsPendingDeletion() bool
 	ShouldBeDeleted() bool
+
 	ApplyNewKeyMaterial() error
-	ApplySeedingKeyMaterial(material SeedingKeyMaterial) error
+	ApplySeedingKeyMaterial(SeedingKeyMaterial) error
+
+	SetParametersForImport(*ParametersForImport)
+	GetParametersForImport() *ParametersForImport
+	ApplyImportedKeyMaterial([]byte, *string, types.ImportType) error
+	DeleteImportedKeyMaterial(*string) error
+	GetLastImportDigest() []byte
+	SetLastImportDigest([]byte)
+
+	RotateKeyOnDemand() error
+	ListKeyRotations(types.IncludeKeyMaterial) []types.RotationsListEntry
 
 	// Operation specific functions
 	GetPublicKey() ([]byte, error)
@@ -65,9 +80,18 @@ func GetKeyType(k KeyType) (Key, error) {
 }
 
 type BaseKey struct {
-	KeyType  KeyType
-	Metadata types.KeyMetadata
-	Policy   string
+	KeyType            KeyType
+	Metadata           types.KeyMetadata
+	Policy             string
+	ImportParams       *ParametersForImport
+	LastImportedDigest []byte
+}
+
+func (b *BaseKey) GetId() string {
+	if b.Metadata.KeyId == nil {
+		return ""
+	}
+	return *b.Metadata.KeyId
 }
 
 func (b *BaseKey) GetArn() string {
@@ -93,6 +117,72 @@ func (b *BaseKey) ShouldBeDeleted() bool {
 
 func (b *BaseKey) GetKeyType() KeyType {
 	return b.KeyType
+}
+
+func (b *BaseKey) GetPolicy() string {
+	return b.Policy
+}
+
+func (b *BaseKey) SetPolicy(policy string) {
+	b.Policy = policy
+}
+
+//---------------------------------------------
+
+func (b *BaseKey) enforceKeyUsageType(v types.KeyUsageType) error {
+	if b.Metadata.KeyUsage != v {
+		return fmt.Errorf("unsupported KeyUsageType: %v. Expected %s", v, b.Metadata.KeyUsage)
+	}
+	return nil
+}
+
+//func (b *BaseKey) enforceMacAlgorithmSpec(v types.MacAlgorithmSpec) error {
+//	if b.Metadata.MacAlgorithms == nil {
+//		return fmt.Errorf("key does not support Mac Algorithms")
+//	}
+//	if !slices.Contains(b.Metadata.MacAlgorithms, v) {
+//		return fmt.Errorf("unsupported MacAlgorithm: %s. Expected %v", v, b.Metadata.MacAlgorithms)
+//	}
+//	return nil
+//}
+//
+//func (b *BaseKey) enforceSigningAlgorithmSpec(v types.SigningAlgorithmSpec) error {
+//	if b.Metadata.MacAlgorithms == nil {
+//		return fmt.Errorf("key does not support Mac Algorithms")
+//	}
+//	if !slices.Contains(b.Metadata.SigningAlgorithms, v) {
+//		return fmt.Errorf("unsupported SigningAlgorithmSpec: %s. Expected %v", v, b.Metadata.SigningAlgorithms)
+//	}
+//	return nil
+//}
+
+//---------------------------------------------
+
+func (b *BaseKey) GetLastImportDigest() []byte {
+	return b.LastImportedDigest
+}
+func (b *BaseKey) SetLastImportDigest(digest []byte) {
+	b.LastImportedDigest = digest
+}
+
+func (b *BaseKey) SetParametersForImport(parameters *ParametersForImport) {
+	b.ImportParams = parameters
+}
+func (b *BaseKey) GetParametersForImport() *ParametersForImport {
+	return b.ImportParams
+}
+func (b *BaseKey) ApplyImportedKeyMaterial([]byte, *string, types.ImportType) error {
+	return ErrOperationNotSupported
+}
+func (b *BaseKey) DeleteImportedKeyMaterial(*string) error {
+	return ErrOperationNotSupported
+}
+
+func (b *BaseKey) RotateKeyOnDemand() error {
+	return ErrOperationNotSupported
+}
+func (b *BaseKey) ListKeyRotations(types.IncludeKeyMaterial) []types.RotationsListEntry {
+	return nil
 }
 
 //---------------------------------------------

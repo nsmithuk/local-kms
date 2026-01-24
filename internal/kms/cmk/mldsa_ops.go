@@ -21,6 +21,10 @@ func (k *MlDsaKey) GetPublicKey() ([]byte, error) {
 }
 
 func (k *MlDsaKey) Sign(message []byte, algorithm types.SigningAlgorithmSpec, messageType types.MessageType) ([]byte, error) {
+	if err := k.enforceKeyUsageType(types.KeyUsageTypeSignVerify); err != nil {
+		return nil, err
+	}
+
 	if algorithm != types.SigningAlgorithmSpecMlDsaShake256 {
 		return nil, fmt.Errorf("unsupported signing algorithm: %s", algorithm)
 	}
@@ -42,6 +46,10 @@ func (k *MlDsaKey) Sign(message []byte, algorithm types.SigningAlgorithmSpec, me
 }
 
 func (k *MlDsaKey) Verify(message []byte, algorithm types.SigningAlgorithmSpec, messageType types.MessageType, signature []byte) (bool, error) {
+	if err := k.enforceKeyUsageType(types.KeyUsageTypeSignVerify); err != nil {
+		return false, err
+	}
+
 	if algorithm != types.SigningAlgorithmSpecMlDsaShake256 {
 		return false, fmt.Errorf("unsupported signing algorithm: %s", algorithm)
 	}

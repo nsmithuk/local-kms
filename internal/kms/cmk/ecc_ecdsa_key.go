@@ -127,7 +127,34 @@ func (k *EcdsaKey) ApplySeedingKeyMaterial(material SeedingKeyMaterial) error {
 
 //-----
 
+func (k *EcdsaKey) ApplyImportedKeyMaterial(material []byte, _ *string, _ types.ImportType) error {
+	pk, err := x509ecc.ParsePKCS8PrivateKey(material)
+	if err != nil {
+		return err
+	}
+
+	k.PrivateKey = EcdsaPrivateKey(*pk)
+
+	return nil
+}
+
+func (k *EcdsaKey) DeleteImportedKeyMaterial(*string) error {
+	metadata := k.GetMetadata()
+	if metadata.Origin != types.OriginTypeExternal {
+		return fmt.Errorf("Cannot delete key that is not an external key")
+	}
+
+	k.PrivateKey = EcdsaPrivateKey{}
+	return nil
+}
+
+//-----
+
 func (k *EcdsaPrivateKey) MarshalJSON() ([]byte, error) {
+	if k == nil || k.PublicKey.Curve == nil {
+		return json.Marshal(nil)
+	}
+
 	data, err := x509ecc.MarshalPKCS8PrivateKey((*ecdsa.PrivateKey)(k))
 	if err != nil {
 		return nil, err
@@ -141,6 +168,10 @@ func (k *EcdsaPrivateKey) UnmarshalJSON(data []byte) error {
 
 	if err != nil {
 		return err
+	}
+
+	if d == nil {
+		return nil
 	}
 
 	pk, err := x509ecc.ParsePKCS8PrivateKey(d)
