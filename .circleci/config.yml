@@ -261,7 +261,7 @@ jobs:
           command: |
             apk add --update --no-cache py3-pip gcc g++ make libffi-dev openssl-dev
             cd tests/functional
-            pip3 install -r requirments.txt
+            pip3 install -r requirments.txt --break-system-packages
             pytest
       - store_artifacts:
           path: /artifacts/linux-amd64-alpine.bin
@@ -273,7 +273,7 @@ jobs:
 
   docker-image-build:
     machine:
-      image: ubuntu-2004:202201-02
+      image: ubuntu-2404:2025.09.1
     steps:
       - checkout
       - run:
