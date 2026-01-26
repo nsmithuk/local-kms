@@ -3,8 +3,6 @@
 > [!NOTE]
 > V4 work in progress.
 
-V3 will continue to be supported for security updates, but will recieve no more feature updates.
-
 ## Refactor overview
 
 The current refactor lays the groundwork for the v4 architecture, focusing on long-term
