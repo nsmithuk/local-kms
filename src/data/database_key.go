@@ -3,6 +3,7 @@ package data
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -10,6 +11,8 @@ import (
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/util"
 )
+
+var KeyNotFoundError *keyNotFoundError
 
 func (d *Database) SaveKey(k cmk.Key) error {
 	encoded, err := json.Marshal(k)
@@ -25,6 +28,9 @@ func (d *Database) LoadKey(arn string) (cmk.Key, error) {
 	encoded, err := d.database.Get([]byte(arn), nil)
 
 	if err != nil {
+		if errors.Is(err, leveldb.ErrNotFound) {
+			return nil, &keyNotFoundError{keyId: arn}
+		}
 		return nil, err
 	}
 
@@ -179,4 +185,14 @@ func unmarshalKey(encoded []byte) (cmk.Key, error) {
 	err = json.Unmarshal(encoded, &key)
 
 	return key, err
+}
+
+//------------------------------------
+
+type keyNotFoundError struct {
+	keyId string
+}
+
+func (e *keyNotFoundError) Error() string {
+	return fmt.Sprintf("Key '%s' does not exist", e.keyId)
 }
