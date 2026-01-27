@@ -28,7 +28,7 @@ func Run(port, seedPath string) {
 	// Start
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		handleRequest(w, r, database)
+		HandleRequest(w, r, database)
 	})
 
 	logger.Infof("Data will be stored in %s", config.DatabasePath)
@@ -41,7 +41,7 @@ func Run(port, seedPath string) {
 
 }
 
-func handleRequest(w http.ResponseWriter, r *http.Request, database *data.Database) {
+func HandleRequest(w http.ResponseWriter, r *http.Request, database *data.Database) {
 	logger.Debugf("%s %s %s\n", r.RemoteAddr, r.Method, r.URL)
 
 	if r.URL.Path != "/" {
