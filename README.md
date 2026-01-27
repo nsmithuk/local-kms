@@ -5,6 +5,11 @@ A mock version of AWS' Key Management Service, for local development and testing
 _Whilst this project does use real encryption ([AES](https://golang.org/pkg/crypto/aes/), [ECDSA](https://golang.org/pkg/crypto/ecdsa/) and [RSA](https://golang.org/pkg/crypto/rsa/)), it is designed for 
 development and testing against KMS; not for use in a production environment._
 
+> [!NOTE]
+> [V4 is in development](https://github.com/nsmithuk/local-kms/tree/v4-dev).
+> A refactor to help remove some of the pain-points of keeping V3 up to date.
+> It'll come with support for all KMS key types, including Post-Quantum Keys.
+
 #### (Local) KMS Usage Guides
 * [Using AWS KMS via the CLI with a Symmetric Key](https://nsmith.net/aws-kms-cli)
 * [Using AWS KMS via the CLI with Elliptic Curve (ECC) Keys](https://nsmith.net/aws-kms-cli-ecc)
