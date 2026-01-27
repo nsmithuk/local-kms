@@ -1,6 +1,7 @@
 package src
 
 import (
+	"errors"
 	"fmt"
 	"github.com/nsmithuk/local-kms/src/cmk"
 	"github.com/nsmithuk/local-kms/src/config"
@@ -170,7 +171,7 @@ func seed(path string, database *data.Database) {
 }
 
 func keyIsNew(database *data.Database, metadata *cmk.KeyMetadata) bool {
-	if _, err := database.LoadKey(metadata.Arn); err != leveldb.ErrNotFound {
+	if _, err := database.LoadKey(metadata.Arn); !errors.As(err, &data.KeyNotFoundError) {
 		logger.Warnf("Key %s already exists; skipping key", metadata.KeyId)
 		return false
 	}
