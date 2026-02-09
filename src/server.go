@@ -6,6 +6,7 @@ import (
 	"github.com/nsmithuk/local-kms/src/data"
 	"github.com/nsmithuk/local-kms/src/handler"
 	log "github.com/sirupsen/logrus"
+	"net"
 	"net/http"
 	"reflect"
 	"strings"
@@ -32,13 +33,21 @@ func Run(port, seedPath string) {
 	})
 
 	logger.Infof("Data will be stored in %s", config.DatabasePath)
-	logger.Infof("Local KMS started on 0.0.0.0:%s", port)
-
-	err := http.ListenAndServe(":"+port, nil)
+	addr := ":"+port
+	// Create server manually so we can bind first and verify
+	// we can create the server
+	s := &http.Server{Addr:addr, Handler:nil}
+	ln, err := net.Listen("tcp", addr)
+	// If port==0, figure out where to we bound
+	arr := strings.Split(ln.Addr().String(), ":");
+	port = arr[len(arr)-1]
+	if err == nil {
+		logger.Infof("Local KMS started on 0.0.0.0:%s", port)
+		err = s.Serve(ln)
+	}
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
-
 }
 
 func HandleRequest(w http.ResponseWriter, r *http.Request, database *data.Database) {
