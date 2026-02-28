@@ -3,7 +3,7 @@
 ############################################
 # Build stage (Debian-based, not Alpine)
 ############################################
-FROM --platform=$BUILDPLATFORM golang:1.26-bookworm AS builder
+FROM --platform=$BUILDPLATFORM golang:1.26 AS builder
 
 ARG TARGETOS
 ARG TARGETARCH
@@ -30,7 +30,7 @@ COPY . .
 RUN --mount=type=cache,target=/root/.cache/go-build \
     CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH \
     go build -trimpath -ldflags="-s -w -X main.version=$VERSION" \
-    -o /out/local-kms ./...
+    -o /out/local-kms ./cmd/local-kms
 
 ############################################
 # Runtime stage (small, multi-arch)
