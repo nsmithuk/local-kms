@@ -2,7 +2,7 @@ package handler
 
 import (
 	"fmt"
-	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/aws/aws-sdk-go-v2/service/kms"
 	"github.com/nsmithuk/local-kms/src/config"
 	"reflect"
 	"strings"
@@ -23,14 +23,14 @@ func (r *RequestHandler) UpdateAlias() Response {
 	if body.TargetKeyId == nil {
 		msg := "TargetKeyId is a required parameter"
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewMissingParameterResponse(msg)
 	}
 
 	if body.AliasName == nil {
 		msg := "AliasName is a required parameter"
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewMissingParameterResponse(msg)
 	}
 
@@ -38,7 +38,7 @@ func (r *RequestHandler) UpdateAlias() Response {
 		msg := "Alias must start with the prefix \"alias/\". Please see " +
 			"http://docs.aws.amazon.com/kms/latest/developerguide/programming-aliases.html"
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewValidationExceptionResponse(msg)
 	}
 
@@ -51,7 +51,7 @@ func (r *RequestHandler) UpdateAlias() Response {
 		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'AliasName' failed to satisfy "+
 			"constraint: Member must have length less than or equal to 256", *body.AliasName)
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewValidationExceptionResponse(msg)
 	}
 
@@ -64,7 +64,7 @@ func (r *RequestHandler) UpdateAlias() Response {
 	if err != nil {
 		msg := fmt.Sprintf("Alias '%s' does not exist", *body.AliasName)
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewNotFoundExceptionResponse(msg)
 	}
 
@@ -77,7 +77,7 @@ func (r *RequestHandler) UpdateAlias() Response {
 
 	if originalKey == nil {
 		msg := fmt.Sprintf("Original key '%s' does not exist", originalKeyArn)
-		r.logger.Errorf(msg)
+		r.logger.Error(msg)
 		return NewInternalFailureExceptionResponse(msg)
 	}
 
@@ -91,7 +91,7 @@ func (r *RequestHandler) UpdateAlias() Response {
 	if targetKey == nil {
 		msg := fmt.Sprintf("Key '%s' does not exist", targetKeyArn)
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewNotFoundExceptionResponse(msg)
 	}
 
@@ -103,7 +103,7 @@ func (r *RequestHandler) UpdateAlias() Response {
 			"usage %s. The key usage of the current CMK and the new CMK must be the same.",
 			*body.AliasName, originalKey.GetMetadata().KeyUsage, targetKey.GetMetadata().KeyUsage)
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewValidationExceptionResponse(msg)
 	}
 
@@ -115,7 +115,7 @@ func (r *RequestHandler) UpdateAlias() Response {
 			"type %s. The key type of the current CMK and the new CMK must be the same.",
 			*body.AliasName, reflect.TypeOf(originalKey), reflect.TypeOf(targetKey))
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewValidationExceptionResponse(msg)
 	}
 
@@ -125,7 +125,7 @@ func (r *RequestHandler) UpdateAlias() Response {
 		// Key is pending deletion; cannot create alias
 		msg := fmt.Sprintf("%s is pending deletion.", targetKeyArn)
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewKMSInvalidStateExceptionResponse(msg)
 	}
 

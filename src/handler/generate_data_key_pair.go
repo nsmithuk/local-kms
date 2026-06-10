@@ -7,7 +7,7 @@ import (
 	"crypto/rsa"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/aws/aws-sdk-go-v2/service/kms"
 	"github.com/btcsuite/btcd/btcec/v2"
 	"github.com/nsmithuk/local-kms/src/cmk"
 	"github.com/nsmithuk/local-kms/src/x509"
@@ -50,14 +50,14 @@ func (r *RequestHandler) generateDataKeyPair() (Response, *GenerateDataKeyPairRe
 	if body.KeyId == nil {
 		msg := "KeyId is a required parameter"
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewMissingParameterResponse(msg), nil
 	}
 
-	if body.KeyPairSpec == nil {
+	if body.KeyPairSpec == "" {
 		msg := "1 validation error detected: KeyPairSpec is required."
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewValidationExceptionResponse(msg), nil
 	}
 
@@ -72,7 +72,7 @@ func (r *RequestHandler) generateDataKeyPair() (Response, *GenerateDataKeyPairRe
 
 	//----------------------------------
 
-	keyPairSpec := cmk.KeySpec(*body.KeyPairSpec)
+	keyPairSpec := cmk.KeySpec(body.KeyPairSpec)
 
 	var publicKey interface{}
 	var privateKey interface{}
@@ -133,7 +133,7 @@ func (r *RequestHandler) generateDataKeyPair() (Response, *GenerateDataKeyPairRe
 
 	default:
 		msg := "1 validation error detected: KeyPairSpec is invalid."
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewValidationExceptionResponse(msg), nil
 	}
 
@@ -149,12 +149,18 @@ func (r *RequestHandler) generateDataKeyPair() (Response, *GenerateDataKeyPairRe
 
 	//---
 
+	encryptionContext := make(map[string]*string, len(body.EncryptionContext))
+	for k, v := range body.EncryptionContext {
+		value := v
+		encryptionContext[k] = &value
+	}
+
 	var cipherResponse []byte
 
 	switch k := key.(type) {
 	case *cmk.AesKey:
 
-		cipherResponse, err = k.EncryptAndPackage(private, body.EncryptionContext)
+		cipherResponse, err = k.EncryptAndPackage(private, encryptionContext)
 		if err != nil {
 			r.logger.Error(err.Error())
 			return NewInternalFailureExceptionResponse(err.Error()), nil
@@ -164,12 +170,12 @@ func (r *RequestHandler) generateDataKeyPair() (Response, *GenerateDataKeyPairRe
 
 		if k.GetMetadata().KeyUsage == cmk.UsageSignVerify {
 			msg := fmt.Sprintf("%s key usage is %s which is not valid for GenerateDataKeyPair.", k.GetArn(), k.GetMetadata().KeyUsage)
-			r.logger.Warnf(msg)
+			r.logger.Warn(msg)
 			return NewInvalidKeyUsageException(msg), nil
 		}
 
 		msg := fmt.Sprintf("%s key KeySpec is %s which is not valid for GenerateDataKeyPair.", k.GetArn(), k.GetMetadata().CustomerMasterKeySpec)
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewInvalidKeyUsageException(msg), nil
 	}
 

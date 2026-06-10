@@ -2,7 +2,7 @@ package handler
 
 import (
 	"fmt"
-	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/aws/aws-sdk-go-v2/service/kms"
 	"github.com/nsmithuk/local-kms/src/cmk"
 )
 
@@ -21,7 +21,7 @@ func (r *RequestHandler) Encrypt() Response {
 	if body.KeyId == nil {
 		msg := "KeyId is a required parameter"
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewMissingParameterResponse(msg)
 	}
 
@@ -29,7 +29,7 @@ func (r *RequestHandler) Encrypt() Response {
 		msg := "1 validation error detected: Value at 'plaintext' failed to satisfy constraint: Member must have " +
 			"length greater than or equal to 1"
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewValidationExceptionResponse(msg)
 	}
 
@@ -37,13 +37,18 @@ func (r *RequestHandler) Encrypt() Response {
 		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'Plaintext' failed to satisfy "+
 			"constraint: Member must have minimum length of 1 and maximum length of 4096.", string(body.Plaintext))
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewValidationExceptionResponse(msg)
 	}
 
-	if body.EncryptionAlgorithm == nil {
-		d := "SYMMETRIC_DEFAULT"
-		body.EncryptionAlgorithm = &d
+	if body.EncryptionAlgorithm == "" {
+		body.EncryptionAlgorithm = "SYMMETRIC_DEFAULT"
+	}
+
+	encryptionContext := make(map[string]*string, len(body.EncryptionContext))
+	for k, v := range body.EncryptionContext {
+		value := v
+		encryptionContext[k] = &value
 	}
 
 	//----------------------------------
@@ -62,7 +67,7 @@ func (r *RequestHandler) Encrypt() Response {
 	switch k := key.(type) {
 	case *cmk.AesKey:
 
-		cipherResponse, err = k.EncryptAndPackage(body.Plaintext, body.EncryptionContext)
+		cipherResponse, err = k.EncryptAndPackage(body.Plaintext, encryptionContext)
 		if err != nil {
 			r.logger.Error(err.Error())
 			return NewInternalFailureExceptionResponse(err.Error())
@@ -72,11 +77,11 @@ func (r *RequestHandler) Encrypt() Response {
 
 		if k.GetMetadata().KeyUsage != cmk.UsageEncryptDecrypt {
 			msg := fmt.Sprintf("%s key usage is %s which is not valid for Encrypt.", k.GetArn(), k.GetMetadata().KeyUsage)
-			r.logger.Warnf(msg)
+			r.logger.Warn(msg)
 			return NewInvalidKeyUsageException(msg)
 		}
 
-		cipherResponse, err = k.Encrypt(body.Plaintext, cmk.EncryptionAlgorithm(*body.EncryptionAlgorithm))
+		cipherResponse, err = k.Encrypt(body.Plaintext, cmk.EncryptionAlgorithm(body.EncryptionAlgorithm))
 		if err != nil {
 			r.logger.Error(err.Error())
 			return NewInternalFailureExceptionResponse(err.Error())
@@ -86,7 +91,7 @@ func (r *RequestHandler) Encrypt() Response {
 
 		if k.GetMetadata().KeyUsage == cmk.UsageSignVerify {
 			msg := fmt.Sprintf("%s key usage is SIGN_VERIFY which is not valid for Encrypt.", k.GetArn())
-			r.logger.Warnf(msg)
+			r.logger.Warn(msg)
 			return NewInvalidKeyUsageException(msg)
 		}
 
@@ -104,6 +109,6 @@ func (r *RequestHandler) Encrypt() Response {
 	}{
 		KeyId:               key.GetArn(),
 		CiphertextBlob:      cipherResponse,
-		EncryptionAlgorithm: cmk.EncryptionAlgorithm(*body.EncryptionAlgorithm),
+		EncryptionAlgorithm: cmk.EncryptionAlgorithm(body.EncryptionAlgorithm),
 	})
 }

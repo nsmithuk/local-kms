@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/aws/aws-sdk-go-v2/service/kms"
 	"github.com/nsmithuk/local-kms/src/cmk"
 )
 
@@ -20,7 +20,7 @@ func (r *RequestHandler) DescribeKey() Response {
 	if body.KeyId == nil {
 		msg := "KeyId is a required parameter"
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewMissingParameterResponse(msg)
 	}
 

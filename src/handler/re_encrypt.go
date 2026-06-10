@@ -2,7 +2,7 @@ package handler
 
 import (
 	"fmt"
-	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/aws/aws-sdk-go-v2/service/kms"
 	"github.com/nsmithuk/local-kms/src/cmk"
 	"github.com/nsmithuk/local-kms/src/service"
 )
@@ -22,14 +22,14 @@ func (r *RequestHandler) ReEncrypt() Response {
 	if body.DestinationKeyId == nil {
 		msg := "DestinationKeyId is a required parameter"
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewMissingParameterResponse(msg)
 	}
 
 	if len(body.CiphertextBlob) == 0 {
 		msg := "CiphertextBlob is a required parameter"
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewMissingParameterResponse(msg)
 	}
 
@@ -37,18 +37,28 @@ func (r *RequestHandler) ReEncrypt() Response {
 		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'CiphertextBlob' failed to satisfy "+
 			"constraint: Member must have length minimum length of 1 and maximum length of 6144.", string(body.CiphertextBlob))
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewValidationExceptionResponse(msg)
 	}
 
-	if body.SourceEncryptionAlgorithm == nil {
-		d := "SYMMETRIC_DEFAULT"
-		body.SourceEncryptionAlgorithm = &d
+	if body.SourceEncryptionAlgorithm == "" {
+		body.SourceEncryptionAlgorithm = "SYMMETRIC_DEFAULT"
 	}
 
-	if body.DestinationEncryptionAlgorithm == nil {
-		d := "SYMMETRIC_DEFAULT"
-		body.DestinationEncryptionAlgorithm = &d
+	if body.DestinationEncryptionAlgorithm == "" {
+		body.DestinationEncryptionAlgorithm = "SYMMETRIC_DEFAULT"
+	}
+
+	sourceEncryptionContext := make(map[string]*string, len(body.SourceEncryptionContext))
+	for k, v := range body.SourceEncryptionContext {
+		value := v
+		sourceEncryptionContext[k] = &value
+	}
+
+	destinationEncryptionContext := make(map[string]*string, len(body.DestinationEncryptionContext))
+	for k, v := range body.DestinationEncryptionContext {
+		value := v
+		destinationEncryptionContext[k] = &value
 	}
 
 	//--------------------------------
@@ -70,10 +80,10 @@ func (r *RequestHandler) ReEncrypt() Response {
 	switch k := keySource.(type) {
 	case *cmk.AesKey:
 
-		plaintext, err = k.Decrypt(keySourceVersion, ciphertext, body.SourceEncryptionContext)
+		plaintext, err = k.Decrypt(keySourceVersion, ciphertext, sourceEncryptionContext)
 		if err != nil {
 			msg := fmt.Sprintf("Unable to decode Ciphertext: %s", err)
-			r.logger.Warnf(msg)
+			r.logger.Warn(msg)
 
 			return NewInvalidCiphertextExceptionResponse("")
 		}
@@ -99,7 +109,7 @@ func (r *RequestHandler) ReEncrypt() Response {
 	switch k := keyDestination.(type) {
 	case *cmk.AesKey:
 
-		cipherResponse, err = k.EncryptAndPackage(plaintext, body.DestinationEncryptionContext)
+		cipherResponse, err = k.EncryptAndPackage(plaintext, destinationEncryptionContext)
 		if err != nil {
 			r.logger.Error(err.Error())
 			return NewInternalFailureExceptionResponse(err.Error())
@@ -123,7 +133,7 @@ func (r *RequestHandler) ReEncrypt() Response {
 		KeyId:                          keyDestination.GetArn(),
 		SourceKeyId:                    keySource.GetArn(),
 		CiphertextBlob:                 cipherResponse,
-		SourceEncryptionAlgorithm:      cmk.EncryptionAlgorithm(*body.SourceEncryptionAlgorithm),
-		DestinationEncryptionAlgorithm: cmk.EncryptionAlgorithm(*body.DestinationEncryptionAlgorithm),
+		SourceEncryptionAlgorithm:      cmk.EncryptionAlgorithm(body.SourceEncryptionAlgorithm),
+		DestinationEncryptionAlgorithm: cmk.EncryptionAlgorithm(body.DestinationEncryptionAlgorithm),
 	})
 }

@@ -113,7 +113,7 @@ jobs:
 
   darwin-amd64:
     docker:
-      - image: golang:1.20-bullseye
+      - image: golang:1.26-bullseye
     steps:
       - checkout
       - run:
@@ -135,7 +135,7 @@ jobs:
 
   darwin-arm64:
     docker:
-      - image: golang:1.20-bullseye
+      - image: golang:1.26-bullseye
     steps:
       - checkout
       - run:
@@ -157,7 +157,7 @@ jobs:
 
   linux-amd64:
     docker:
-      - image: golang:1.20-bullseye
+      - image: golang:1.26-bullseye
     steps:
       - checkout
       - run:
@@ -202,7 +202,7 @@ jobs:
             
   linux-arm64:
     docker:
-      - image: golang:1.20-bullseye
+      - image: golang:1.26-bullseye
     steps:
       - checkout
       - run:
@@ -225,7 +225,7 @@ jobs:
   linux-amd64-apline:
     working_directory: /go/src/github.com/nsmithuk/local-kms
     docker:
-      - image: golang:1.20-alpine
+      - image: golang:1.26-alpine
     steps:
       - checkout
       - run:

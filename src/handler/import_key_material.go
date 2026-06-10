@@ -46,7 +46,7 @@ func (r *RequestHandler) ImportKeyMaterial() Response {
 	if body.ImportToken == nil {
 		msg := "ImportToken is a required parameter"
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewMissingParameterResponse(msg)
 	}
 
@@ -65,7 +65,7 @@ func (r *RequestHandler) ImportKeyMaterial() Response {
 	default:
 		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'expirationModel' failed to satisfy constraint: Member must satisfy enum value set: [KEY_MATERIAL_DOES_NOT_EXPIRE, KEY_MATERIAL_EXPIRES]", *body.ExpirationModel)
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewValidationExceptionResponse(msg)
 	}
 
@@ -94,7 +94,7 @@ func (r *RequestHandler) ImportKeyMaterial() Response {
 	if key == nil {
 		msg := fmt.Sprintf("Key '%s' does not exist", key.GetArn())
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewNotFoundExceptionResponse(msg)
 	}
 
@@ -102,7 +102,7 @@ func (r *RequestHandler) ImportKeyMaterial() Response {
 	if keyMetadata.Origin != cmk.KeyOriginExternal {
 		msg := fmt.Sprintf("%s origin is %s which is not valid for this operation.", key.GetArn(), keyMetadata.Origin)
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewUnsupportedOperationException(msg)
 	}
 
@@ -110,13 +110,13 @@ func (r *RequestHandler) ImportKeyMaterial() Response {
 	case cmk.KeyStatePendingDeletion:
 		msg := fmt.Sprintf("%s is pending deletion.", *body.KeyId)
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewKMSInvalidStateExceptionResponse(msg)
 
 	case cmk.KeyStateUnavailable:
 		msg := fmt.Sprintf("%s is unavailable.", *body.KeyId)
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewKMSInvalidStateExceptionResponse(msg)
 	}
 
@@ -130,7 +130,7 @@ func (r *RequestHandler) ImportKeyMaterial() Response {
 	if params.ParametersValidTo < time.Now().Unix() {
 		msg := fmt.Sprintf("Parameters for key material import have expired. Key '%s'", key.GetArn())
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewExpiredImportTokenExceptionResponse()
 	}
 
@@ -149,14 +149,14 @@ func (r *RequestHandler) ImportKeyMaterial() Response {
 	if err != nil {
 		msg := fmt.Sprintf("Unable to decode EncryptedKeyMaterial: %s", err.Error())
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewInvalidCiphertextExceptionResponse("")
 	}
 
 	if err = key.(*cmk.AesKey).ImportKeyMaterial(keyMaterial); err != nil {
 		msg := fmt.Sprintf("Unable to import key material: %s", err.Error())
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewIncorrectKeyMaterialExceptionResponse()
 	}
 

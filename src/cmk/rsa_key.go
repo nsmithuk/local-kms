@@ -218,9 +218,9 @@ func (k *RsaKey) HashAndVerify(signature []byte, message []byte, algorithm Signi
 	return k.Verify(signature, digest, algorithm)
 }
 
-//----------------------------------------------------
+// ----------------------------------------------------
 // Construct key from YAML (seeding)
-//---
+// ---
 func (k *RsaKey) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 	// Cannot use embedded 'Key' struct

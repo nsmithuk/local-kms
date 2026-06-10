@@ -2,8 +2,7 @@ package handler
 
 import (
 	"crypto/ecdsa"
-	"fmt"
-	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/aws/aws-sdk-go-v2/service/kms"
 	"github.com/nsmithuk/local-kms/src/cmk"
 	"github.com/nsmithuk/local-kms/src/x509"
 )
@@ -23,7 +22,7 @@ func (r *RequestHandler) GetPublicKey() Response {
 	if body.KeyId == nil {
 		msg := "1 validation error detected: Value null at 'keyId' failed to satisfy constraint: Member must not be null"
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewValidationExceptionResponse(msg)
 	}
 
@@ -58,7 +57,7 @@ func (r *RequestHandler) GetPublicKey() Response {
 		}
 
 	default:
-		r.logger.Warnf(fmt.Sprintf("Key '%s' does does not support returning a public key", key.GetArn()))
+		r.logger.Warnf("Key '%s' does does not support returning a public key", key.GetArn())
 		return NewUnsupportedOperationException("")
 	}
 

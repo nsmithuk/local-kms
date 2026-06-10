@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/aws/aws-sdk-go-v2/service/kms"
 	"github.com/nsmithuk/local-kms/src/cmk"
 	"github.com/nsmithuk/local-kms/src/config"
 )
@@ -24,20 +24,20 @@ func (r *RequestHandler) ScheduleKeyDeletion() Response {
 	if body.KeyId == nil {
 		msg := "KeyId is a required parameter"
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewMissingParameterResponse(msg)
 	}
 
 	var PendingWindowInDays int64
 
 	if body.PendingWindowInDays != nil {
-		PendingWindowInDays = *body.PendingWindowInDays
+		PendingWindowInDays = int64(*body.PendingWindowInDays)
 
 		if PendingWindowInDays < 7 || PendingWindowInDays > 30 {
 			msg := fmt.Sprintf("1 validation error detected: Value '%d' at 'PendingWindowInDays' failed to satisfy "+
 				"constraint: Member must have minimum value of 7 and maximum value of 30.", *body.PendingWindowInDays)
 
-			r.logger.Warnf(msg)
+			r.logger.Warn(msg)
 			return NewValidationExceptionResponse(msg)
 		}
 	} else {
@@ -54,7 +54,7 @@ func (r *RequestHandler) ScheduleKeyDeletion() Response {
 	if key == nil {
 		msg := fmt.Sprintf("Key '%s' does not exist", target)
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewNotFoundExceptionResponse(msg)
 	}
 
@@ -64,7 +64,7 @@ func (r *RequestHandler) ScheduleKeyDeletion() Response {
 		// Key is pending deletion; cannot re-schedule
 		msg := fmt.Sprintf("%s is pending deletion.", target)
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewKMSInvalidStateExceptionResponse(msg)
 	}
 

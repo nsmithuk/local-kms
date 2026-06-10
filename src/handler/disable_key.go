@@ -3,7 +3,7 @@ package handler
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/aws/aws-sdk-go-v2/service/kms"
 	"github.com/nsmithuk/local-kms/src/cmk"
 	"github.com/nsmithuk/local-kms/src/config"
 )
@@ -23,7 +23,7 @@ func (r *RequestHandler) DisableKey() Response {
 	if body.KeyId == nil {
 		msg := "KeyId is a required parameter"
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewMissingParameterResponse(msg)
 	}
 
@@ -37,7 +37,7 @@ func (r *RequestHandler) DisableKey() Response {
 	if key == nil {
 		msg := fmt.Sprintf("Key '%s' does not exist", keyArn)
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewNotFoundExceptionResponse(msg)
 	}
 
@@ -47,7 +47,7 @@ func (r *RequestHandler) DisableKey() Response {
 		// Key is pending deletion; cannot create alias
 		msg := fmt.Sprintf("%s is pending deletion.", keyArn)
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewKMSInvalidStateExceptionResponse(msg)
 	}
 

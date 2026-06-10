@@ -2,7 +2,7 @@ package handler
 
 import (
 	"fmt"
-	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/aws/aws-sdk-go-v2/service/kms"
 	"github.com/nsmithuk/local-kms/src/config"
 	"github.com/nsmithuk/local-kms/src/data"
 	"strings"
@@ -23,14 +23,14 @@ func (r *RequestHandler) CreateAlias() Response {
 	if body.TargetKeyId == nil {
 		msg := "TargetKeyId is a required parameter"
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewMissingParameterResponse(msg)
 	}
 
 	if body.AliasName == nil {
 		msg := "AliasName is a required parameter"
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewMissingParameterResponse(msg)
 	}
 
@@ -38,7 +38,7 @@ func (r *RequestHandler) CreateAlias() Response {
 		msg := "Alias must start with the prefix \"alias/\". Please see " +
 			"http://docs.aws.amazon.com/kms/latest/developerguide/programming-aliases.html"
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewValidationExceptionResponse(msg)
 	}
 
@@ -51,7 +51,7 @@ func (r *RequestHandler) CreateAlias() Response {
 		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'AliasName' failed to satisfy "+
 			"constraint: Member must have length less than or equal to 256", *body.AliasName)
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewValidationExceptionResponse(msg)
 	}
 
@@ -65,7 +65,7 @@ func (r *RequestHandler) CreateAlias() Response {
 	if key == nil {
 		msg := fmt.Sprintf("Key '%s' does not exist", target)
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewNotFoundExceptionResponse(msg)
 	}
 
@@ -75,7 +75,7 @@ func (r *RequestHandler) CreateAlias() Response {
 		// Key is pending deletion; cannot create alias
 		msg := fmt.Sprintf("%s is pending deletion.", target)
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewKMSInvalidStateExceptionResponse(msg)
 	}
 
@@ -88,7 +88,7 @@ func (r *RequestHandler) CreateAlias() Response {
 	if err == nil {
 		msg := fmt.Sprintf("An alias with the name %s already exists", aliasArn)
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewAlreadyExistsExceptionResponse(msg)
 	}
 

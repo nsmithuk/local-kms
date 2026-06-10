@@ -3,7 +3,7 @@ package handler
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/aws/aws-sdk-go-v2/service/kms"
 	"github.com/nsmithuk/local-kms/src/cmk"
 )
 
@@ -20,25 +20,25 @@ func (r *RequestHandler) VerifyMac() Response {
 
 	if body.KeyId == nil {
 		msg := "1 validation error detected: Value null at 'keyId' failed to satisfy constraint: Member must not be null"
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewValidationExceptionResponse(msg)
 	}
 
 	if body.Message == nil {
 		msg := "1 validation error detected: Value null at 'message' failed to satisfy constraint: Member must not be null"
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewValidationExceptionResponse(msg)
 	}
 
 	if body.Mac == nil {
 		msg := "1 validation error detected: Value null at 'mac' failed to satisfy constraint: Member must not be null"
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewValidationExceptionResponse(msg)
 	}
 
-	if body.MacAlgorithm == nil {
+	if body.MacAlgorithm == "" {
 		msg := "1 validation error detected: Value null at 'macAlgorithm' failed to satisfy constraint: Member must not be null"
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewValidationExceptionResponse(msg)
 	}
 
@@ -58,7 +58,7 @@ func (r *RequestHandler) VerifyMac() Response {
 
 	if key.GetKeyType() != cmk.TypeHmac {
 		msg := fmt.Sprintf("The key usage %s is not valid for this operation.", key.GetMetadata().KeyUsage)
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewValidationExceptionResponse(msg)
 	}
 
@@ -68,7 +68,7 @@ func (r *RequestHandler) VerifyMac() Response {
 	supportedAlgorithms := key.GetMetadata().SigningAlgorithms
 	algorithmSupported := false
 	for _, alg := range supportedAlgorithms {
-		if string(alg) == *body.MacAlgorithm {
+		if string(alg) == string(body.MacAlgorithm) {
 			algorithmSupported = true
 			break
 		}
@@ -76,7 +76,7 @@ func (r *RequestHandler) VerifyMac() Response {
 
 	if !algorithmSupported {
 		msg := fmt.Sprintf("The request is not valid for the key spec %s.", key.GetMetadata().KeySpec)
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewValidationExceptionResponse(msg)
 	}
 
@@ -85,13 +85,13 @@ func (r *RequestHandler) VerifyMac() Response {
 	macKey, ok := key.(cmk.MacKey)
 	if !ok {
 		msg := "Key does not support MAC operations"
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewValidationExceptionResponse(msg)
 	}
 
 	//---
 
-	macValid, err := macKey.VerifyMac(body.Message, body.Mac, cmk.SigningAlgorithm(*body.MacAlgorithm))
+	macValid, err := macKey.VerifyMac(body.Message, body.Mac, cmk.SigningAlgorithm(body.MacAlgorithm))
 	if err != nil {
 		r.logger.Error(err)
 		return NewInternalFailureExceptionResponse(err.Error())
@@ -100,11 +100,11 @@ func (r *RequestHandler) VerifyMac() Response {
 	//---
 
 	keyArn := key.GetArn()
-	r.logger.Infof("MAC verification performed using key %s with algorithm %s, result: %v", keyArn, *body.MacAlgorithm, macValid)
+	r.logger.Infof("MAC verification performed using key %s with algorithm %s, result: %v", keyArn, body.MacAlgorithm, macValid)
 
 	return NewResponse(200, &kms.VerifyMacOutput{
 		KeyId:        &keyArn,
-		MacValid:     &macValid,
+		MacValid:     macValid,
 		MacAlgorithm: body.MacAlgorithm,
 	})
 }

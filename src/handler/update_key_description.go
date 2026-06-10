@@ -2,7 +2,7 @@ package handler
 
 import (
 	"fmt"
-	"github.com/aws/aws-sdk-go/service/kms"
+	"github.com/aws/aws-sdk-go-v2/service/kms"
 	"github.com/nsmithuk/local-kms/src/config"
 )
 
@@ -21,7 +21,7 @@ func (r *RequestHandler) UpdateKeyDescription() Response {
 	if body.KeyId == nil {
 		msg := "KeyId is a required parameter"
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewMissingParameterResponse(msg)
 	}
 
@@ -29,7 +29,7 @@ func (r *RequestHandler) UpdateKeyDescription() Response {
 		msg := fmt.Sprintf("1 validation error detected: Value '%s' at 'description' failed to satisfy "+
 			"constraint: Member must have length less than or equal to 8192", *body.Description)
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewValidationExceptionResponse(msg)
 	}
 
@@ -43,7 +43,7 @@ func (r *RequestHandler) UpdateKeyDescription() Response {
 	if key == nil {
 		msg := fmt.Sprintf("Key '%s' does not exist", keyArn)
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewNotFoundExceptionResponse(msg)
 	}
 
@@ -53,7 +53,7 @@ func (r *RequestHandler) UpdateKeyDescription() Response {
 		// Key is pending deletion; cannot create alias
 		msg := fmt.Sprintf("%s is pending deletion.", keyArn)
 
-		r.logger.Warnf(msg)
+		r.logger.Warn(msg)
 		return NewKMSInvalidStateExceptionResponse(msg)
 	}
 

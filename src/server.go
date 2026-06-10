@@ -33,13 +33,13 @@ func Run(port, seedPath string) {
 	})
 
 	logger.Infof("Data will be stored in %s", config.DatabasePath)
-	addr := ":"+port
+	addr := ":" + port
 	// Create server manually so we can bind first and verify
 	// we can create the server
-	s := &http.Server{Addr:addr, Handler:nil}
+	s := &http.Server{Addr: addr, Handler: nil}
 	ln, err := net.Listen("tcp", addr)
 	// If port==0, figure out where to we bound
-	arr := strings.Split(ln.Addr().String(), ":");
+	arr := strings.Split(ln.Addr().String(), ":")
 	port = arr[len(arr)-1]
 	if err == nil {
 		logger.Infof("Local KMS started on 0.0.0.0:%s", port)
