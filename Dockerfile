@@ -3,7 +3,7 @@
 ############################################
 # Build stage (Debian-based, not Alpine)
 ############################################
-FROM --platform=$BUILDPLATFORM golang:1.26 AS builder
+FROM --platform=$BUILDPLATFORM golang:1.27 AS builder
 
 ARG TARGETOS
 ARG TARGETARCH
@@ -29,7 +29,7 @@ COPY . .
 # Build a static binary for the target platform
 RUN --mount=type=cache,target=/root/.cache/go-build \
     CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH \
-    go build -trimpath -ldflags="-s -w -X main.version=$VERSION" \
+    go build -trimpath -ldflags="-s -w -X main.Version=$VERSION" \
     -o /out/local-kms ./cmd/local-kms
 
 ############################################

@@ -2,8 +2,8 @@ package kms
 
 import (
 	"context"
-	"errors"
 	"fmt"
+	"log/slog"
 	"time"
 
 	awskms "github.com/aws/aws-sdk-go-v2/service/kms"
@@ -55,12 +55,14 @@ func (k KmsService) CreateKeyWithoutMaterial(ctx context.Context, req awskms.Cre
 
 	validationErrors := make([]error, 0)
 
-	if err := validator.Length(req.Description, "description", 8192); err != nil {
-		validationErrors = append(validationErrors, err)
+	if req.Description != nil && len(*req.Description) > 8192 {
+		validationErrors = append(validationErrors,
+			kmserr.NewValidation(kmserr.CauseValidationException, "Value at 'description' failed to satisfy constraint: Member must have length less than or equal to 8192"))
 	}
 
-	if err := validator.Length(req.Policy, "policy", 32768); err != nil {
-		validationErrors = append(validationErrors, err)
+	if req.Policy != nil && len(*req.Policy) > 32768 {
+		validationErrors = append(validationErrors,
+			kmserr.NewValidation(kmserr.CauseMalformedPolicyDocumentException, "Value at 'policy' failed to satisfy constraint: Member must have length less than or equal to 32768"))
 	}
 
 	if errs := validator.Tags(req.Tags); len(errs) > 0 {
@@ -105,13 +107,13 @@ func (k KmsService) CreateKeyWithoutMaterial(ctx context.Context, req awskms.Cre
 	if metadata.Origin == types.OriginTypeAwsCloudhsm {
 		validationErrors = append(
 			validationErrors,
-			errors.New("Local KMS does not support Origin = AWS_CLOUDHSM"),
+			kmserr.NewValidation(kmserr.CauseUnsupportedOperationException, "Local KMS does not support Origin = AWS_CLOUDHSM"),
 		)
 	}
 	if metadata.Origin == types.OriginTypeExternalKeyStore {
 		validationErrors = append(
 			validationErrors,
-			errors.New("Local KMS does not support Origin = EXTERNAL_KEY_STORE"),
+			kmserr.NewValidation(kmserr.CauseUnsupportedOperationException, "Local KMS does not support Origin = EXTERNAL_KEY_STORE"),
 		)
 	}
 	if metadata.Origin == "" {
@@ -133,7 +135,7 @@ func (k KmsService) CreateKeyWithoutMaterial(ctx context.Context, req awskms.Cre
 		// Both values cannot be set
 		validationErrors = append(
 			validationErrors,
-			kmserr.NewValidation(kmserr.CauseValidationError, "You cannot specify KeySpec and CustomerMasterKeySpec in the same request. CustomerMasterKeySpec is deprecated."),
+			kmserr.New("", kmserr.CauseValidationException, "You cannot specify KeySpec and CustomerMasterKeySpec in the same request. CustomerMasterKeySpec is deprecated."),
 		)
 	}
 
@@ -148,7 +150,7 @@ func (k KmsService) CreateKeyWithoutMaterial(ctx context.Context, req awskms.Cre
 	if metadata.KeySpec == "SM2" {
 		validationErrors = append(
 			validationErrors,
-			errors.New("Local KMS does not (yet) support KeySpec = SM2"),
+			kmserr.NewValidation(kmserr.CauseUnsupportedOperationException, "Local KMS does not (yet) support KeySpec = SM2"),
 		)
 	}
 
@@ -224,6 +226,14 @@ func (k KmsService) CreateKey(ctx context.Context, req awskms.CreateKeyInput) (*
 			k.Db.SaveTag(key, tag)
 		}
 	}
+
+	//----------------------------
+
+	slog.Info("CreateKey Success",
+		"KeyId", *key.GetMetadata().KeyId,
+		"KeySpec", key.GetMetadata().KeySpec,
+		"KeyUsage", key.GetMetadata().KeyUsage,
+	)
 
 	//----------------------------
 

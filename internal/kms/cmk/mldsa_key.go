@@ -18,7 +18,7 @@ type MlDsaKey struct {
 	PrivateKeyBytes []byte
 }
 
-//------------------------------------------------
+//-------------------------------------------------------------------------------------
 
 func NewMlDsaKey(metadata types.KeyMetadata, policy string) (*MlDsaKey, error) {
 
@@ -105,7 +105,7 @@ func (k *MlDsaKey) ApplySeedingKeyMaterial(material SeedingKeyMaterial) error {
 	return nil
 }
 
-//-----
+//---------------------------------------------
 
 func (k *MlDsaKey) PublicKey() (mldsa.PublicKey, error) {
 	sk, err := k.PrivateKey()

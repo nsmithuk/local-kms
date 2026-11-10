@@ -94,6 +94,9 @@ func main() {
 	//}
 
 	kmsService, err := kms.NewKmsService(region, accountId, dataPath)
+	if err != nil {
+		log.Fatal(err)
+	}
 	defer kmsService.Close()
 
 	//---

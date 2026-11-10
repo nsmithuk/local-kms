@@ -38,13 +38,14 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	_, operation, ok := strings.Cut(r.Header.Get("X-Amz-Target"), ".")
 	if !ok {
 		error501(w, r)
+		return
 	}
 
 	slog.Info("Request",
 		"operation", operation,
 	)
 
-	handler, ok := s.kmsHanders[operation]
+	handler, ok := s.kmsHandlers[operation]
 	if !ok {
 		error501(w, r)
 		return

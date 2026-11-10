@@ -8,8 +8,7 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
-	"errors"
-	"fmt"
+	"log/slog"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awskms "github.com/aws/aws-sdk-go-v2/service/kms"
@@ -17,7 +16,6 @@ import (
 	"github.com/decred/dcrd/dcrec/secp256k1/v4"
 	"github.com/nsmithuk/local-kms/internal/kms/cmk"
 	"github.com/nsmithuk/local-kms/internal/kms/cmk/x509ecc"
-	"github.com/nsmithuk/local-kms/internal/kms/data"
 	"github.com/nsmithuk/local-kms/internal/kms/kmserr"
 	"github.com/nsmithuk/local-kms/internal/kms/validation"
 )
@@ -43,16 +41,10 @@ func (k KmsService) GenerateDataKeyPairWithoutPlaintext(ctx context.Context, req
 
 func (k KmsService) GenerateDataKeyPair(ctx context.Context, req awskms.GenerateDataKeyPairInput) (*awskms.GenerateDataKeyPairOutput, []error) {
 
+	validator := validation.Validator{}
 	validationErrors := make([]error, 0)
 
-	keyId, err := k.ResolveKeyArn(req.KeyId)
-	if err != nil {
-		validationErrors = append(validationErrors, err)
-	}
-
-	//---
-
-	err = validation.KeyPairSpec(req.KeyPairSpec)
+	err := validator.KeyPairSpec(req.KeyPairSpec)
 	if err != nil {
 		validationErrors = append(validationErrors, err)
 	}
@@ -63,19 +55,14 @@ func (k KmsService) GenerateDataKeyPair(ctx context.Context, req awskms.Generate
 
 	//---
 
-	key, err := k.Db.LoadKey(keyId)
+	key, err := k.getUsableKey(req.KeyId)
 	if err != nil {
-		if errors.Is(err, data.ErrKeyNotFound) {
-			return nil, []error{
-				kmserr.NewValidation(kmserr.CauseNotFoundException, "A key with the arn %s does not exists", keyId),
-			}
-		}
 		return nil, []error{err}
 	}
 
 	if key.GetKeyType() != cmk.TypeSymmetricKey {
 		return nil, []error{
-			fmt.Errorf("keyspec must be %s", types.KeySpecSymmetricDefault),
+			kmserr.NewValidation(kmserr.CauseValidationError, "keyspec must be %s", types.KeySpecSymmetricDefault),
 		}
 	}
 
@@ -166,6 +153,13 @@ func (k KmsService) GenerateDataKeyPair(ctx context.Context, req awskms.Generate
 	if errs != nil {
 		return nil, errs
 	}
+
+	//---
+
+	slog.Info("GenerateDataKeyPair Success",
+		"KeyId", *key.GetMetadata().KeyId,
+		"KeyPairSpec", req.KeyPairSpec,
+	)
 
 	return &awskms.GenerateDataKeyPairOutput{
 		KeyId:                    encrypt.KeyId,

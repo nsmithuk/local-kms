@@ -66,6 +66,9 @@ func (k *EcdsaKey) Sign(message []byte, algorithm types.SigningAlgorithmSpec, me
 	}
 
 	digest, err := k.prepSigningDigest(message, algorithm, messageType)
+	if err != nil {
+		return nil, err
+	}
 
 	//---
 
@@ -96,6 +99,9 @@ func (k *EcdsaKey) Verify(message []byte, algorithm types.SigningAlgorithmSpec, 
 	//---
 
 	digest, err := k.prepSigningDigest(message, algorithm, messageType)
+	if err != nil {
+		return false, err
+	}
 
 	//---
 
@@ -129,7 +135,7 @@ func (k *EcdsaKey) DeriveSharedSecret(peerPublicKey []byte, algorithm types.KeyA
 	if pubKey.Curve == nil || priKey.Curve == nil {
 		return nil, errors.New("missing curve parameters")
 	}
-	if pubKey.Curve.Params().Name != pubKey.Curve.Params().Name {
+	if pubKey.Curve.Params().Name != priKey.Curve.Params().Name {
 		return nil, errors.New("curve mismatch")
 	}
 	if !priKey.Curve.IsOnCurve(pubKey.X, pubKey.Y) {

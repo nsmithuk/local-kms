@@ -13,7 +13,7 @@ func (v *Validator) Tags(tags []awskmstypes.Tag) []error {
 	if tags != nil && len(tags) > 0 {
 		for i, tag := range tags {
 
-			if len(*tag.TagKey) < 1 {
+			if tag.TagKey == nil || len(*tag.TagKey) < 1 {
 				err := kmserr.New(
 					kmserr.TypeValidation,
 					kmserr.CauseTagException,
@@ -21,9 +21,7 @@ func (v *Validator) Tags(tags []awskmstypes.Tag) []error {
 						"satisfy constraint: Member must have length greater than or equal to 1", i+1),
 				)
 				validationErrors = append(validationErrors, err)
-			}
-
-			if len(*tag.TagKey) > 128 {
+			} else if len(*tag.TagKey) > 128 {
 				err := kmserr.New(
 					kmserr.TypeValidation,
 					kmserr.CauseTagException,
@@ -33,7 +31,7 @@ func (v *Validator) Tags(tags []awskmstypes.Tag) []error {
 				validationErrors = append(validationErrors, err)
 			}
 
-			if len(*tag.TagValue) > 256 {
+			if tag.TagValue != nil && len(*tag.TagValue) > 256 {
 				err := kmserr.New(
 					kmserr.TypeValidation,
 					kmserr.CauseTagException,

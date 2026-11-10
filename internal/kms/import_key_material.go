@@ -6,6 +6,8 @@ import (
 	"crypto/sha3"
 	"crypto/subtle"
 	"errors"
+	"log/slog"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awskms "github.com/aws/aws-sdk-go-v2/service/kms"
@@ -17,14 +19,33 @@ import (
 
 func (k KmsService) ImportKeyMaterial(ctx context.Context, req awskms.ImportKeyMaterialInput) (*awskms.ImportKeyMaterialOutput, []error) {
 
-	if err := validation.ValidateEnum(req.ExpirationModel, "ExpirationModel"); err != nil {
+	validator := validation.Validator{}
+
+	if err := validator.ExpirationModel(req.ExpirationModel); err != nil {
 		return nil, []error{err}
+	}
+
+	if req.ExpirationModel == types.ExpirationModelTypeKeyMaterialExpires {
+		if req.ValidTo == nil {
+			return nil, []error{
+				kmserr.NewValidation(kmserr.CauseValidationError, "Value at 'validTo' failed to satisfy constraint: Member must not be null when ExpirationModel is KEY_MATERIAL_EXPIRES"),
+			}
+		}
+		if !time.Now().Before(*req.ValidTo) {
+			return nil, []error{
+				kmserr.NewValidation(kmserr.CauseValidationError, "Value at 'validTo' failed to satisfy constraint: Member must be in the future"),
+			}
+		}
+	} else if req.ValidTo != nil {
+		return nil, []error{
+			kmserr.NewValidation(kmserr.CauseValidationError, "Value at 'validTo' failed to satisfy constraint: Member must be null when ExpirationModel is KEY_MATERIAL_DOES_NOT_EXPIRE"),
+		}
 	}
 
 	if req.ImportType == "" {
 		req.ImportType = types.ImportTypeNewKeyMaterial
 	}
-	if err := validation.ValidateEnum(req.ImportType, "ImportType"); err != nil {
+	if err := validator.ImportType(req.ImportType); err != nil {
 		return nil, []error{err}
 	}
 
@@ -84,7 +105,8 @@ func (k KmsService) ImportKeyMaterial(ctx context.Context, req awskms.ImportKeyM
 		return nil, []error{err}
 	}
 
-	// TODO: ValidTo
+	key.GetMetadata().ExpirationModel = req.ExpirationModel
+	key.GetMetadata().ValidTo = req.ValidTo
 
 	//---
 
@@ -100,6 +122,11 @@ func (k KmsService) ImportKeyMaterial(ctx context.Context, req awskms.ImportKeyM
 	}
 
 	//---
+
+	slog.Info("ImportKeyMaterial Success",
+		"KeyId", *key.GetMetadata().KeyId,
+		"KeySpec", key.GetMetadata().KeySpec,
+	)
 
 	return &awskms.ImportKeyMaterialOutput{
 		KeyId:         aws.String(key.GetArn()),

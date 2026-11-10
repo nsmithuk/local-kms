@@ -125,7 +125,7 @@ func (k *RsaKey) ApplySeedingKeyMaterial(material SeedingKeyMaterial) error {
 	return nil
 }
 
-//-----------------------------------
+//---------------------------------------------
 
 func (k *RsaKey) ApplyImportedKeyMaterial(material []byte, _ *string, _ types.ImportType) error {
 	pk, err := x509.ParsePKCS8PrivateKey(material)

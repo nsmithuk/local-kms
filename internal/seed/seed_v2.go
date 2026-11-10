@@ -57,11 +57,11 @@ func (m *KeyMetadata) getCreateKeyInput() awskms.CreateKeyInput {
 //----------------------------------------------------
 
 type Seeder struct {
-	ksmService *kms.KmsService
+	kmsService *kms.KmsService
 }
 
 func NewSeeder(kmsService *kms.KmsService) *Seeder {
-	return &Seeder{ksmService: kmsService}
+	return &Seeder{kmsService: kmsService}
 }
 
 func (s *Seeder) Seed(seedPath string) error {
@@ -72,14 +72,14 @@ func (s *Seeder) Seed(seedPath string) error {
 	}
 
 	for _, key := range config.Keys {
-		cmk, errs := s.ksmService.CreateKeyWithoutMaterial(context.TODO(), key.Metadata.getCreateKeyInput(), key.KeyId)
+		cmk, errs := s.kmsService.CreateKeyWithoutMaterial(context.TODO(), key.Metadata.getCreateKeyInput(), key.KeyId)
 		if errs != nil {
 			return fmt.Errorf("Errors found when seeding: %v", errs)
 		}
 
 		//---
 
-		_, err := s.ksmService.Db.LoadKey(cmk.GetArn())
+		_, err := s.kmsService.Db.LoadKey(cmk.GetArn())
 		if !errors.Is(err, data.ErrKeyNotFound) {
 			slog.Info("Key from seed file is already in the database; skipping",
 				"arn", cmk.GetArn(),
@@ -95,7 +95,7 @@ func (s *Seeder) Seed(seedPath string) error {
 			return err
 		}
 
-		err = s.ksmService.Db.SaveKey(cmk)
+		err = s.kmsService.Db.SaveKey(cmk)
 		if err != nil {
 			return err
 		}
@@ -106,8 +106,8 @@ func (s *Seeder) Seed(seedPath string) error {
 	now := time.Now()
 
 	for _, alias := range config.Aliases {
-		aliasArn := s.ksmService.ArnPrefix() + "alias/" + strings.TrimPrefix(alias.AliasName, "alias/")
-		_, err = s.ksmService.Db.LoadAlias(aliasArn)
+		aliasArn := s.kmsService.ArnPrefix() + "alias/" + strings.TrimPrefix(alias.AliasName, "alias/")
+		_, err = s.kmsService.Db.LoadAlias(aliasArn)
 		if !errors.Is(err, data.ErrAliasNotFound) {
 			slog.Info("Alias from seed file is already in the database; skipping",
 				"arn", aliasArn,
@@ -115,12 +115,12 @@ func (s *Seeder) Seed(seedPath string) error {
 			continue
 		}
 
-		targetKeyArn, err := s.ksmService.ResolveKeyArn(&alias.TargetKeyId)
+		targetKeyArn, err := s.kmsService.ResolveKeyArn(&alias.TargetKeyId)
 		if err != nil {
 			return err
 		}
 
-		_, err = s.ksmService.Db.LoadKey(targetKeyArn)
+		_, err = s.kmsService.Db.LoadKey(targetKeyArn)
 		if err != nil {
 			return err
 		}
@@ -135,7 +135,7 @@ func (s *Seeder) Seed(seedPath string) error {
 			TargetKeyId:     &targetKeyArn,
 		}
 
-		if err := s.ksmService.Db.SaveAlias(a); err != nil {
+		if err := s.kmsService.Db.SaveAlias(a); err != nil {
 			return err
 		}
 	}

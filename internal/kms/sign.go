@@ -5,9 +5,8 @@ import (
 	"errors"
 	"log/slog"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	awskms "github.com/aws/aws-sdk-go-v2/service/kms"
-	awskmstypes "github.com/aws/aws-sdk-go-v2/service/kms/types"
+	"github.com/aws/aws-sdk-go-v2/service/kms/types"
 	"github.com/nsmithuk/local-kms/internal/kms/cmk"
 	"github.com/nsmithuk/local-kms/internal/kms/kmserr"
 	"github.com/nsmithuk/local-kms/internal/kms/validation"
@@ -35,7 +34,7 @@ func (k KmsService) Sign(ctx context.Context, req awskms.SignInput) (*awskms.Sig
 
 	messageType := req.MessageType
 	if messageType == "" {
-		messageType = awskmstypes.MessageTypeRaw
+		messageType = types.MessageTypeRaw
 	}
 	if err = validator.MessageType(messageType); err != nil {
 		validationErrors = append(validationErrors, err)
@@ -47,6 +46,7 @@ func (k KmsService) Sign(ctx context.Context, req awskms.SignInput) (*awskms.Sig
 
 	// ---
 
+	keyId := key.GetArn()
 	metadata := key.GetMetadata()
 
 	signature, err := key.Sign(req.Message, req.SigningAlgorithm, messageType)
@@ -72,7 +72,7 @@ func (k KmsService) Sign(ctx context.Context, req awskms.SignInput) (*awskms.Sig
 	//---
 
 	return &awskms.SignOutput{
-		KeyId:            aws.String(key.GetId()),
+		KeyId:            &keyId,
 		Signature:        signature,
 		SigningAlgorithm: req.SigningAlgorithm,
 	}, nil

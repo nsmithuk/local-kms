@@ -2,8 +2,8 @@ package kms
 
 import (
 	"context"
+	"log/slog"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	awskms "github.com/aws/aws-sdk-go-v2/service/kms"
 )
 
@@ -28,7 +28,15 @@ func (k KmsService) RotateKeyOnDemand(ctx context.Context, req awskms.RotateKeyO
 
 	//---
 
+	keyId := key.GetArn()
+
+	slog.Info("RotateKeyOnDemand Success",
+		"KeyId", *key.GetMetadata().KeyId,
+	)
+
+	//---
+
 	return &awskms.RotateKeyOnDemandOutput{
-		KeyId: aws.String(key.GetId()),
+		KeyId: &keyId,
 	}, nil
 }

@@ -25,11 +25,13 @@ func (k KmsService) GetParametersForImport(ctx context.Context, req awskms.GetPa
 		}
 	}
 
-	if err := validation.ValidateEnum(req.WrappingKeySpec, "WrappingKeySpec"); err != nil {
+	validator := validation.Validator{}
+
+	if err := validator.WrappingKeySpec(req.WrappingKeySpec); err != nil {
 		return nil, []error{err}
 	}
 
-	if err := validation.ValidateEnum(req.WrappingAlgorithm, "WrappingAlgorithm"); err != nil {
+	if err := validator.WrappingAlgorithm(req.WrappingAlgorithm); err != nil {
 		return nil, []error{err}
 	}
 

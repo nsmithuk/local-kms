@@ -70,8 +70,8 @@ func (k *RsaKey) prepSigningDigest(message []byte, algorithm types.SigningAlgori
 }
 
 func (k *RsaKey) Sign(message []byte, algorithm types.SigningAlgorithmSpec, messageType types.MessageType) ([]byte, error) {
-	if k.GetMetadata().KeyUsage != types.KeyUsageTypeSignVerify {
-		return nil, fmt.Errorf("unsupported key usage: %v", k.GetMetadata().KeyUsage)
+	if err := k.enforceKeyUsageType(types.KeyUsageTypeSignVerify); err != nil {
+		return nil, err
 	}
 
 	digest, hash, err := k.prepSigningDigest(message, algorithm, messageType)
@@ -94,8 +94,8 @@ func (k *RsaKey) Sign(message []byte, algorithm types.SigningAlgorithmSpec, mess
 }
 
 func (k *RsaKey) Verify(message []byte, algorithm types.SigningAlgorithmSpec, messageType types.MessageType, signature []byte) (bool, error) {
-	if k.GetMetadata().KeyUsage != types.KeyUsageTypeSignVerify {
-		return false, fmt.Errorf("unsupported key usage: %v", k.GetMetadata().KeyUsage)
+	if err := k.enforceKeyUsageType(types.KeyUsageTypeSignVerify); err != nil {
+		return false, err
 	}
 
 	digest, hash, err := k.prepSigningDigest(message, algorithm, messageType)
@@ -169,7 +169,7 @@ func (k *RsaKey) Encrypt(plaintext []byte, algorithm types.EncryptionAlgorithmSp
 	case types.EncryptionAlgorithmSpecRsaesOaepSha256:
 		hashAlgorithm = sha256.New()
 	default:
-		return []byte{}, fmt.Errorf("unknown encryption algorithm %s", algorithm)
+		return nil, fmt.Errorf("unknown encryption algorithm %s", algorithm)
 	}
 
 	return rsa.EncryptOAEP(hashAlgorithm, rand.Reader, &k.PrivateKey.PublicKey, plaintext, []byte{})
@@ -193,7 +193,7 @@ func (k *RsaKey) Decrypt(ciphertextblob []byte, algorithm types.EncryptionAlgori
 	case types.EncryptionAlgorithmSpecRsaesOaepSha256:
 		hashAlgorithm = sha256.New()
 	default:
-		return []byte{}, fmt.Errorf("unknown encryption algorithm %s", algorithm)
+		return nil, fmt.Errorf("unknown encryption algorithm %s", algorithm)
 	}
 
 	key := rsa.PrivateKey(k.PrivateKey)

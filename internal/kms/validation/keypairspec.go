@@ -9,7 +9,7 @@ import (
 	"github.com/nsmithuk/local-kms/internal/kms/kmserr"
 )
 
-func KeyPairSpec(value awskmstypes.DataKeyPairSpec) error {
+func (*Validator) KeyPairSpec(value awskmstypes.DataKeyPairSpec) error {
 	options := value.Values()
 	for _, option := range options {
 		if value == option {

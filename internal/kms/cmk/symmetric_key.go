@@ -44,7 +44,7 @@ func (bk *SymmetricBackingKey) MaterialId() string {
 	return hex.EncodeToString(sha3.SumSHAKE256(m, 32))
 }
 
-//--------------------------------
+//---------------------------------------------
 
 type SymmetricKey struct {
 	BaseKey
@@ -118,7 +118,7 @@ func (k *SymmetricKey) ApplySeedingKeyMaterial(material SeedingKeyMaterial) erro
 	return nil
 }
 
-//--------------------------------
+//---------------------------------------------
 
 func (k *SymmetricKey) ApplyImportedKeyMaterial(material []byte, materialId *string, importType types.ImportType) error {
 	if k.GetMetadata().Origin != types.OriginTypeExternal {
@@ -223,11 +223,11 @@ func (k *SymmetricKey) DeleteImportedKeyMaterial(passedMaterialId *string) error
 	return nil
 }
 
-//--------------------------------
+//---------------------------------------------
 
 func (k *SymmetricKey) RotateKeyOnDemand() error {
-	if k.ManualKeyRotations >= 10 {
-		return kmserr.NewValidation(kmserr.CauseLimitExceededException, "key has already rotated 10 times")
+	if k.ManualKeyRotations >= 25 {
+		return kmserr.NewValidation(kmserr.CauseLimitExceededException, "key has already rotated 25 times")
 	}
 
 	if k.PendingKey != nil {

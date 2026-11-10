@@ -13,14 +13,12 @@ import (
 )
 
 type Server struct {
-	ksmService *kms.KmsService
-	kmsHanders map[string]kmsHandler
+	kmsHandlers map[string]kmsHandler
 }
 
 func NewServer(kmsService *kms.KmsService) *Server {
 	s := &Server{
-		ksmService: kmsService,
-		kmsHanders: buildDispatcher(kmsService),
+		kmsHandlers: buildDispatcher(kmsService),
 	}
 	return s
 }

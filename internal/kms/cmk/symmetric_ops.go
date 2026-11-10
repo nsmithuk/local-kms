@@ -99,7 +99,7 @@ func (c CiphertextBlob) Ciphertext() ([]byte, error) {
 	return c[ciphertextOffset:], nil
 }
 
-//------------------------------------------------------
+//---------------------------------------------
 
 func (k *SymmetricKey) Encrypt(plaintext []byte, algorithm types.EncryptionAlgorithmSpec, context map[string]string) ([]byte, error) {
 	if err := k.enforceKeyUsageType(types.KeyUsageTypeEncryptDecrypt); err != nil {

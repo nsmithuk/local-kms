@@ -2,8 +2,8 @@ package kms
 
 import (
 	"errors"
-	"fmt"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/kms/types"
 	"github.com/cockroachdb/pebble"
@@ -48,19 +48,22 @@ func (k KmsService) getKeyWithState(keyId *string, state types.KeyState) (cmk.Ke
 	key, err := k.Db.LoadKey(arn)
 	if err != nil {
 		if errors.Is(err, data.ErrKeyNotFound) {
-			return nil, kmserr.NewValidation(kmserr.CauseNotFoundException, "A key with the arn %s does not exists", keyId)
+			return nil, kmserr.NewValidation(kmserr.CauseNotFoundException, "A key with the arn %s does not exists", arn)
 		}
 		return nil, err
 	}
 
 	metadata := key.GetMetadata()
 
-	if !metadata.Enabled {
-		return nil, fmt.Errorf("key %s is disabled", key.GetArn())
+	if metadata.ValidTo != nil && time.Now().After(*metadata.ValidTo) {
+		_ = key.DeleteImportedKeyMaterial(nil)
+		metadata.KeyState = types.KeyStatePendingImport
+		metadata.ValidTo = nil
+		_ = k.Db.SaveKey(key)
 	}
 
 	if metadata.KeyState != state {
-		return nil, fmt.Errorf("key %s has state %s. Expected: %s", key.GetArn(), metadata.KeyState, state)
+		return nil, kmserr.NewValidation(kmserr.CauseKMSInvalidStateException, "key %s has state %s. Expected: %s", key.GetArn(), metadata.KeyState, state)
 	}
 
 	return key, nil

@@ -86,7 +86,7 @@ func (k *HmacKey) ApplySeedingKeyMaterial(material SeedingKeyMaterial) error {
 			return fmt.Errorf("KeySpec %s is not compatible with a %d bit key", keySpec, len(keyBytes)*8)
 		}
 	default:
-		return fmt.Errorf("unknown key length %d", len(material.BackingKeys))
+		return fmt.Errorf("unknown key length %d bits", len(keyBytes)*8)
 	}
 
 	k.PrivateKey = keyBytes

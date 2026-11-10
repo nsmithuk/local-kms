@@ -41,9 +41,9 @@ func (k KmsService) CreateAlias(ctx context.Context, req awskms.CreateAliasInput
 
 	key, err := k.Db.LoadKey(targetKeyArn)
 	if err != nil {
-		if !errors.Is(err, data.ErrKeyNotFound) {
+		if errors.Is(err, data.ErrKeyNotFound) {
 			return nil, []error{
-				kmserr.NewValidation(kmserr.CauseNotFoundException, "Key %s not found.", key.GetArn()),
+				kmserr.NewValidation(kmserr.CauseNotFoundException, "Key %s not found.", targetKeyArn),
 			}
 		}
 		return nil, []error{err}

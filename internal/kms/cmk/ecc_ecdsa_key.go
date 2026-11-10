@@ -125,7 +125,7 @@ func (k *EcdsaKey) ApplySeedingKeyMaterial(material SeedingKeyMaterial) error {
 	return nil
 }
 
-//-----
+//---------------------------------------------
 
 func (k *EcdsaKey) ApplyImportedKeyMaterial(material []byte, _ *string, _ types.ImportType) error {
 	pk, err := x509ecc.ParsePKCS8PrivateKey(material)
@@ -148,7 +148,7 @@ func (k *EcdsaKey) DeleteImportedKeyMaterial(*string) error {
 	return nil
 }
 
-//-----
+//---------------------------------------------
 
 func (k *EcdsaPrivateKey) MarshalJSON() ([]byte, error) {
 	if k == nil || k.PublicKey.Curve == nil {

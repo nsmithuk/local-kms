@@ -36,13 +36,23 @@ func (k KmsService) ReEncrypt(ctx context.Context, req awskms.ReEncryptInput) (*
 
 	//---
 
-	// We don't check errors here as we'd see errors above if there was an issue.
+	sourceKeyId, err := k.ResolveKeyArn(req.SourceKeyId)
+	if err != nil {
+		return nil, []error{err}
+	}
+	sourceKey, err := k.Db.LoadKey(sourceKeyId)
+	if err != nil {
+		return nil, []error{err}
+	}
 
-	sourceKeyId, _ := k.ResolveKeyArn(req.SourceKeyId)
-	sourceKey, _ := k.Db.LoadKey(sourceKeyId)
-
-	destinationKeyId, _ := k.ResolveKeyArn(req.DestinationKeyId)
-	destinationKey, _ := k.Db.LoadKey(destinationKeyId)
+	destinationKeyId, err := k.ResolveKeyArn(req.DestinationKeyId)
+	if err != nil {
+		return nil, []error{err}
+	}
+	destinationKey, err := k.Db.LoadKey(destinationKeyId)
+	if err != nil {
+		return nil, []error{err}
+	}
 
 	return &awskms.ReEncryptOutput{
 		CiphertextBlob: encrypt.CiphertextBlob,

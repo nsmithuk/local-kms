@@ -2,14 +2,12 @@ package kms
 
 import (
 	"context"
-	"errors"
-	"fmt"
+	"log/slog"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awskms "github.com/aws/aws-sdk-go-v2/service/kms"
 	"github.com/aws/aws-sdk-go-v2/service/kms/types"
 	"github.com/nsmithuk/local-kms/internal/kms/cmk"
-	"github.com/nsmithuk/local-kms/internal/kms/data"
 	"github.com/nsmithuk/local-kms/internal/kms/kmserr"
 	"github.com/nsmithuk/local-kms/internal/kms/validation"
 )
@@ -37,27 +35,20 @@ func (k KmsService) GenerateDataKey(ctx context.Context, req awskms.GenerateData
 	validator := validation.Validator{}
 	validationErrors := make([]error, 0)
 
-	keyId, err := k.ResolveKeyArn(req.KeyId)
-	if err != nil {
-		validationErrors = append(validationErrors, err)
-	}
-
-	//---
-
 	numberOfBytes := int32(0)
 	if req.NumberOfBytes != nil {
 		numberOfBytes = *req.NumberOfBytes
 		if numberOfBytes == 0 {
-			validationErrors = append(validationErrors, fmt.Errorf("number of bytes must be greater than zero"))
+			validationErrors = append(validationErrors, kmserr.NewValidation(kmserr.CauseValidationError, "number of bytes must be greater than zero"))
 		} else if numberOfBytes > 1024 {
-			validationErrors = append(validationErrors, fmt.Errorf("number of bytes must be less than or equal to 1024"))
+			validationErrors = append(validationErrors, kmserr.NewValidation(kmserr.CauseValidationError, "number of bytes must be less than or equal to 1024"))
 		}
 
 		if len(req.KeySpec) > 0 {
-			validationErrors = append(validationErrors, fmt.Errorf("keySpec cannot be used with NumberOfBytes"))
+			validationErrors = append(validationErrors, kmserr.NewValidation(kmserr.CauseValidationError, "keySpec cannot be used with NumberOfBytes"))
 		}
 	} else {
-		err = validator.DataKeySpec(req.KeySpec)
+		err := validator.DataKeySpec(req.KeySpec)
 		if err != nil {
 			validationErrors = append(validationErrors, err)
 		}
@@ -67,7 +58,7 @@ func (k KmsService) GenerateDataKey(ctx context.Context, req awskms.GenerateData
 		case types.DataKeySpecAes256:
 			numberOfBytes = 256 / 8
 		default:
-			validationErrors = append(validationErrors, fmt.Errorf("keySpec must be one of AES_256 | AES_128"))
+			validationErrors = append(validationErrors, kmserr.NewValidation(kmserr.CauseValidationError, "keySpec must be one of AES_256 | AES_128"))
 		}
 	}
 
@@ -77,19 +68,14 @@ func (k KmsService) GenerateDataKey(ctx context.Context, req awskms.GenerateData
 
 	//---
 
-	key, err := k.Db.LoadKey(keyId)
+	key, err := k.getUsableKey(req.KeyId)
 	if err != nil {
-		if errors.Is(err, data.ErrKeyNotFound) {
-			return nil, []error{
-				kmserr.NewValidation(kmserr.CauseNotFoundException, "A key with the arn %s does not exists", keyId),
-			}
-		}
 		return nil, []error{err}
 	}
 
 	if key.GetKeyType() != cmk.TypeSymmetricKey {
 		return nil, []error{
-			fmt.Errorf("keyspec must be %s", types.KeySpecSymmetricDefault),
+			kmserr.NewValidation(kmserr.CauseValidationError, "keyspec must be %s", types.KeySpecSymmetricDefault),
 		}
 	}
 
@@ -107,6 +93,13 @@ func (k KmsService) GenerateDataKey(ctx context.Context, req awskms.GenerateData
 	if errs != nil {
 		return nil, errs
 	}
+
+	//---
+
+	slog.Info("GenerateDataKey Success",
+		"KeyId", *key.GetMetadata().KeyId,
+		"NumberOfBytes", numberOfBytes,
+	)
 
 	return &awskms.GenerateDataKeyOutput{
 		KeyId:          encrypt.KeyId,

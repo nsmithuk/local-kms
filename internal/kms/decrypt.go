@@ -10,7 +10,6 @@ import (
 	awskms "github.com/aws/aws-sdk-go-v2/service/kms"
 	"github.com/aws/aws-sdk-go-v2/service/kms/types"
 	"github.com/nsmithuk/local-kms/internal/kms/cmk"
-	"github.com/nsmithuk/local-kms/internal/kms/data"
 	"github.com/nsmithuk/local-kms/internal/kms/kmserr"
 	"github.com/nsmithuk/local-kms/internal/kms/validation"
 )
@@ -31,16 +30,6 @@ func (k KmsService) Decrypt(ctx context.Context, req awskms.DecryptInput) (*awsk
 	validator := validation.Validator{}
 	validationErrors := make([]error, 0)
 
-	keyId, err := k.ResolveKeyArn(req.KeyId)
-	if err != nil {
-		validationErrors = append(validationErrors, err)
-	}
-
-	if len(ctbKeyId) > 0 && ctbKeyId != keyId {
-		// If we hve a supplied key, and oen from metadata, they must match.
-		return nil, []error{fmt.Errorf("KeyId '%s' does not match the key within the CiphertextBlob metedata", *req.KeyId)}
-	}
-
 	if err = validator.RequiredPointer(req.CiphertextBlob, "CiphertextBlob"); err != nil {
 		validationErrors = append(validationErrors, err)
 	}
@@ -51,14 +40,16 @@ func (k KmsService) Decrypt(ctx context.Context, req awskms.DecryptInput) (*awsk
 
 	// ---
 
-	key, err := k.Db.LoadKey(keyId)
+	key, err := k.getUsableKey(req.KeyId)
 	if err != nil {
-		if errors.Is(err, data.ErrKeyNotFound) {
-			return nil, []error{
-				kmserr.NewValidation(kmserr.CauseNotFoundException, "A key with the arn %s does not exists", keyId),
-			}
-		}
 		return nil, []error{err}
+	}
+
+	keyId := key.GetArn()
+
+	if len(ctbKeyId) > 0 && ctbKeyId != keyId {
+		// If we have a supplied key, and one from metadata, they must match.
+		return nil, []error{fmt.Errorf("KeyId '%s' does not match the key within the CiphertextBlob metadata", *req.KeyId)}
 	}
 
 	metadata := key.GetMetadata()
@@ -93,7 +84,7 @@ func (k KmsService) Decrypt(ctx context.Context, req awskms.DecryptInput) (*awsk
 	if err != nil {
 		if errors.Is(err, cmk.ErrOperationNotSupported) {
 			return nil, []error{
-				kmserr.NewValidation(kmserr.CauseUnsupportedOperationException, "Encrypt not supported with KeySpec %s", metadata.KeySpec),
+				kmserr.NewValidation(kmserr.CauseUnsupportedOperationException, "Decrypt not supported with KeySpec %s", metadata.KeySpec),
 			}
 		}
 		return nil, []error{err}

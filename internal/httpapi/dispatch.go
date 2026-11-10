@@ -13,13 +13,13 @@ type kmsHandler func(ctx context.Context, body []byte) (any, []error)
 
 func buildDispatcher(kms *kms.KmsService) map[string]kmsHandler {
 	return map[string]kmsHandler{
-		//"CancelKeyDeletion": func(ctx context.Context, body []byte) (any, []error) {
-		//	var in awskms.CancelKeyDeletionInput
-		//	if err := json.Unmarshal(body, &in); err != nil {
-		//		return nil, []error{err}
-		//	}
-		//	return kms.CancelKeyDeletion(ctx, in)
-		//},
+		"CancelKeyDeletion": func(ctx context.Context, body []byte) (any, []error) {
+			var in awskms.CancelKeyDeletionInput
+			if err := json.Unmarshal(body, &in); err != nil {
+				return nil, []error{err}
+			}
+			return kms.CancelKeyDeletion(ctx, in)
+		},
 		//"ConnectCustomKeyStore": func(ctx context.Context, body []byte) (any, []error) {
 		//	var in awskms.ConnectCustomKeyStoreInput
 		//	if err := json.Unmarshal(body, &in); err != nil {
@@ -104,20 +104,20 @@ func buildDispatcher(kms *kms.KmsService) map[string]kmsHandler {
 			}
 			return kms.DescribeKey(ctx, in)
 		},
-		//"DisableKey": func(ctx context.Context, body []byte) (any, []error) {
-		//	var in awskms.DisableKeyInput
-		//	if err := json.Unmarshal(body, &in); err != nil {
-		//		return nil, []error{err}
-		//	}
-		//	return kms.DisableKey(ctx, in)
-		//},
-		//"DisableKeyRotation": func(ctx context.Context, body []byte) (any, []error) {
-		//	var in awskms.DisableKeyRotationInput
-		//	if err := json.Unmarshal(body, &in); err != nil {
-		//		return nil, []error{err}
-		//	}
-		//	return kms.DisableKeyRotation(ctx, in)
-		//},
+		"DisableKey": func(ctx context.Context, body []byte) (any, []error) {
+			var in awskms.DisableKeyInput
+			if err := json.Unmarshal(body, &in); err != nil {
+				return nil, []error{err}
+			}
+			return kms.DisableKey(ctx, in)
+		},
+		"DisableKeyRotation": func(ctx context.Context, body []byte) (any, []error) {
+			var in awskms.DisableKeyRotationInput
+			if err := json.Unmarshal(body, &in); err != nil {
+				return nil, []error{err}
+			}
+			return kms.DisableKeyRotation(ctx, in)
+		},
 		//"DisconnectCustomKeyStore": func(ctx context.Context, body []byte) (any, []error) {
 		//	var in awskms.DisconnectCustomKeyStoreInput
 		//	if err := json.Unmarshal(body, &in); err != nil {
@@ -125,20 +125,20 @@ func buildDispatcher(kms *kms.KmsService) map[string]kmsHandler {
 		//	}
 		//	return kms.DisconnectCustomKeyStore(ctx, in)
 		//},
-		//"EnableKey": func(ctx context.Context, body []byte) (any, []error) {
-		//	var in awskms.EnableKeyInput
-		//	if err := json.Unmarshal(body, &in); err != nil {
-		//		return nil, []error{err}
-		//	}
-		//	return kms.EnableKey(ctx, in)
-		//},
-		//"EnableKeyRotation": func(ctx context.Context, body []byte) (any, []error) {
-		//	var in awskms.EnableKeyRotationInput
-		//	if err := json.Unmarshal(body, &in); err != nil {
-		//		return nil, []error{err}
-		//	}
-		//	return kms.EnableKeyRotation(ctx, in)
-		//},
+		"EnableKey": func(ctx context.Context, body []byte) (any, []error) {
+			var in awskms.EnableKeyInput
+			if err := json.Unmarshal(body, &in); err != nil {
+				return nil, []error{err}
+			}
+			return kms.EnableKey(ctx, in)
+		},
+		"EnableKeyRotation": func(ctx context.Context, body []byte) (any, []error) {
+			var in awskms.EnableKeyRotationInput
+			if err := json.Unmarshal(body, &in); err != nil {
+				return nil, []error{err}
+			}
+			return kms.EnableKeyRotation(ctx, in)
+		},
 		"Encrypt": func(ctx context.Context, body []byte) (any, []error) {
 			var in awskms.EncryptInput
 			if err := json.Unmarshal(body, &in); err != nil {
@@ -188,20 +188,20 @@ func buildDispatcher(kms *kms.KmsService) map[string]kmsHandler {
 			}
 			return kms.GenerateRandom(ctx, in)
 		},
-		//"GetKeyPolicy": func(ctx context.Context, body []byte) (any, []error) {
-		//	var in awskms.GetKeyPolicyInput
-		//	if err := json.Unmarshal(body, &in); err != nil {
-		//		return nil, []error{err}
-		//	}
-		//	return kms.GetKeyPolicy(ctx, in)
-		//},
-		//"GetKeyRotationStatus": func(ctx context.Context, body []byte) (any, []error) {
-		//	var in awskms.GetKeyRotationStatusInput
-		//	if err := json.Unmarshal(body, &in); err != nil {
-		//		return nil, []error{err}
-		//	}
-		//	return kms.GetKeyRotationStatus(ctx, in)
-		//},
+		"GetKeyPolicy": func(ctx context.Context, body []byte) (any, []error) {
+			var in awskms.GetKeyPolicyInput
+			if err := json.Unmarshal(body, &in); err != nil {
+				return nil, []error{err}
+			}
+			return kms.GetKeyPolicy(ctx, in)
+		},
+		"GetKeyRotationStatus": func(ctx context.Context, body []byte) (any, []error) {
+			var in awskms.GetKeyRotationStatusInput
+			if err := json.Unmarshal(body, &in); err != nil {
+				return nil, []error{err}
+			}
+			return kms.GetKeyRotationStatus(ctx, in)
+		},
 		"GetParametersForImport": func(ctx context.Context, body []byte) (any, []error) {
 			var in awskms.GetParametersForImportInput
 			if err := json.Unmarshal(body, &in); err != nil {
@@ -223,13 +223,13 @@ func buildDispatcher(kms *kms.KmsService) map[string]kmsHandler {
 			}
 			return kms.ImportKeyMaterial(ctx, in)
 		},
-		//"ListAliases": func(ctx context.Context, body []byte) (any, []error) {
-		//	var in awskms.ListAliasesInput
-		//	if err := json.Unmarshal(body, &in); err != nil {
-		//		return nil, []error{err}
-		//	}
-		//	return kms.ListAliases(ctx, in)
-		//},
+		"ListAliases": func(ctx context.Context, body []byte) (any, []error) {
+			var in awskms.ListAliasesInput
+			if err := json.Unmarshal(body, &in); err != nil {
+				return nil, []error{err}
+			}
+			return kms.ListAliases(ctx, in)
+		},
 		//"ListGrants": func(ctx context.Context, body []byte) (any, []error) {
 		//	var in awskms.ListGrantsInput
 		//	if err := json.Unmarshal(body, &in); err != nil {
@@ -237,13 +237,13 @@ func buildDispatcher(kms *kms.KmsService) map[string]kmsHandler {
 		//	}
 		//	return kms.ListGrants(ctx, in)
 		//},
-		//"ListKeyPolicies": func(ctx context.Context, body []byte) (any, []error) {
-		//	var in awskms.ListKeyPoliciesInput
-		//	if err := json.Unmarshal(body, &in); err != nil {
-		//		return nil, []error{err}
-		//	}
-		//	return kms.ListKeyPolicies(ctx, in)
-		//},
+		"ListKeyPolicies": func(ctx context.Context, body []byte) (any, []error) {
+			var in awskms.ListKeyPoliciesInput
+			if err := json.Unmarshal(body, &in); err != nil {
+				return nil, []error{err}
+			}
+			return kms.ListKeyPolicies(ctx, in)
+		},
 		"ListKeyRotations": func(ctx context.Context, body []byte) (any, []error) {
 			var in awskms.ListKeyRotationsInput
 			if err := json.Unmarshal(body, &in); err != nil {
@@ -258,13 +258,13 @@ func buildDispatcher(kms *kms.KmsService) map[string]kmsHandler {
 			}
 			return kms.ListKeys(ctx, in)
 		},
-		//"ListResourceTags": func(ctx context.Context, body []byte) (any, []error) {
-		//	var in awskms.ListResourceTagsInput
-		//	if err := json.Unmarshal(body, &in); err != nil {
-		//		return nil, []error{err}
-		//	}
-		//	return kms.ListResourceTags(ctx, in)
-		//},
+		"ListResourceTags": func(ctx context.Context, body []byte) (any, []error) {
+			var in awskms.ListResourceTagsInput
+			if err := json.Unmarshal(body, &in); err != nil {
+				return nil, []error{err}
+			}
+			return kms.ListResourceTags(ctx, in)
+		},
 		//"ListRetirableGrants": func(ctx context.Context, body []byte) (any, []error) {
 		//	var in awskms.ListRetirableGrantsInput
 		//	if err := json.Unmarshal(body, &in); err != nil {
@@ -272,13 +272,13 @@ func buildDispatcher(kms *kms.KmsService) map[string]kmsHandler {
 		//	}
 		//	return kms.ListRetirableGrants(ctx, in)
 		//},
-		//"PutKeyPolicy": func(ctx context.Context, body []byte) (any, []error) {
-		//	var in awskms.PutKeyPolicyInput
-		//	if err := json.Unmarshal(body, &in); err != nil {
-		//		return nil, []error{err}
-		//	}
-		//	return kms.PutKeyPolicy(ctx, in)
-		//},
+		"PutKeyPolicy": func(ctx context.Context, body []byte) (any, []error) {
+			var in awskms.PutKeyPolicyInput
+			if err := json.Unmarshal(body, &in); err != nil {
+				return nil, []error{err}
+			}
+			return kms.PutKeyPolicy(ctx, in)
+		},
 		"ReEncrypt": func(ctx context.Context, body []byte) (any, []error) {
 			var in awskms.ReEncryptInput
 			if err := json.Unmarshal(body, &in); err != nil {
@@ -328,27 +328,27 @@ func buildDispatcher(kms *kms.KmsService) map[string]kmsHandler {
 			}
 			return kms.Sign(ctx, in)
 		},
-		//"TagResource": func(ctx context.Context, body []byte) (any, []error) {
-		//	var in awskms.TagResourceInput
-		//	if err := json.Unmarshal(body, &in); err != nil {
-		//		return nil, []error{err}
-		//	}
-		//	return kms.TagResource(ctx, in)
-		//},
-		//"UntagResource": func(ctx context.Context, body []byte) (any, []error) {
-		//	var in awskms.UntagResourceInput
-		//	if err := json.Unmarshal(body, &in); err != nil {
-		//		return nil, []error{err}
-		//	}
-		//	return kms.UntagResource(ctx, in)
-		//},
-		//"UpdateAlias": func(ctx context.Context, body []byte) (any, []error) {
-		//	var in awskms.UpdateAliasInput
-		//	if err := json.Unmarshal(body, &in); err != nil {
-		//		return nil, []error{err}
-		//	}
-		//	return kms.UpdateAlias(ctx, in)
-		//},
+		"TagResource": func(ctx context.Context, body []byte) (any, []error) {
+			var in awskms.TagResourceInput
+			if err := json.Unmarshal(body, &in); err != nil {
+				return nil, []error{err}
+			}
+			return kms.TagResource(ctx, in)
+		},
+		"UntagResource": func(ctx context.Context, body []byte) (any, []error) {
+			var in awskms.UntagResourceInput
+			if err := json.Unmarshal(body, &in); err != nil {
+				return nil, []error{err}
+			}
+			return kms.UntagResource(ctx, in)
+		},
+		"UpdateAlias": func(ctx context.Context, body []byte) (any, []error) {
+			var in awskms.UpdateAliasInput
+			if err := json.Unmarshal(body, &in); err != nil {
+				return nil, []error{err}
+			}
+			return kms.UpdateAlias(ctx, in)
+		},
 		//"UpdateCustomKeyStore": func(ctx context.Context, body []byte) (any, []error) {
 		//	var in awskms.UpdateCustomKeyStoreInput
 		//	if err := json.Unmarshal(body, &in); err != nil {
@@ -356,13 +356,13 @@ func buildDispatcher(kms *kms.KmsService) map[string]kmsHandler {
 		//	}
 		//	return kms.UpdateCustomKeyStore(ctx, in)
 		//},
-		//"UpdateKeyDescription": func(ctx context.Context, body []byte) (any, []error) {
-		//	var in awskms.UpdateKeyDescriptionInput
-		//	if err := json.Unmarshal(body, &in); err != nil {
-		//		return nil, []error{err}
-		//	}
-		//	return kms.UpdateKeyDescription(ctx, in)
-		//},
+		"UpdateKeyDescription": func(ctx context.Context, body []byte) (any, []error) {
+			var in awskms.UpdateKeyDescriptionInput
+			if err := json.Unmarshal(body, &in); err != nil {
+				return nil, []error{err}
+			}
+			return kms.UpdateKeyDescription(ctx, in)
+		},
 		//"UpdatePrimaryRegion": func(ctx context.Context, body []byte) (any, []error) {
 		//	var in awskms.UpdatePrimaryRegionInput
 		//	if err := json.Unmarshal(body, &in); err != nil {

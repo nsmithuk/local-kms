@@ -46,7 +46,7 @@ func (k KmsService) GetPublicKey(ctx context.Context, req awskms.GetPublicKeyInp
 
 	//---
 
-	slog.Info("GetPubicKey Success",
+	slog.Info("GetPublicKey Success",
 		"KeyId", *metadata.KeyId,
 		"KeySpec", metadata.KeySpec,
 		"KeyUsage", metadata.KeyUsage,
@@ -61,7 +61,7 @@ func (k KmsService) GetPublicKey(ctx context.Context, req awskms.GetPublicKeyInp
 		CustomerMasterKeySpec:  metadata.CustomerMasterKeySpec,
 		EncryptionAlgorithms:   metadata.EncryptionAlgorithms,
 		KeyAgreementAlgorithms: metadata.KeyAgreementAlgorithms,
-		KeyId:                  metadata.KeyId,
+		KeyId:                  &keyId,
 		KeySpec:                metadata.KeySpec,
 		KeyUsage:               metadata.KeyUsage,
 		SigningAlgorithms:      metadata.SigningAlgorithms,

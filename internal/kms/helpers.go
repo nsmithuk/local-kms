@@ -14,6 +14,6 @@ func DecodeMarker(in *string) (*string, error) {
 	if err != nil {
 		return nil, err
 	}
-	nextMarketStr := string(data)
-	return &nextMarketStr, nil
+	nextMarkerStr := string(data)
+	return &nextMarkerStr, nil
 }

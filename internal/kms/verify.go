@@ -6,22 +6,21 @@ import (
 	"log/slog"
 
 	awskms "github.com/aws/aws-sdk-go-v2/service/kms"
-	awskmstypes "github.com/aws/aws-sdk-go-v2/service/kms/types"
+	"github.com/aws/aws-sdk-go-v2/service/kms/types"
 	"github.com/nsmithuk/local-kms/internal/kms/cmk"
-	"github.com/nsmithuk/local-kms/internal/kms/data"
 	"github.com/nsmithuk/local-kms/internal/kms/kmserr"
 	"github.com/nsmithuk/local-kms/internal/kms/validation"
 )
 
 func (k KmsService) Verify(ctx context.Context, req awskms.VerifyInput) (*awskms.VerifyOutput, []error) {
 
+	key, err := k.getUsableKey(req.KeyId)
+	if err != nil {
+		return nil, []error{err}
+	}
+
 	validator := validation.Validator{}
 	validationErrors := make([]error, 0)
-
-	keyId, err := k.ResolveKeyArn(req.KeyId)
-	if err != nil {
-		validationErrors = append(validationErrors, err)
-	}
 
 	if err = validator.RequiredPointer(req.Message, "Message"); err != nil {
 		validationErrors = append(validationErrors, err)
@@ -39,7 +38,7 @@ func (k KmsService) Verify(ctx context.Context, req awskms.VerifyInput) (*awskms
 
 	messageType := req.MessageType
 	if messageType == "" {
-		messageType = awskmstypes.MessageTypeRaw
+		messageType = types.MessageTypeRaw
 	}
 	if err = validator.MessageType(messageType); err != nil {
 		validationErrors = append(validationErrors, err)
@@ -49,17 +48,7 @@ func (k KmsService) Verify(ctx context.Context, req awskms.VerifyInput) (*awskms
 		return nil, validationErrors
 	}
 
-	// ---
-
-	key, err := k.Db.LoadKey(keyId)
-	if err != nil {
-		if errors.Is(err, data.ErrKeyNotFound) {
-			return nil, []error{
-				kmserr.NewValidation(kmserr.CauseNotFoundException, "A key with the arn %s does not exists", keyId),
-			}
-		}
-		return nil, []error{err}
-	}
+	keyId := key.GetArn()
 
 	//---
 
@@ -75,6 +64,12 @@ func (k KmsService) Verify(ctx context.Context, req awskms.VerifyInput) (*awskms
 		return nil, []error{err}
 	}
 
+	if !valid {
+		return nil, []error{
+			kmserr.NewValidation(kmserr.CauseKMSInvalidSignatureException, "Signature verification failed"),
+		}
+	}
+
 	//---
 
 	slog.Info("Verify Success",
@@ -83,14 +78,13 @@ func (k KmsService) Verify(ctx context.Context, req awskms.VerifyInput) (*awskms
 		"KeyUsage", metadata.KeyUsage,
 		"SigningAlgorithms", metadata.SigningAlgorithms,
 		"MessageType", messageType,
-		"SignatureValid", valid,
 	)
 
 	//---
 
 	return &awskms.VerifyOutput{
 		KeyId:            &keyId,
-		SignatureValid:   valid,
+		SignatureValid:   true,
 		SigningAlgorithm: req.SigningAlgorithm,
 	}, nil
 }
