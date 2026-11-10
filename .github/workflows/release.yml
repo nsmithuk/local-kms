@@ -3,7 +3,7 @@ name: release
 on:
   push:
     tags:
-      - 'v*'
+      - '[0-9]*'
 
 permissions:
   contents: write
@@ -24,7 +24,7 @@ jobs:
         id: version
         run: |
           TAG="${{ github.ref_name }}"
-          VERSION=$(echo "$TAG" | sed 's/^v//')
+          VERSION="$TAG"
           MAJOR=$(echo "$VERSION" | cut -d. -f1)
           if echo "$VERSION" | grep -q '-'; then
             IS_PRERELEASE=true
@@ -77,7 +77,7 @@ jobs:
         id: version
         run: |
           TAG="${{ github.ref_name }}"
-          VERSION=$(echo "$TAG" | sed 's/^v//')
+          VERSION="$TAG"
           MAJOR=$(echo "$VERSION" | cut -d. -f1)
           if echo "$VERSION" | grep -q '-'; then
             DOCKER_TAGS="nsmithuk/local-kms:${VERSION}"
