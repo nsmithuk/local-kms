@@ -55,7 +55,7 @@ If a key in the seeding file already exists, it will not be overwritten or amend
 
 ## Download
 
-Pre-built binaries for Linux (amd64, arm64) and macOS (amd64) are attached to each [GitHub release](https://github.com/nsmithuk/local-kms/releases).
+Pre-built binaries for Linux (amd64, arm64) and macOS (amd64, arm64) are attached to each [GitHub release](https://github.com/nsmithuk/local-kms/releases).
 
 
 ## Getting Started with Docker
@@ -64,7 +64,7 @@ Images are available on [Docker Hub](https://hub.docker.com/r/nsmithuk/local-kms
 
 The quickest way to get started is with Docker. To get LKMS up, running and accessible on port 8080, you can run:
 ```
-docker run -p 8080:8080 nsmithuk/local-kms
+docker run -p 8080:8080 nsmithuk/local-kms:4
 ```
 
 ### Seeding and Docker
@@ -73,7 +73,7 @@ To use a seed file with Docker, mount a directory containing your `seed.yaml` an
 docker run -p 8080:8080 \
 -e KMS_SEED_PATH=/init/seed.yaml \
 --mount type=bind,source="$(pwd)"/init,target=/init \
-nsmithuk/local-kms
+nsmithuk/local-kms:4
 ```
 
 ### Persisting data and Docker
@@ -81,7 +81,7 @@ By default in Docker, data will be stored in the directory `/data/`. To persist 
 ```
 docker run -p 8080:8080 \
 --mount type=bind,source="$(pwd)"/data,target=/data \
-nsmithuk/local-kms
+nsmithuk/local-kms:4
 ```
 
 ## Seed file format

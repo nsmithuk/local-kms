@@ -85,8 +85,7 @@ jobs:
             DOCKER_TAGS="nsmithuk/local-kms:${VERSION}"
           else
             DOCKER_TAGS="nsmithuk/local-kms:${VERSION}
-          nsmithuk/local-kms:${MAJOR}"
-            # To also tag as latest, add: nsmithuk/local-kms:latest
+nsmithuk/local-kms:${MAJOR}"
           fi
           {
             echo "docker_tags<<EOF"
