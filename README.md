@@ -1,5 +1,8 @@
 # Local KMS (LKMS)
 
+> [!IMPORTANT]
+> The `latest` tag on Docker Hub will move to v4 in January 2027. If you rely on v3, update your image reference to `nsmithuk/local-kms:3` before then.
+
 A mock version of AWS' Key Management Service, for local development and testing. Written in Go.
 
 _Whilst this project does use real encryption ([AES](https://pkg.go.dev/crypto/aes), [ECDSA](https://pkg.go.dev/crypto/ecdsa), [RSA](https://pkg.go.dev/crypto/rsa), and [ML-DSA](https://github.com/nsmithuk/ml-dsa)), it is designed for
