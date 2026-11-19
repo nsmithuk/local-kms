@@ -79,6 +79,14 @@ docker run -p 8080:8080 \
 nsmithuk/local-kms:4
 ```
 
+The image also includes a standard seed file at `/seed.yaml`. It is only used if you ask for it, by setting `KMS_SEED_PATH` when the container starts:
+```
+docker run -p 8080:8080 \
+-e KMS_SEED_PATH=/seed.yaml \
+nsmithuk/local-kms:4
+```
+Without `KMS_SEED_PATH`, no seeding takes place.
+
 ### Persisting data and Docker
 By default in Docker, data will be stored in the directory `/data/`. To persist data between container executions, mount `/data` to a directory on the host's file system.
 ```

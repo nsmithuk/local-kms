@@ -90,7 +90,12 @@ func (k *RsaKey) Sign(message []byte, algorithm types.SigningAlgorithmSpec, mess
 	}
 
 	// Else we can assume it is PSS.
-	return rsa.SignPSS(rand.Reader, &key, hash, digest, nil)
+	// AWS KMS uses a salt length equal to the hash length (RFC 8017 / RFC 7518 §3.5).
+	// The Go default (nil opts) is the maximum salt length, which standard verifiers reject.
+	return rsa.SignPSS(rand.Reader, &key, hash, digest, &rsa.PSSOptions{
+		SaltLength: rsa.PSSSaltLengthEqualsHash,
+		Hash:       hash,
+	})
 }
 
 func (k *RsaKey) Verify(message []byte, algorithm types.SigningAlgorithmSpec, messageType types.MessageType, signature []byte) (bool, error) {

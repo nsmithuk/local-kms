@@ -39,4 +39,8 @@ FROM gcr.io/distroless/static-debian12:nonroot AS runtime
 
 COPY --from=builder /out/local-kms /local-kms
 
+# Standard seed file. Not used unless the container is started with
+# KMS_SEED_PATH=/seed.yaml (seeding only runs when KMS_SEED_PATH is set).
+COPY --from=builder /src/test/seed-v2.yaml /seed.yaml
+
 ENTRYPOINT ["/local-kms"]
